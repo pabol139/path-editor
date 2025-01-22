@@ -14,6 +14,7 @@ export default {
         primary: "var(--primary)",
         secondary: "var(--secondary)",
         tertiary: "var(--tertiary)",
+        gray200: "var(--gray200)",
         gray300: "var(--gray300)",
       },
     },
