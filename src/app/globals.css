@@ -7,8 +7,10 @@
     --primary: hsl(240, 9%, 15%);
     --secondary: hsl(240, 9%, 23%);
     --tertiary: hsl(240, 10%, 90%);
+    --gray100: hsl(0, 0%, 63%);
     --gray200: hsl(0, 0%, 57%);
     --gray300: hsl(240, 9%, 32%);
+    --purple: hsl(240, 36%, 52%);
   }
 
   /* 1. Use a more-intuitive box-sizing model */
