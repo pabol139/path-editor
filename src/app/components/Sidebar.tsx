@@ -1,4 +1,5 @@
 import Input from "./Input";
+import InputColor from "./InputColor";
 import SectionHeader from "./SectionHeader";
 import { XSquare } from "react-feather";
 
@@ -65,6 +66,12 @@ export default function Sidebar() {
       </section>
       <section className=" pb-5 border-b border-secondary">
         <SectionHeader title="Style"></SectionHeader>
+        <div className="px-5 space-y-4">
+          <h4 className="text-gray100">Fill color</h4>
+          <InputColor />
+          <h4 className="text-gray100">Stroke-width</h4>
+          <h4 className="text-gray100">Stroke-color</h4>
+        </div>
       </section>
       <section className=" pb-5 border-b border-secondary">
         <SectionHeader title="Commands"></SectionHeader>

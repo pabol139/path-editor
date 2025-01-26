@@ -86,4 +86,30 @@
   #__next {
     isolation: isolate;
   }
+
+  input[type="color" i] {
+    border-radius: 4px;
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+
+    /* Can set padding between outer circle and color swatch for Firefox here;
+   * it doesn't support a color-swarch-wrapper pseudoclass
+   */
+    padding: 0px;
+  }
+
+  input[type="color" i]::-webkit-color-swatch-wrapper {
+    padding: 1px;
+  }
+
+  /* Affects the inner circle, i.e. the current color selection */
+  input[type="color" i]::-webkit-color-swatch {
+    border-radius: 3px;
+    border-color: transparent;
+  }
+
+  input[type="color" i]::-moz-color-swatch {
+    border-radius: 3px;
+    border-color: transparent;
+  }
 }
