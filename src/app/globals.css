@@ -87,8 +87,15 @@
     isolation: isolate;
   }
 
+  /*** COLOR INPUT ***/
+  /* Source: https://www.smashingmagazine.com/2021/12/create-custom-range-input-consistent-browsers/ */
   input[type="color" i] {
-    border-radius: 4px;
+    --input-color-outer-radius: 4px;
+    --input-color-padding: 1px;
+    --input-color-inner-radius: calc(
+      var(--input-color-outer-radius) - var(--input-color-padding)
+    );
+    border-radius: var(--input-color-outer-radius);
     inline-size: 1.25rem;
     block-size: 1.25rem;
 
@@ -99,17 +106,75 @@
   }
 
   input[type="color" i]::-webkit-color-swatch-wrapper {
-    padding: 1px;
+    padding: var(--input-color-padding);
   }
 
   /* Affects the inner circle, i.e. the current color selection */
   input[type="color" i]::-webkit-color-swatch {
-    border-radius: 3px;
+    border-radius: var(--input-color-inner-radius);
     border-color: transparent;
   }
 
   input[type="color" i]::-moz-color-swatch {
-    border-radius: 3px;
+    border-radius: var(--input-color-inner-radius);
     border-color: transparent;
+  }
+
+  /*** RANGE INPUT ***/
+
+  input[type="range"] {
+    --input-range-height: calc(6 / 16 * 1rem);
+    --input-size: calc(12 / 16 * 1rem);
+    --input-range-progress: 0%;
+
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+    width: 10rem;
+  }
+
+  /***** Track Styles *****/
+  /***** Chrome, Safari, Opera, and Edge Chromium *****/
+  input[type="range"]::-webkit-slider-runnable-track {
+    background: linear-gradient(
+      to right,
+      var(--purple) var(--input-range-progress, 0%),
+      var(--gray300) var(--input-range-progress, 0%)
+    );
+    height: var(--input-range-height);
+    border-radius: 6px;
+  }
+
+  /******** Firefox ********/
+  input[type="range"]::-moz-range-track {
+    background: var(--gray300);
+    height: var(--input-range-height);
+    border-radius: 6px;
+  }
+
+  /***** Thumb Styles *****/
+  /***** Chrome, Safari, Opera, and Edge Chromium *****/
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Override default look */
+    appearance: none;
+    margin-top: calc(
+      (var(--input-range-height) / 2) - (var(--input-size) / 2)
+    ); /* Centers thumb on the track */
+    background-color: var(--purple);
+    height: var(--input-size);
+    width: var(--input-size);
+    border-radius: 9999px;
+  }
+
+  /***** Thumb Styles *****/
+  /***** Firefox *****/
+  input[type="range"]::-moz-range-thumb {
+    border: none; /*Removes extra border that FF applies*/
+    border-radius: 0; /*Removes default border-radius that FF applies*/
+    background-color: var(--purple);
+    height: var(--input-size);
+    width: var(--input-size);
+    border-radius: 9999px;
   }
 }

@@ -2,6 +2,7 @@ import Input from "./Input";
 import InputColor from "./InputColor";
 import SectionHeader from "./SectionHeader";
 import { XSquare } from "react-feather";
+import Slider from "./Slider";
 
 export default function Sidebar() {
   return (
@@ -12,8 +13,8 @@ export default function Sidebar() {
           className="mt-2 w-full bg-secondary text-base"
           name=""
           id=""
-          cols="30"
-          rows="3"
+          cols={30}
+          rows={3}
         ></textarea>
       </section>
       <section className=" pb-5 border-b border-secondary">
@@ -70,7 +71,11 @@ export default function Sidebar() {
           <h4 className="text-gray100">Fill color</h4>
           <InputColor />
           <h4 className="text-gray100">Stroke-width</h4>
+          <Slider max={10} min={0} />
           <h4 className="text-gray100">Stroke-color</h4>
+          <Slider max={10} min={0} />
+          <h4 className="text-gray100">Stroke-color</h4>
+          <InputColor />
         </div>
       </section>
       <section className=" pb-5 border-b border-secondary">
