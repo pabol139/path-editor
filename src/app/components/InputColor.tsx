@@ -6,7 +6,7 @@ export default function InputColor() {
   const [colorText, setColorText] = useState("#000000");
 
   function isHexColor(color: string) {
-    return /^#([0-9A-F]{3}|[0-9A-F]{6}|[0-9A-F]{8})$/i.test(color);
+    return /^#([0-9A-F]{3}|[0-9A-F]{6})$/i.test(color);
   }
 
   function handleColorChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -30,15 +30,17 @@ export default function InputColor() {
           className="block"
         />
       </div>
-      <input
-        type="text"
-        value={colorText}
-        onChange={handleColorChange}
-        className="bg-transparent w-20 px-2 border-r border-gray300"
-      ></input>
-      <div className="px-2 ">
-        <input type="text" className="h-5 w-10 block bg-transparent " />
+      <div className="px-2">
+        <input
+          type="text"
+          value={colorText}
+          onChange={handleColorChange}
+          className="bg-transparent w-20 "
+        ></input>
       </div>
+      {/* <div className="px-2 ">
+        <input type="text" className="h-5 w-10 block bg-transparent " />
+      </div> */}
     </div>
   );
 }

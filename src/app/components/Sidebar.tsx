@@ -3,8 +3,33 @@ import InputColor from "./InputColor";
 import SectionHeader from "./SectionHeader";
 import { XSquare } from "react-feather";
 import Slider from "./Slider";
+import { Viewbox } from "../types/Viewbox";
 
-export default function Sidebar() {
+type SiderbarProps = {
+  viewbox: Viewbox;
+  setViewbox: (key: keyof Viewbox, value: number) => void;
+};
+
+export default function Sidebar({ viewbox, setViewbox }: SiderbarProps) {
+  const viewboxArray = [
+    {
+      char: "X",
+      value: "x" as keyof Viewbox,
+    },
+    {
+      char: "Y",
+      value: "y" as keyof Viewbox,
+    },
+    {
+      char: "W",
+      value: "width" as keyof Viewbox,
+    },
+    {
+      char: "H",
+      value: "height" as keyof Viewbox,
+    },
+  ];
+
   return (
     <aside className="absolute overflow-auto border-l bg-primary border-secondary top-0 right-0 h-full text-tertiary w-full max-w-[326px]">
       <section className="bg-secondary px-5 py-3">
@@ -20,8 +45,16 @@ export default function Sidebar() {
       <section className=" pb-5 border-b border-secondary">
         <SectionHeader title="Viewbox"></SectionHeader>
         <div className="grid px-5 w-fit mt-1 grid-cols-2 gap-2">
-          {Array.from(["X", "Y", "W", "H"]).map((char, index) => {
-            return <Input leftText={char} key={index} />;
+          {viewboxArray.map((item, index) => {
+            return (
+              <Input
+                leftText={item.char}
+                property={item.value}
+                value={viewbox[item.value]}
+                setter={setViewbox}
+                key={index}
+              />
+            );
           })}
         </div>
       </section>
@@ -71,8 +104,6 @@ export default function Sidebar() {
           <h4 className="text-gray100">Fill color</h4>
           <InputColor />
           <h4 className="text-gray100">Stroke-width</h4>
-          <Slider max={10} min={0} />
-          <h4 className="text-gray100">Stroke-color</h4>
           <Slider max={10} min={0} />
           <h4 className="text-gray100">Stroke-color</h4>
           <InputColor />
