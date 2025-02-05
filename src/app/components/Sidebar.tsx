@@ -4,60 +4,31 @@ import SectionHeader from "./SectionHeader";
 import { XSquare } from "react-feather";
 import Slider from "./Slider";
 import { Viewbox } from "../types/Viewbox";
+import PathInput from "./PathInput";
+import ViewboxSection from "./Viewbox-section";
 
 type SiderbarProps = {
   viewbox: Viewbox;
+  path: string;
+  setPath: React.Dispatch<React.SetStateAction<string>>;
   setViewbox: (key: keyof Viewbox, value: number) => void;
 };
 
-export default function Sidebar({ viewbox, setViewbox }: SiderbarProps) {
-  const viewboxArray = [
-    {
-      char: "X",
-      value: "x" as keyof Viewbox,
-    },
-    {
-      char: "Y",
-      value: "y" as keyof Viewbox,
-    },
-    {
-      char: "W",
-      value: "width" as keyof Viewbox,
-    },
-    {
-      char: "H",
-      value: "height" as keyof Viewbox,
-    },
-  ];
-
+export default function Sidebar({
+  viewbox,
+  path,
+  setPath,
+  setViewbox,
+}: SiderbarProps) {
   return (
     <aside className="absolute overflow-auto border-l bg-primary border-secondary top-0 right-0 h-full text-tertiary w-full max-w-[326px]">
       <section className="bg-secondary px-5 py-3">
         <h3 className="text-sm">Path</h3>
-        <textarea
-          className="mt-2 w-full bg-secondary text-base"
-          name=""
-          id=""
-          cols={30}
-          rows={3}
-        ></textarea>
+        <PathInput path={path} setPath={setPath} />
       </section>
-      <section className=" pb-5 border-b border-secondary">
-        <SectionHeader title="Viewbox"></SectionHeader>
-        <div className="grid px-5 w-fit mt-1 grid-cols-2 gap-2">
-          {viewboxArray.map((item, index) => {
-            return (
-              <Input
-                leftText={item.char}
-                property={item.value}
-                value={viewbox[item.value]}
-                setter={setViewbox}
-                key={index}
-              />
-            );
-          })}
-        </div>
-      </section>
+
+      <ViewboxSection viewbox={viewbox} setViewbox={setViewbox} />
+
       <section className=" pb-5 border-b border-secondary">
         <SectionHeader title="Path Transform"></SectionHeader>
         <div className="px-5 space-y-4">
