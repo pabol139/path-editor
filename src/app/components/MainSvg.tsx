@@ -15,53 +15,87 @@ export default function MainSvg() {
     "M 200 500 H 500 L 500 220 L 200 220 Z"
   );
 
-  const pathCommands = {
-    M: { xAxis: true, yAxis: true },
-    L: { xAxis: true, yAxis: true },
-    H: { xAxis: true, yAxis: false },
-    V: { xAxis: false, yAxis: true },
-    C: { xAxis: true, yAxis: true },
-    S: { xAxis: true, yAxis: true },
-    Q: { xAxis: true, yAxis: true },
-    T: { xAxis: true, yAxis: true },
-    A: { xAxis: true, yAxis: true },
-    Z: { xAxis: false, yAxis: false },
+  const kCommandTypeRegex = /^[\t\n\f\r ]*([MLHVZCSQTAmlhvzcsqta])[\t\n\f\r ]*/;
+  const kFlagRegex = /^[01]/;
+  const kNumberRegex =
+    /^[+-]?(([0-9]*\.[0-9]+)|([0-9]+\.)|([0-9]+))([eE][+-]?[0-9]+)?/;
+  const kCoordinateRegex = kNumberRegex;
+  const kCommaWsp = /^(([\t\n\f\r ]+,?[\t\n\f\r ]*)|(,[\t\n\f\r ]*))/;
+
+  const kGrammar: { [key: string]: RegExp[] } = {
+    M: [kCoordinateRegex, kCoordinateRegex],
+    L: [kCoordinateRegex, kCoordinateRegex],
+    H: [kCoordinateRegex],
+    V: [kCoordinateRegex],
+    Z: [],
+    C: [
+      kCoordinateRegex,
+      kCoordinateRegex,
+      kCoordinateRegex,
+      kCoordinateRegex,
+      kCoordinateRegex,
+      kCoordinateRegex,
+    ],
+    S: [kCoordinateRegex, kCoordinateRegex, kCoordinateRegex, kCoordinateRegex],
+    Q: [kCoordinateRegex, kCoordinateRegex, kCoordinateRegex, kCoordinateRegex],
+    T: [kCoordinateRegex, kCoordinateRegex],
+    A: [
+      kNumberRegex,
+      kNumberRegex,
+      kCoordinateRegex,
+      kFlagRegex,
+      kFlagRegex,
+      kCoordinateRegex,
+      kCoordinateRegex,
+    ],
   };
 
-  const handleYAxis = () => {
+  const parsePath = () => {
     const commands = [];
-    var lastCommand = "";
-    var coordinates = "";
     var i = 0;
 
     while (i < path.length) {
-      var char = path[i].toUpperCase();
+      const match = path.slice(i).match(kCommandTypeRegex);
 
-      if (pathCommands[char]) {
-        if (lastCommand) {
-          commands.push({
-            command: lastCommand,
-            coordinates: coordinates,
-          });
+      if (match === null)
+        throw new Error("malformed path (first error at " + i + ")");
 
-          if (char === "Z") {
-            commands.push({
-              command: char,
-            });
-          }
-          coordinates = "";
-          lastCommand = "";
-        }
-        lastCommand = char;
-      } else {
-        coordinates += char;
+      const commandLetterWithSpaces = match[0];
+      const commandLetter = match[1];
+
+      if (i === 0 && commandLetter.toUpperCase() !== "M") {
+        throw new Error("malformed path (first error at " + i + ")");
       }
-      i++;
-    }
+      i = i + commandLetterWithSpaces.length;
+      var regexTable = kGrammar[commandLetter];
+      var j = 0;
+      var coordinates = [];
+      while (j < regexTable.length) {
+        var regex = regexTable[j];
+        var newMatch = path.slice(i).match(regex);
 
+        if (!newMatch)
+          throw new Error("malformed path (first error at " + i + ")");
+
+        coordinates.push(newMatch[1]);
+        i = i + newMatch[0].length;
+
+        while (path.slice(i).match(kCommaWsp)) {
+          i++;
+        }
+
+        j++;
+      }
+
+      commands.push({
+        command: commandLetter.toUpperCase(),
+        coordinates: coordinates,
+      });
+    }
     console.log(commands);
   };
-  handleYAxis();
+
+  parsePath();
 
   // Type for updateViewbox function
   const updateViewbox = (key: keyof Viewbox, value: number) => {
