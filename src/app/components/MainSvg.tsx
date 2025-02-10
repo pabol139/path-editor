@@ -88,14 +88,54 @@ export default function MainSvg() {
       }
 
       commands.push({
-        command: commandLetter.toUpperCase(),
+        letter: commandLetter.toUpperCase(),
         coordinates: coordinates,
       });
     }
-    console.log(commands);
+    return commands;
   };
 
-  parsePath();
+  const translate = (x: string, y: string) => {
+    const commands = parsePath() || [];
+
+    if (commands.length === 0) throw new Error("No commands available");
+
+    const xValue = parseFloat(x);
+    const yValue = parseFloat(y);
+
+    if (isNaN(xValue) || isNaN(yValue))
+      throw new Error("Invalid translate parameters");
+
+    commands.forEach((command) => {
+      const letter = command.letter;
+
+      if (letter === "V") {
+        var parsedCoordinate = parseFloat(command.coordinates[0]);
+        command.coordinates[0] = (parsedCoordinate + yValue).toString();
+      }
+
+      if (letter === "A") {
+        // 5 === X
+        // 6 === Y
+        var parsedCoordinateX = parseFloat(command.coordinates[5]);
+        var parsedCoordinateY = parseFloat(command.coordinates[6]);
+        command.coordinates[5] = (parsedCoordinateX + xValue).toString();
+        command.coordinates[6] = (parsedCoordinateY + yValue).toString();
+      }
+
+      command.coordinates.forEach((coordinate, i) => {
+        var newCoordinate = parseFloat(coordinate);
+
+        if (i % 2 === 0) {
+          command.coordinates[i] = (newCoordinate + xValue).toString();
+        } else command.coordinates[i] = (newCoordinate + yValue).toString();
+      });
+    });
+  };
+
+  const rotate = (originX: string, originY: string, angle: string) => {};
+
+  translate("1", "2");
 
   // Type for updateViewbox function
   const updateViewbox = (key: keyof Viewbox, value: number) => {
