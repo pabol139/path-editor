@@ -1,3 +1,5 @@
+import { usePath, useSetPath } from "../context/PathContext";
+import { translate } from "../utils/pathUtils";
 import { Viewbox } from "../types/Viewbox";
 
 type InputProps = {
@@ -13,9 +15,15 @@ export default function Input({
   value,
   setter,
 }: InputProps) {
+  const path = usePath();
+  const setPath = useSetPath();
+
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = event.target.value;
     const value = parseFloat(rawValue);
+
+    setPath(translate(path, "1", "2"));
+
     if (!isNaN(value)) {
       setter(property, value);
     }

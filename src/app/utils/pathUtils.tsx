@@ -1,5 +1,3 @@
-import { usePath } from "../context/PathContext";
-
 const kCommandTypeRegex = /^[\t\n\f\r ]*([MLHVZCSQTAmlhvzcsqta])[\t\n\f\r ]*/;
 const kFlagRegex = /^[01]/;
 const kNumberRegex =
@@ -35,9 +33,14 @@ const kGrammar: { [key: string]: RegExp[] } = {
   ],
 };
 
-export const parsePath = () => {
-  const path = usePath();
+type Command<T> = {
+  letter: string;
+  coordinates: T[];
+};
 
+type ParsePath<T> = Command<T>[];
+
+export const parsePath = (path: string): ParsePath<string> => {
   const commands = [];
   var i = 0;
 
@@ -82,10 +85,22 @@ export const parsePath = () => {
   return commands;
 };
 
-export const translate = (x: string, y: string) => {
-  const commands = parsePath() || [];
+const convertCoordinatesToFloat = (commands: ParsePath<string>) => {
+  return commands.map((command) => ({
+    ...command,
+    coordinates: command.coordinates.map((coordinate: string) =>
+      parseFloat(coordinate)
+    ),
+  }));
+};
+
+export const translate = (path: string, x: string, y: string) => {
+  const commands: ParsePath<string> = parsePath(path) || [];
 
   if (commands.length === 0) throw new Error("No commands available");
+
+  const formatedCommands: ParsePath<number> =
+    convertCoordinatesToFloat(commands);
 
   const xValue = parseFloat(x);
   const yValue = parseFloat(y);
@@ -93,31 +108,46 @@ export const translate = (x: string, y: string) => {
   if (isNaN(xValue) || isNaN(yValue))
     throw new Error("Invalid translate parameters");
 
-  commands.forEach((command) => {
+  formatedCommands.forEach((command) => {
     const letter = command.letter;
 
     if (letter === "V") {
-      var parsedCoordinate = parseFloat(command.coordinates[0]);
-      command.coordinates[0] = (parsedCoordinate + yValue).toString();
+      var parsedCoordinate = command.coordinates[0];
+      command.coordinates[0] = parsedCoordinate + yValue;
     }
 
     if (letter === "A") {
       // 5 === X
       // 6 === Y
-      var parsedCoordinateX = parseFloat(command.coordinates[5]);
-      var parsedCoordinateY = parseFloat(command.coordinates[6]);
-      command.coordinates[5] = (parsedCoordinateX + xValue).toString();
-      command.coordinates[6] = (parsedCoordinateY + yValue).toString();
+      var parsedCoordinateX = command.coordinates[5];
+      var parsedCoordinateY = command.coordinates[6];
+      command.coordinates[5] = parsedCoordinateX + xValue;
+      command.coordinates[6] = parsedCoordinateY + yValue;
     }
 
     command.coordinates.forEach((coordinate, i) => {
-      var newCoordinate = parseFloat(coordinate);
+      var newCoordinate = coordinate;
 
       if (i % 2 === 0) {
-        command.coordinates[i] = (newCoordinate + xValue).toString();
-      } else command.coordinates[i] = (newCoordinate + yValue).toString();
+        command.coordinates[i] = newCoordinate + xValue;
+      } else command.coordinates[i] = newCoordinate + yValue;
     });
   });
+
+  return convertPathToString(formatedCommands);
+};
+
+const convertPathToString = (commands: ParsePath<number>) => {
+  return commands
+    .map((command) => {
+      return (
+        command.letter +
+        " " +
+        command.coordinates.map((coordinate) => coordinate.toString() + " ")
+      );
+    })
+    .toString()
+    .replace(/,/g, "");
 };
 
 // const rotate = (originX: string, originY: string, angle: number) => {
@@ -140,7 +170,7 @@ export const translate = (x: string, y: string) => {
 //         cos * (parsedCoordinate - parsedOriginY) -
 //         sin * (0 - parsedOriginX) +
 //         parsedOriginY
-//       ).toString();
+//       ;
 //     }
 
 //     if (letter === "A") {
