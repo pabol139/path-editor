@@ -9,22 +9,15 @@ import ViewboxSection from "./Viewbox-section";
 
 type SiderbarProps = {
   viewbox: Viewbox;
-  path: string;
-  setPath: React.Dispatch<React.SetStateAction<string>>;
   setViewbox: (key: keyof Viewbox, value: number) => void;
 };
 
-export default function Sidebar({
-  viewbox,
-  path,
-  setPath,
-  setViewbox,
-}: SiderbarProps) {
+export default function Sidebar({ viewbox, setViewbox }: SiderbarProps) {
   return (
     <aside className="absolute overflow-auto border-l bg-primary border-secondary top-0 right-0 h-full text-tertiary w-full max-w-[326px]">
       <section className="bg-secondary px-5 py-3">
         <h3 className="text-sm">Path</h3>
-        <PathInput path={path} setPath={setPath} />
+        <PathInput />
       </section>
 
       <ViewboxSection viewbox={viewbox} setViewbox={setViewbox} />

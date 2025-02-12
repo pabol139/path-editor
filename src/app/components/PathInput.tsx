@@ -1,10 +1,9 @@
-export default function PathInput({
-  path,
-  setPath,
-}: {
-  path: string;
-  setPath: React.Dispatch<React.SetStateAction<string>>;
-}) {
+import { usePath, useSetPath } from "../context/PathContext";
+
+export default function PathInput() {
+  const path = usePath();
+  const setPath = useSetPath();
+
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = event.target.value;
     setPath(value);
