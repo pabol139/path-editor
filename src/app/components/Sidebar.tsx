@@ -1,11 +1,9 @@
-import Input from "./Input";
-import InputColor from "./InputColor";
-import SectionHeader from "./SectionHeader";
-import { XSquare } from "react-feather";
-import Slider from "./Slider";
 import { Viewbox } from "../types/Viewbox";
-import PathInput from "./PathInput";
-import ViewboxSection from "./Viewbox-section";
+import ViewboxSection from "./Section_viewbox";
+import TransformSection from "./Section_transform";
+import PathSection from "./Section_path";
+import StyleSection from "./Section_style";
+import CommandsSection from "./Section_commands";
 
 type SiderbarProps = {
   viewbox: Viewbox;
@@ -15,67 +13,15 @@ type SiderbarProps = {
 export default function Sidebar({ viewbox, setViewbox }: SiderbarProps) {
   return (
     <aside className="absolute overflow-auto border-l bg-primary border-secondary top-0 right-0 h-full text-tertiary w-full max-w-[326px]">
-      <section className="bg-secondary px-5 py-3">
-        <h3 className="text-sm">Path</h3>
-        <PathInput />
-      </section>
+      <PathSection />
 
       <ViewboxSection viewbox={viewbox} setViewbox={setViewbox} />
 
-      <section className=" pb-5 border-b border-secondary">
-        <SectionHeader title="Path Transform"></SectionHeader>
-        <div className="px-5 space-y-4">
-          <div>
-            <h4 className="text-gray100">Translate</h4>
-            <div className="flex gap-2 mt-3">
-              {Array.from(["x", "y"]).map((char, index) => {
-                return <Input leftText={char} key={index} />;
-              })}
-              <button>
-                <XSquare size={28}></XSquare>
-              </button>
-            </div>
-          </div>
-          <div>
-            <h4 className="text-gray100">Rotate</h4>
-            <div className="flex gap-2 mt-3">
-              {Array.from(["x", "y"]).map((char, index) => {
-                return <Input leftText={char} key={index} />;
-              })}
-            </div>
-          </div>
-          <div>
-            <h4 className="text-gray100">Scale</h4>
-            <div className="flex gap-2 mt-3">
-              {Array.from(["x", "y"]).map((char, index) => {
-                return <Input leftText={char} key={index} />;
-              })}
-            </div>
-          </div>
-          <div className="text-xs flex justify-start gap-3 !mt-8">
-            <button className="px-2 py-3 border border-tertiary rounded-md bg-purple">
-              Convert to absolute
-            </button>
-            <button className="px-2  py-3 border border-tertiary rounded-md bg-purple">
-              Convert to relative
-            </button>
-          </div>
-        </div>
-      </section>
-      <section className=" pb-5 border-b border-secondary">
-        <SectionHeader title="Style"></SectionHeader>
-        <div className="px-5 space-y-4">
-          <h4 className="text-gray100">Fill color</h4>
-          <InputColor />
-          <h4 className="text-gray100">Stroke-width</h4>
-          <Slider max={10} min={0} />
-          <h4 className="text-gray100">Stroke-color</h4>
-          <InputColor />
-        </div>
-      </section>
-      <section className=" pb-5 border-b border-secondary">
-        <SectionHeader title="Commands"></SectionHeader>
-      </section>
+      <TransformSection />
+
+      <StyleSection />
+
+      <CommandsSection />
     </aside>
   );
 }
