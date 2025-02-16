@@ -140,6 +140,10 @@ export const translate = (path: string, x: string, y: string) => {
 const convertPathToString = (commands: ParsePath<number>) => {
   return commands
     .map((command) => {
+      if (command.letter.toUpperCase() === "Z") {
+        return command.letter;
+      }
+
       return (
         command.letter +
         " " +

@@ -1,6 +1,6 @@
 export interface Viewbox {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  x: string;
+  y: string;
+  width: string;
+  height: string;
 }

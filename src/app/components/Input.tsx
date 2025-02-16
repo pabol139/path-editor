@@ -5,7 +5,7 @@ type InputProps = {
   leftText: string;
   property?: keyof Viewbox;
   value: string;
-  setter: (x: string, y: string) => void;
+  setter: (value: string) => void;
 };
 
 export default function Input({
@@ -14,19 +14,6 @@ export default function Input({
   value,
   setter,
 }: InputProps) {
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const rawValue = event.target.value || "0";
-    const value = parseFloat(rawValue);
-
-    if (!isNaN(value)) {
-      if (leftText.toUpperCase() === "X") {
-        setter(value.toString(), "0");
-      } else if (leftText.toUpperCase() === "Y") {
-        setter("0", value.toString());
-      }
-    }
-  };
-
   return (
     <div className="relative">
       <label
@@ -40,7 +27,7 @@ export default function Input({
         className="rounded-md text-sm py-2 pr-3 pl-12 max-w-28 bg-secondary"
         type="text"
         value={value}
-        onChange={handleChange}
+        onChange={(e) => setter(e.target.value)}
       />
     </div>
   );

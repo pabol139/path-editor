@@ -8,18 +8,20 @@ export default function MainSvg() {
   const path = usePath();
 
   const [viewbox, setViewbox] = useState<Viewbox>({
-    x: -230,
-    y: -140,
-    width: 1200,
-    height: 1000,
+    x: "-230",
+    y: "-140",
+    width: "1200",
+    height: "1000",
   });
 
   // Type for updateViewbox function
-  const updateViewbox = (key: keyof Viewbox, value: number) => {
+  const updateViewbox = (key: keyof Viewbox, value: string) => {
     setViewbox((prevState) => ({
       ...prevState,
       [key]: value,
     }));
+
+    console.log(viewbox);
   };
 
   return (
@@ -30,7 +32,7 @@ export default function MainSvg() {
       >
         <path d={path} fill="#ffffff40" stroke="#fff" strokeWidth={1}></path>
       </svg>
-      <Sidebar viewbox={viewbox} setViewbox={updateViewbox} />
+      <Sidebar viewbox={viewbox} updateViewbox={updateViewbox} />
     </>
   );
 }

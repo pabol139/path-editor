@@ -4,31 +4,31 @@ import { Viewbox } from "../types/Viewbox";
 
 type ViewboxSectionProps = {
   viewbox: Viewbox;
-  setViewbox: (key: keyof Viewbox, value: number) => void;
+  updateViewbox: (key: keyof Viewbox, value: string) => void;
 };
 
 const viewboxArray = [
   {
-    char: "X",
+    char: "x",
     value: "x" as keyof Viewbox,
   },
   {
-    char: "Y",
+    char: "y",
     value: "y" as keyof Viewbox,
   },
   {
-    char: "W",
+    char: "w",
     value: "width" as keyof Viewbox,
   },
   {
-    char: "H",
+    char: "h",
     value: "height" as keyof Viewbox,
   },
 ];
 
 export default function ViewboxSection({
   viewbox,
-  setViewbox,
+  updateViewbox,
 }: ViewboxSectionProps) {
   return (
     <section className=" pb-5 border-b border-secondary">
@@ -40,7 +40,9 @@ export default function ViewboxSection({
               leftText={item.char}
               property={item.value}
               value={viewbox[item.value]}
-              setter={setViewbox}
+              setter={(value) =>
+                updateViewbox(item.value as keyof Viewbox, value)
+              }
               key={index}
             />
           );

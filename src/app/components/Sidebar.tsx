@@ -7,15 +7,15 @@ import CommandsSection from "./Section_commands";
 
 type SiderbarProps = {
   viewbox: Viewbox;
-  setViewbox: (key: keyof Viewbox, value: number) => void;
+  updateViewbox: (key: keyof Viewbox, value: string) => void;
 };
 
-export default function Sidebar({ viewbox, setViewbox }: SiderbarProps) {
+export default function Sidebar({ viewbox, updateViewbox }: SiderbarProps) {
   return (
     <aside className="absolute overflow-auto border-l bg-primary border-secondary top-0 right-0 h-full text-tertiary w-full max-w-[326px]">
       <PathSection />
 
-      <ViewboxSection viewbox={viewbox} setViewbox={setViewbox} />
+      <ViewboxSection viewbox={viewbox} updateViewbox={updateViewbox} />
 
       <TransformSection />
 

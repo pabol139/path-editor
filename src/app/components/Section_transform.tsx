@@ -1,27 +1,66 @@
 import SectionHeader from "./SectionHeader";
-import { XSquare } from "react-feather";
 import Input from "./Input";
 import { usePath, useSetPath } from "../context/PathContext";
 import { translate } from "../utils/pathUtils";
 import { useState } from "react";
 
 type Coordinates = {
+  translate: AxisValues;
+  rotate: AxisValues;
+  scale: AxisValues;
+};
+
+type Axis = "x" | "y";
+
+type AxisValues = {
   x: string;
   y: string;
 };
+
+type Action = "translate" | "rotate" | "scale";
+
+const axis = ["x", "y"];
 
 export default function TransformSection() {
   const path = usePath();
   const setPath = useSetPath();
 
   const [coordinates, setCoordinates] = useState<Coordinates>({
-    x: "0",
-    y: "0",
+    translate: {
+      x: "0",
+      y: "0",
+    },
+    rotate: {
+      x: "0",
+      y: "0",
+    },
+    scale: {
+      x: "0",
+      y: "0",
+    },
   });
 
-  const handleTransform = (x: string, y: string) => {
-    setCoordinates({ ...coordinates, x: x, y: y });
-    setPath(translate(path, x, y));
+  const updatePosition = (action: Action, axis: Axis, value: string) => {
+    setCoordinates((prev) => ({
+      ...prev,
+      [action]: { ...prev[action], [axis]: value },
+    }));
+  };
+
+  const handleTranslate = () => {
+    setPath(
+      translate(path, coordinates["translate"].x, coordinates["translate"].y)
+    );
+  };
+  const handleRotate = () => {
+    // setPath(
+    //   rotate(path, coordinates["rotate"].x, coordinates["rotate"].y)
+    // );
+  };
+  const handleScale = () => {
+    // setPath(
+    //   scale(path, coordinates["scale"].x, coordinates["scale"].y)
+    // );
   };
 
   return (
@@ -31,35 +70,70 @@ export default function TransformSection() {
         <div>
           <h4 className="text-gray100">Translate</h4>
           <div className="flex gap-2 mt-3">
-            {Array.from(["x", "y"]).map((char, index) => {
+            {axis.map((char, index) => {
               return (
                 <Input
                   leftText={char}
                   key={index}
-                  value={coordinates[char as keyof Coordinates]}
-                  setter={handleTransform}
+                  value={coordinates["translate"][char as Axis]}
+                  setter={(value) =>
+                    updatePosition("translate", char as Axis, value)
+                  }
                 />
               );
             })}
-            <button>
-              <XSquare size={28}></XSquare>
+            <button
+              onClick={handleTranslate}
+              className="px-2 py-1 border bg-purple rounded-md border-white"
+            >
+              <span className="text-sm">Apply</span>
             </button>
           </div>
         </div>
         <div>
           <h4 className="text-gray100">Rotate</h4>
           <div className="flex gap-2 mt-3">
-            {Array.from(["x", "y"]).map((char, index) => {
-              return <Input leftText={char} key={index} />;
+            {axis.map((char, index) => {
+              return (
+                <Input
+                  leftText={char}
+                  key={index}
+                  value={coordinates["rotate"][char as Axis]}
+                  setter={(value) =>
+                    updatePosition("rotate", char as Axis, value)
+                  }
+                />
+              );
             })}
+            <button
+              onClick={handleRotate}
+              className="px-2 py-1 border bg-purple rounded-md border-white"
+            >
+              <span className="text-sm">Apply</span>
+            </button>
           </div>
         </div>
         <div>
           <h4 className="text-gray100">Scale</h4>
           <div className="flex gap-2 mt-3">
-            {Array.from(["x", "y"]).map((char, index) => {
-              return <Input leftText={char} key={index} />;
+            {axis.map((char, index) => {
+              return (
+                <Input
+                  leftText={char}
+                  key={index}
+                  value={coordinates["scale"][char as Axis]}
+                  setter={(value) =>
+                    updatePosition("scale", char as Axis, value)
+                  }
+                />
+              );
             })}
+            <button
+              onClick={handleScale}
+              className="px-2 py-1 border bg-purple rounded-md border-white"
+            >
+              <span className="text-sm">Apply</span>
+            </button>
           </div>
         </div>
       </div>
