@@ -27,7 +27,7 @@ export default function MainSvg() {
   return (
     <>
       <svg
-        className="w-full h-full"
+        className="w-[calc(100%-var(--aside-width))] h-full"
         viewBox={`${viewbox.x} ${viewbox.y} ${viewbox.width} ${viewbox.height}`}
       >
         <path d={path} fill="#ffffff40" stroke="#fff" strokeWidth={1}></path>

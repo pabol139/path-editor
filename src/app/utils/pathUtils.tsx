@@ -10,7 +10,6 @@ const kGrammar: { [key: string]: RegExp[] } = {
   L: [kCoordinateRegex, kCoordinateRegex],
   H: [kCoordinateRegex],
   V: [kCoordinateRegex],
-  Z: [],
   C: [
     kCoordinateRegex,
     kCoordinateRegex,
@@ -31,6 +30,20 @@ const kGrammar: { [key: string]: RegExp[] } = {
     kCoordinateRegex,
     kCoordinateRegex,
   ],
+  Z: [],
+};
+
+const lineCommands = {
+  MoveTo: "M",
+  LineTo: "L",
+  Horizontal: "H",
+  Vertical: "V",
+  Curve: "C",
+  SmoothCurve: "S",
+  QuadraticCurve: "Q",
+  SmoothQuadraticCurve: "T",
+  Arc: "A",
+  Close: "Z",
 };
 
 type Command<T> = {
@@ -53,7 +66,7 @@ export const parsePath = (path: string): ParsePath<string> => {
     const commandLetterWithSpaces = match[0];
     const commandLetter = match[1];
 
-    if (i === 0 && commandLetter.toUpperCase() !== "M") {
+    if (i === 0 && commandLetter.toUpperCase() !== lineCommands.MoveTo) {
       throw new Error("malformed path (first error at " + i + ")");
     }
     i = i + commandLetterWithSpaces.length;
@@ -94,6 +107,32 @@ const convertCoordinatesToFloat = (commands: ParsePath<string>) => {
   }));
 };
 
+const formatNumber = (number: number, decimals: number): string => {
+  return number
+    .toFixed(decimals)
+    .replace(/^(-?[0-9]*\.([0-9]*[1-9])?)0*$/, "$1") // Search for meaningful decimals (non zero)
+    .replace(/\.$/, ""); // Removes any trailing point
+};
+
+const convertPathToString = (commands: ParsePath<number>) => {
+  return commands
+    .map((command) => {
+      if (command.letter.toUpperCase() === lineCommands.Close) {
+        return command.letter;
+      }
+
+      return (
+        command.letter +
+        " " +
+        command.coordinates
+          .map((coordinate) => formatNumber(coordinate, 2))
+          .join(" ")
+      );
+    })
+    .join(" ")
+    .toString();
+};
+
 export const translate = (path: string, x: string, y: string) => {
   const commands: ParsePath<string> = parsePath(path) || [];
 
@@ -111,12 +150,12 @@ export const translate = (path: string, x: string, y: string) => {
   formatedCommands.forEach((command) => {
     const letter = command.letter;
 
-    if (letter === "V") {
+    if (letter === lineCommands.Vertical) {
       var parsedCoordinate = command.coordinates[0];
       command.coordinates[0] = parsedCoordinate + yValue;
     }
 
-    if (letter === "A") {
+    if (letter === lineCommands.Arc) {
       // 5 === X
       // 6 === Y
       var parsedCoordinateX = command.coordinates[5];
@@ -137,21 +176,41 @@ export const translate = (path: string, x: string, y: string) => {
   return convertPathToString(formatedCommands);
 };
 
-const convertPathToString = (commands: ParsePath<number>) => {
-  return commands
-    .map((command) => {
-      if (command.letter.toUpperCase() === "Z") {
-        return command.letter;
-      }
+export const scale = (path: string, rawXFactor: string, rawYFactor: string) => {
+  const commands: ParsePath<string> = parsePath(path) || [];
 
-      return (
-        command.letter +
-        " " +
-        command.coordinates.map((coordinate) => coordinate.toString() + " ")
-      );
-    })
-    .toString()
-    .replace(/,/g, "");
+  if (commands.length === 0) throw new Error("No commands available");
+
+  const formatedCommands: ParsePath<number> =
+    convertCoordinatesToFloat(commands);
+
+  const xValue = parseFloat(rawXFactor);
+  const yValue = parseFloat(rawYFactor);
+
+  if (isNaN(xValue) || isNaN(yValue))
+    throw new Error("Invalid translate parameters");
+
+  formatedCommands.forEach((command) => {
+    const letter = command.letter;
+
+    if (letter === lineCommands.Vertical) {
+      var parsedCoordinate = command.coordinates[0];
+      command.coordinates[0] = parsedCoordinate * yValue;
+    }
+
+    if (letter === lineCommands.Arc) {
+    }
+
+    command.coordinates.forEach((coordinate, i) => {
+      var newCoordinate = coordinate;
+
+      if (i % 2 === 0) {
+        command.coordinates[i] = newCoordinate * xValue;
+      } else command.coordinates[i] = newCoordinate * yValue;
+    });
+  });
+
+  return convertPathToString(formatedCommands);
 };
 
 // const rotate = (originX: string, originY: string, angle: number) => {

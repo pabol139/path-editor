@@ -38,7 +38,6 @@ export default function ViewboxSection({
           return (
             <Input
               leftText={item.char}
-              property={item.value}
               value={viewbox[item.value]}
               setter={(value) =>
                 updateViewbox(item.value as keyof Viewbox, value)

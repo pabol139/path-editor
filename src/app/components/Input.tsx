@@ -1,19 +1,12 @@
-import { log } from "console";
 import { Viewbox } from "../types/Viewbox";
 
 type InputProps = {
   leftText: string;
-  property?: keyof Viewbox;
   value: string;
   setter: (value: string) => void;
 };
 
-export default function Input({
-  leftText,
-  property,
-  value,
-  setter,
-}: InputProps) {
+export default function Input({ leftText, value, setter }: InputProps) {
   return (
     <div className="relative">
       <label

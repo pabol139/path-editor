@@ -1,7 +1,7 @@
 import SectionHeader from "./SectionHeader";
 import Input from "./Input";
 import { usePath, useSetPath } from "../context/PathContext";
-import { translate } from "../utils/pathUtils";
+import { scale, translate } from "../utils/pathUtils";
 import { useState } from "react";
 
 type Coordinates = {
@@ -35,8 +35,8 @@ export default function TransformSection() {
       y: "0",
     },
     scale: {
-      x: "0",
-      y: "0",
+      x: "1",
+      y: "1",
     },
   });
 
@@ -58,9 +58,7 @@ export default function TransformSection() {
     // );
   };
   const handleScale = () => {
-    // setPath(
-    //   scale(path, coordinates["scale"].x, coordinates["scale"].y)
-    // );
+    setPath(scale(path, coordinates["scale"].x, coordinates["scale"].y));
   };
 
   return (
@@ -90,7 +88,7 @@ export default function TransformSection() {
             </button>
           </div>
         </div>
-        <div>
+        {/* <div>
           <h4 className="text-gray100">Rotate</h4>
           <div className="flex gap-2 mt-3">
             {axis.map((char, index) => {
@@ -112,7 +110,7 @@ export default function TransformSection() {
               <span className="text-sm">Apply</span>
             </button>
           </div>
-        </div>
+        </div> */}
         <div>
           <h4 className="text-gray100">Scale</h4>
           <div className="flex gap-2 mt-3">

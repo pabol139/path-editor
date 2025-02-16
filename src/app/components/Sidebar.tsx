@@ -12,7 +12,7 @@ type SiderbarProps = {
 
 export default function Sidebar({ viewbox, updateViewbox }: SiderbarProps) {
   return (
-    <aside className="absolute overflow-auto border-l bg-primary border-secondary top-0 right-0 h-full text-tertiary w-full max-w-[326px]">
+    <aside className="absolute overflow-auto border-l bg-primary border-secondary top-0 right-0 h-full text-tertiary w-full max-w-[var(--aside-width)]">
       <PathSection />
 
       <ViewboxSection viewbox={viewbox} updateViewbox={updateViewbox} />
