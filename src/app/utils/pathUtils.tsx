@@ -70,7 +70,7 @@ export const parsePath = (path: string): ParsePath<string> => {
       throw new Error("malformed path (first error at " + i + ")");
     }
     i = i + commandLetterWithSpaces.length;
-    var regexTable = kGrammar[commandLetter];
+    var regexTable = kGrammar[commandLetter] || [];
     var j = 0;
     var coordinates = [];
     while (j < regexTable.length) {

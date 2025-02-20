@@ -2,11 +2,9 @@
 import { useState } from "react";
 import Sidebar from "./Sidebar";
 import { Viewbox } from "../types/Viewbox";
-import { usePath } from "../context/PathContext";
+import Svg from "./Svg";
 
 export default function MainSvg() {
-  const path = usePath();
-
   const [viewbox, setViewbox] = useState<Viewbox>({
     x: "-230",
     y: "-140",
@@ -20,18 +18,11 @@ export default function MainSvg() {
       ...prevState,
       [key]: value,
     }));
-
-    console.log(viewbox);
   };
 
   return (
     <>
-      <svg
-        className="w-[calc(100%-var(--aside-width))] h-full"
-        viewBox={`${viewbox.x} ${viewbox.y} ${viewbox.width} ${viewbox.height}`}
-      >
-        <path d={path} fill="#ffffff40" stroke="#fff" strokeWidth={1}></path>
-      </svg>
+      <Svg viewbox={viewbox}></Svg>
       <Sidebar viewbox={viewbox} updateViewbox={updateViewbox} />
     </>
   );

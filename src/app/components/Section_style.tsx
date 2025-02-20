@@ -3,6 +3,8 @@ import InputColor from "./InputColor";
 import SectionHeader from "./SectionHeader";
 
 export default function StyleSection() {
+  console.log("entro");
+
   return (
     <section className=" pb-5 border-b border-secondary">
       <SectionHeader title="Style"></SectionHeader>
