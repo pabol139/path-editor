@@ -1,14 +1,11 @@
-import Slider from "./Slider";
-import InputColor from "./InputColor";
-import SectionHeader from "./SectionHeader";
+import Slider from "./inputs/InputSlider";
+import InputColor from "./inputs/InputColor";
+import { CollapsedSection } from "./CollapsedSection";
 
 export default function StyleSection() {
-  console.log("entro");
-
   return (
-    <section className=" pb-5 border-b border-secondary">
-      <SectionHeader title="Style"></SectionHeader>
-      <div className="px-5 space-y-4">
+    <CollapsedSection title="Style">
+      <div className="px-5 pb-5 space-y-4">
         <h4 className="text-gray100">Fill color</h4>
         <InputColor />
         <h4 className="text-gray100">Stroke-width</h4>
@@ -16,6 +13,6 @@ export default function StyleSection() {
         <h4 className="text-gray100">Stroke-color</h4>
         <InputColor />
       </div>
-    </section>
+    </CollapsedSection>
   );
 }

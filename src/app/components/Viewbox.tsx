@@ -1,6 +1,6 @@
-import Input from "./Input";
-import SectionHeader from "./SectionHeader";
+import Input from "./inputs/Input";
 import { Viewbox } from "../types/Viewbox";
+import { CollapsedSection } from "./CollapsedSection";
 
 type ViewboxSectionProps = {
   viewbox: Viewbox;
@@ -31,9 +31,8 @@ export default function ViewboxSection({
   updateViewbox,
 }: ViewboxSectionProps) {
   return (
-    <section className=" pb-5 border-b border-secondary">
-      <SectionHeader title="Viewbox"></SectionHeader>
-      <div className="grid px-5 w-fit mt-1 grid-cols-2 gap-2">
+    <CollapsedSection title="Viewbox">
+      <div className="grid px-5 pb-5 w-fit mt-1 grid-cols-2 gap-2">
         {viewboxArray.map((item, index) => {
           return (
             <Input
@@ -47,6 +46,6 @@ export default function ViewboxSection({
           );
         })}
       </div>
-    </section>
+    </CollapsedSection>
   );
 }

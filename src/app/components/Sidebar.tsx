@@ -1,9 +1,9 @@
 import { Viewbox } from "../types/Viewbox";
-import ViewboxSection from "./Section_viewbox";
-import TransformSection from "./Section_transform";
-import PathSection from "./Section_path";
-import StyleSection from "./Section_style";
-import CommandsSection from "./Section_commands";
+import ViewboxSection from "./Viewbox";
+import TransformSection from "./transformations/Transforms";
+import PathSection from "./path/Path";
+import StyleSection from "./Styles";
+import CommandsSection from "./commands/Commands";
 
 type SiderbarProps = {
   viewbox: Viewbox;
@@ -19,7 +19,7 @@ export default function Sidebar({ viewbox, updateViewbox }: SiderbarProps) {
 
       <TransformSection />
 
-      <StyleSection />
+      {/* <StyleSection /> */}
 
       <CommandsSection />
     </aside>

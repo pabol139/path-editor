@@ -7,7 +7,7 @@ export default function Command({
 }) {
   return (
     <div className="flex">
-      <div className="rounded-tl-md text-sm px-2 py-1 w-8 bg-purple text-center rounded-bl-md">
+      <div className="rounded-tl-md text-sm px-2 py-1 w-8 bg-purple text-center rounded-bl-md last:rounded-tr-md last:rounded-br-md">
         {letter}
       </div>
       {coordinates.map((coordinate, key) => {

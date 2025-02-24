@@ -1,4 +1,4 @@
-import { Viewbox } from "../types/Viewbox";
+import { Viewbox } from "../../types/Viewbox";
 
 type InputProps = {
   leftText: string;

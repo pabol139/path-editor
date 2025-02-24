@@ -1,16 +1,15 @@
-import SectionHeader from "./SectionHeader";
 import Command from "./Command";
-import { usePath } from "../context/PathContext";
-import { parsePath } from "../utils/pathUtils";
+import { usePath } from "../../context/PathContext";
+import { parsePath } from "../../utils/pathUtils";
+import { CollapsedSection } from "../CollapsedSection";
 
 export default function CommandsSection() {
   const path = usePath();
   const commands = parsePath(path);
 
   return (
-    <section className=" pb-5 border-b border-secondary">
-      <SectionHeader title="Commands"></SectionHeader>
-      <div className="px-5 gap-2 flex flex-col">
+    <CollapsedSection title="Commands">
+      <div className="px-5 pb-5  gap-2 flex flex-col">
         {commands.map((command, key) => (
           <Command
             key={key}
@@ -19,6 +18,6 @@ export default function CommandsSection() {
           />
         ))}
       </div>
-    </section>
+    </CollapsedSection>
   );
 }
