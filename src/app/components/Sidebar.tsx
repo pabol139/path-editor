@@ -4,6 +4,7 @@ import TransformSection from "./transformations/Transforms";
 import PathSection from "./path/Path";
 import StyleSection from "./Styles";
 import CommandsSection from "./commands/Commands";
+import { RefObject } from "react";
 
 type SiderbarProps = {
   viewbox: Viewbox;

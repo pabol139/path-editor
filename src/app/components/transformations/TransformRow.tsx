@@ -29,7 +29,7 @@ export function TransformRow({
 
   return (
     <div>
-      <h4 className="text-gray100">{title}</h4>
+      <h4 className="text-gray100 first-letter:uppercase">{title}</h4>
       <div className="flex gap-2 mt-3">
         {axis.map((char, index) => {
           return (

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Sidebar from "./Sidebar";
 import { Viewbox } from "../types/Viewbox";
 import Svg from "./Svg";

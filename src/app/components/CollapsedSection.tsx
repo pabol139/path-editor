@@ -12,7 +12,6 @@ export function CollapsedSection({
 
   const handleExpanded = () => {
     setExpanded(!expanded);
-    console.log("entro", expanded);
   };
 
   return (
@@ -25,9 +24,9 @@ export function CollapsedSection({
       <div
         className={`${
           expanded ? "expanded" : ""
-        } grid overflow-hidden   grid-rows-[0fr] transition-[grid-template-rows] duration-300 [&.expanded]:grid-rows-[1fr]`}
+        } grid overflow-hidden grid-rows-[0fr] transition-[grid-template-rows] duration-300 [&.expanded]:grid-rows-[1fr]`}
       >
-        <div className="min-h-0 invisible transition-[visibility] duration-300  [.expanded_&]:visible">
+        <div className="min-h-0 invisible transition-[visibility] duration-300 [.expanded_&]:visible">
           {children}
         </div>
       </div>

@@ -1,3 +1,4 @@
+/** Regex based on https://github.com/Yqnn/svg-path-editor/blob/master/src/lib/path-parser.ts */
 const kCommandTypeRegex = /^[\t\n\f\r ]*([MLHVZCSQTAmlhvzcsqta])[\t\n\f\r ]*/;
 const kFlagRegex = /^[01]/;
 const kNumberRegex =
@@ -95,6 +96,8 @@ export const parsePath = (path: string): ParsePath<string> => {
       coordinates: coordinates,
     });
   }
+
+  updatePoints(commands);
   return commands;
 };
 
@@ -211,6 +214,55 @@ export const scale = (path: string, rawXFactor: string, rawYFactor: string) => {
   });
 
   return convertPathToString(formatedCommands);
+};
+
+export const updatePoints = (commands: ParsePath<string>) => {
+  var lastPositionX = "0";
+  var lastPositionY = "0";
+  var points = [];
+
+  commands.forEach((command) => {
+    if (command.letter === lineCommands.Close) {
+      return;
+    }
+
+    const circle = {
+      radius: "10",
+      fill: "red",
+      cy: "0",
+      cx: "0",
+    };
+
+    if (command.letter === lineCommands.Vertical) {
+      circle.cx = lastPositionX;
+      circle.cy = command.coordinates[0];
+      lastPositionY = command.coordinates[0];
+      points.push(circle);
+
+      return;
+    }
+
+    if (command.letter === lineCommands.Horizontal) {
+      circle.cx = command.coordinates[0];
+      circle.cy = lastPositionY;
+      lastPositionX = command.coordinates[0];
+      points.push(circle);
+
+      return;
+    }
+    command.coordinates.forEach((coordinate, index) => {
+      if (index % 2 === 0) {
+        circle.cx = coordinate;
+        lastPositionX = coordinate;
+      } else {
+        circle.cy = coordinate;
+        lastPositionY = coordinate;
+      }
+    });
+    points.push(circle);
+  });
+
+  return points;
 };
 
 // const rotate = (originX: string, originY: string, angle: number) => {
