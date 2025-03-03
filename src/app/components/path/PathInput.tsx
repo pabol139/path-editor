@@ -1,19 +1,18 @@
 import { useRef } from "react";
-import { usePath, useSetPath } from "../../context/PathContext";
+import { usePathObject } from "../../context/PathContext";
 import { Copy } from "react-feather";
 
 export default function PathInput() {
-  const path = usePath();
-  const setPath = useSetPath();
+  const { pathObject, updatePath } = usePathObject();
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = event.target.value;
-    setPath(value);
+    updatePath(value);
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(path).then(
+    navigator.clipboard.writeText(pathObject.path).then(
       () => {
         if (!buttonRef.current) return;
         const textElement = buttonRef.current.querySelector("span");
@@ -46,7 +45,7 @@ export default function PathInput() {
         cols={30}
         rows={3}
         onChange={handleChange}
-        value={path}
+        value={pathObject.path}
       ></textarea>
       <button
         ref={buttonRef}

@@ -6,9 +6,9 @@ import Svg from "./Svg";
 
 export default function MainSvg() {
   const [viewbox, setViewbox] = useState<Viewbox>({
-    x: "-230",
-    y: "-140",
-    width: "1200",
+    x: "0",
+    y: "0",
+    width: "1000",
     height: "1000",
   });
 

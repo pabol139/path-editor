@@ -1,11 +1,10 @@
 import Command from "./Command";
-import { usePath } from "../../context/PathContext";
-import { parsePath } from "../../utils/pathUtils";
+import { usePathObject } from "../../context/PathContext";
 import { CollapsedSection } from "../CollapsedSection";
 
 export default function CommandsSection() {
-  const path = usePath();
-  const commands = parsePath(path);
+  const { pathObject } = usePathObject();
+  const commands = pathObject.commands;
 
   return (
     <CollapsedSection title="Commands">

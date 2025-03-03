@@ -1,3 +1,5 @@
+import { PathObject, ParsePath } from "../types/Path";
+
 /** Regex based on https://github.com/Yqnn/svg-path-editor/blob/master/src/lib/path-parser.ts */
 const kCommandTypeRegex = /^[\t\n\f\r ]*([MLHVZCSQTAmlhvzcsqta])[\t\n\f\r ]*/;
 const kFlagRegex = /^[01]/;
@@ -47,14 +49,7 @@ const lineCommands = {
   Close: "Z",
 };
 
-type Command<T> = {
-  letter: string;
-  coordinates: T[];
-};
-
-type ParsePath<T> = Command<T>[];
-
-export const parsePath = (path: string): ParsePath<string> => {
+export const parsePath = (path: string): ParsePath<number> => {
   const commands = [];
   var i = 0;
 
@@ -81,7 +76,7 @@ export const parsePath = (path: string): ParsePath<string> => {
       if (!newMatch)
         throw new Error("malformed path (first error at " + i + ")");
 
-      coordinates.push(newMatch[1]);
+      coordinates.push(parseFloat(newMatch[1]));
       i = i + newMatch[0].length;
 
       while (path.slice(i).match(kCommaWsp)) {
@@ -92,6 +87,7 @@ export const parsePath = (path: string): ParsePath<string> => {
     }
 
     commands.push({
+      id: crypto.randomUUID(),
       letter: commandLetter.toUpperCase(),
       coordinates: coordinates,
     });
@@ -99,6 +95,20 @@ export const parsePath = (path: string): ParsePath<string> => {
 
   updatePoints(commands);
   return commands;
+};
+
+export const mergeCommands = (
+  oldCommands: ParsePath<number>,
+  newCommands: ParsePath<number>
+): ParsePath<number> => {
+  const filteredArray = oldCommands.map((oldCommand) => {
+    const matchedCommand = newCommands.find(
+      (command) => command.id === oldCommand.id
+    );
+    return matchedCommand;
+  });
+
+  return filteredArray;
 };
 
 const convertCoordinatesToFloat = (commands: ParsePath<string>) => {
@@ -117,7 +127,7 @@ const formatNumber = (number: number, decimals: number): string => {
     .replace(/\.$/, ""); // Removes any trailing point
 };
 
-const convertPathToString = (commands: ParsePath<number>) => {
+export const convertPathToString = (commands: ParsePath<number>) => {
   return commands
     .map((command) => {
       if (command.letter.toUpperCase() === lineCommands.Close) {
@@ -136,13 +146,14 @@ const convertPathToString = (commands: ParsePath<number>) => {
     .toString();
 };
 
-export const translate = (path: string, x: string, y: string) => {
-  const commands: ParsePath<string> = parsePath(path) || [];
-
+export const translate = (
+  commands: ParsePath<number>,
+  x: string,
+  y: string
+) => {
   if (commands.length === 0) throw new Error("No commands available");
 
-  const formatedCommands: ParsePath<number> =
-    convertCoordinatesToFloat(commands);
+  const formatedCommands = commands;
 
   const xValue = parseFloat(x);
   const yValue = parseFloat(y);
@@ -176,16 +187,17 @@ export const translate = (path: string, x: string, y: string) => {
     });
   });
 
-  return convertPathToString(formatedCommands);
+  return formatedCommands;
 };
 
-export const scale = (path: string, rawXFactor: string, rawYFactor: string) => {
-  const commands: ParsePath<string> = parsePath(path) || [];
-
+export const scale = (
+  commands: ParsePath<number>,
+  rawXFactor: string,
+  rawYFactor: string
+) => {
   if (commands.length === 0) throw new Error("No commands available");
 
-  const formatedCommands: ParsePath<number> =
-    convertCoordinatesToFloat(commands);
+  const formatedCommands = commands;
 
   const xValue = parseFloat(rawXFactor);
   const yValue = parseFloat(rawYFactor);
@@ -213,10 +225,10 @@ export const scale = (path: string, rawXFactor: string, rawYFactor: string) => {
     });
   });
 
-  return convertPathToString(formatedCommands);
+  return formatedCommands;
 };
 
-export const updatePoints = (commands: ParsePath<string>) => {
+export const updatePoints = (commands: ParsePath<number>) => {
   var lastPositionX = "0";
   var lastPositionY = "0";
   var points = [];
@@ -227,6 +239,7 @@ export const updatePoints = (commands: ParsePath<string>) => {
     }
 
     const circle = {
+      id: command.id,
       radius: "10",
       fill: "red",
       cy: "0",
@@ -235,28 +248,27 @@ export const updatePoints = (commands: ParsePath<string>) => {
 
     if (command.letter === lineCommands.Vertical) {
       circle.cx = lastPositionX;
-      circle.cy = command.coordinates[0];
-      lastPositionY = command.coordinates[0];
+      circle.cy = command.coordinates[0].toString();
+      lastPositionY = command.coordinates[0].toString();
       points.push(circle);
-
       return;
     }
 
     if (command.letter === lineCommands.Horizontal) {
-      circle.cx = command.coordinates[0];
+      circle.cx = command.coordinates[0].toString();
       circle.cy = lastPositionY;
-      lastPositionX = command.coordinates[0];
+      lastPositionX = command.coordinates[0].toString();
       points.push(circle);
 
       return;
     }
     command.coordinates.forEach((coordinate, index) => {
       if (index % 2 === 0) {
-        circle.cx = coordinate;
-        lastPositionX = coordinate;
+        circle.cx = coordinate.toString();
+        lastPositionX = coordinate.toString();
       } else {
-        circle.cy = coordinate;
-        lastPositionY = coordinate;
+        circle.cy = coordinate.toString();
+        lastPositionY = coordinate.toString();
       }
     });
     points.push(circle);

@@ -1,5 +1,5 @@
 import Input from "../inputs/Input";
-import { usePath, useSetPath } from "../../context/PathContext";
+import { usePathObject, useSetPath } from "../../context/PathContext";
 import { scale, translate } from "../../utils/pathUtils";
 import { useState } from "react";
 import { CollapsedSection } from "../CollapsedSection";
@@ -23,8 +23,7 @@ type Action = "translate" | "rotate" | "scale";
 const axis = ["x", "y"];
 
 export default function TransformSection() {
-  const path = usePath();
-  const setPath = useSetPath();
+  const { pathObject, updateCommands } = usePathObject();
 
   const [coordinates, setCoordinates] = useState<Coordinates>({
     translate: {
@@ -49,17 +48,27 @@ export default function TransformSection() {
   };
 
   const handleTranslate = () => {
-    setPath(
-      translate(path, coordinates["translate"].x, coordinates["translate"].y)
+    updateCommands(
+      translate(
+        [...pathObject.commands],
+        coordinates["translate"].x,
+        coordinates["translate"].y
+      )
     );
   };
   const handleRotate = () => {
-    // setPath(
+    // updateCommands(
     //   rotate(path, coordinates["rotate"].x, coordinates["rotate"].y)
     // );
   };
   const handleScale = () => {
-    setPath(scale(path, coordinates["scale"].x, coordinates["scale"].y));
+    updateCommands(
+      scale(
+        [...pathObject.commands],
+        coordinates["scale"].x,
+        coordinates["scale"].y
+      )
+    );
   };
 
   return (
