@@ -2,11 +2,7 @@
 
 import { createContext, useContext, useState } from "react";
 import { PathObject, ParsePath } from "../types/Path";
-import {
-  mergeCommands,
-  convertPathToString,
-  parsePath,
-} from "../utils/pathUtils";
+import { convertPathToString, parsePath } from "../utils/pathUtils";
 interface PathProviderProps {
   children: React.ReactNode;
 }
@@ -41,8 +37,8 @@ export function PathProvider({ children }: PathProviderProps) {
 
   function updateCommands(commands: ParsePath<number>) {
     setPathObject((prevObject) => ({
-      path: convertPathToString(mergeCommands(prevObject.commands, commands)),
-      commands: mergeCommands(prevObject.commands, commands),
+      path: convertPathToString(commands),
+      commands: commands,
     }));
   }
 

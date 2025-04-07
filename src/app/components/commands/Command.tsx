@@ -3,7 +3,7 @@ export default function Command({
   coordinates,
 }: {
   letter: string;
-  coordinates: string[];
+  coordinates: number[];
 }) {
   return (
     <div className="flex">
@@ -14,9 +14,9 @@ export default function Command({
         return (
           <div
             key={key}
-            className="flex items-center bg-secondary text-xs border-r border-gray300 w-10 justify-center  last:rounded-tr-md last:rounded-br-md last:border-none"
+            className="overflow-auto  flex items-center bg-secondary text-xs border-r border-gray300 w-10 justify-center  last:rounded-tr-md last:rounded-br-md last:border-none"
           >
-            <span className="">{coordinate}</span>
+            <span className="px-1">{coordinate}</span>
           </div>
         );
       })}

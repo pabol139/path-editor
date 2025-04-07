@@ -4,7 +4,7 @@ import { CollapsedSection } from "./CollapsedSection";
 
 type ViewboxSectionProps = {
   viewbox: Viewbox;
-  updateViewbox: (key: keyof Viewbox, value: string) => void;
+  updateViewbox: (viewbox: Viewbox) => void;
 };
 
 const viewboxArray = [
@@ -38,9 +38,11 @@ export default function ViewboxSection({
             <Input
               leftText={item.char}
               value={viewbox[item.value]}
-              setter={(value) =>
-                updateViewbox(item.value as keyof Viewbox, value)
-              }
+              setter={(value) => {
+                const newObject = { ...viewbox };
+                newObject[item.value] = value;
+                updateViewbox({ ...viewbox, ...newObject });
+              }}
               key={index}
             />
           );

@@ -17,24 +17,24 @@ export function Circle({
 }) {
   const [dragging, setDragging] = useState(false);
 
-  const handlePointerDown = (event) => {
+  const handlePointerDown = (event: React.PointerEvent<SVGCircleElement>) => {
     setDragging(true);
-    event.target.setPointerCapture(event.pointerId);
+    (event.target as HTMLElement).setPointerCapture(event.pointerId);
   };
 
-  const handlePointerMove = (event) => {
+  const handlePointerMove = (event: React.PointerEvent<SVGCircleElement>) => {
     if (!dragging) {
       return;
     }
 
     // Get the SVG element
-    const svg = event.target.closest("svg");
+    const svg = (event.target as HTMLElement).closest("svg");
     if (!svg) return;
 
     const point = svg.createSVGPoint();
     point.x = event.clientX;
     point.y = event.clientY;
-    const svgPoint = point.matrixTransform(svg.getScreenCTM().inverse());
+    const svgPoint = point.matrixTransform(svg.getScreenCTM()?.inverse());
 
     handleMove({
       id: id,
@@ -51,7 +51,7 @@ export function Circle({
       }}
       onPointerUp={(event) => {
         setDragging(false);
-        event.target.releasePointerCapture(event.pointerId);
+        (event.target as HTMLElement).releasePointerCapture(event.pointerId);
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}

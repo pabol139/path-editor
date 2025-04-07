@@ -1,13 +1,43 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { usePathObject } from "../../context/PathContext";
+import { Viewbox } from "../../types/Viewbox";
+import { SvgDimensions } from "@/app/types/Svg";
+import { getPathBBox } from "@/app/utils/pathUtils";
 import { Copy } from "react-feather";
 
-export default function PathInput() {
+export default function PathInput({
+  svgDimensions,
+  updateViewbox,
+}: {
+  svgDimensions: SvgDimensions;
+  updateViewbox: (viewbox: Viewbox) => void;
+}) {
   const { pathObject, updatePath } = usePathObject();
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = event.target.value;
+    const svgWidth = svgDimensions.width;
+    const svgHeight = svgDimensions.height;
+    const pathBBox = getPathBBox(value);
+
+    let pathWidth = pathBBox.width + 2;
+    let pathHeight = pathBBox.height + 2;
+    const svgAspectRatio = svgHeight / svgWidth;
+    const pathAspectRatio = pathHeight / pathWidth;
+    if (svgAspectRatio < pathAspectRatio) {
+      pathWidth = pathHeight / svgAspectRatio;
+    } else {
+      pathHeight = svgAspectRatio * pathWidth;
+    }
+    const newObject: Viewbox = {
+      x: String(pathBBox.x - 1),
+      y: String(pathBBox.y - 1),
+      width: String(pathWidth),
+      height: String(pathHeight),
+    };
+
+    updateViewbox(newObject);
     updatePath(value);
   };
 
@@ -39,7 +69,7 @@ export default function PathInput() {
   return (
     <>
       <textarea
-        className="mt-2 w-full bg-secondary text-base"
+        className="mt-2 w-full bg-secondary text-base tabular-nums"
         name=""
         id=""
         cols={30}

@@ -1,4 +1,12 @@
-import { PathObject, ParsePath } from "../types/Path";
+import { ParsePath } from "../types/Path";
+
+type Circle = {
+  id: string;
+  radius: string;
+  fill: string;
+  cy: string;
+  cx: string;
+};
 
 /** Regex based on https://github.com/Yqnn/svg-path-editor/blob/master/src/lib/path-parser.ts */
 const kCommandTypeRegex = /^[\t\n\f\r ]*([MLHVZCSQTAmlhvzcsqta])[\t\n\f\r ]*/;
@@ -76,7 +84,7 @@ export const parsePath = (path: string): ParsePath<number> => {
       if (!newMatch)
         throw new Error("malformed path (first error at " + i + ")");
 
-      coordinates.push(parseFloat(newMatch[1]));
+      coordinates.push(parseFloat(newMatch[0]));
       i = i + newMatch[0].length;
 
       while (path.slice(i).match(kCommaWsp)) {
@@ -97,27 +105,19 @@ export const parsePath = (path: string): ParsePath<number> => {
   return commands;
 };
 
-export const mergeCommands = (
-  oldCommands: ParsePath<number>,
-  newCommands: ParsePath<number>
-): ParsePath<number> => {
-  const filteredArray = oldCommands.map((oldCommand) => {
-    const matchedCommand = newCommands.find(
-      (command) => command.id === oldCommand.id
-    );
-    return matchedCommand;
-  });
+export const getPathBBox = (path: string) => {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  const pathElement = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "path"
+  );
+  pathElement.setAttribute("d", path);
+  svg.appendChild(pathElement);
+  document.body.appendChild(svg);
+  const BBox = pathElement?.getBBox();
+  document.body.removeChild(svg);
 
-  return filteredArray;
-};
-
-const convertCoordinatesToFloat = (commands: ParsePath<string>) => {
-  return commands.map((command) => ({
-    ...command,
-    coordinates: command.coordinates.map((coordinate: string) =>
-      parseFloat(coordinate)
-    ),
-  }));
+  return BBox;
 };
 
 const formatNumber = (number: number, decimals: number): string => {
@@ -231,7 +231,7 @@ export const scale = (
 export const updatePoints = (commands: ParsePath<number>) => {
   var lastPositionX = "0";
   var lastPositionY = "0";
-  var points = [];
+  var points: Circle[] = [];
 
   commands.forEach((command) => {
     if (command.letter === lineCommands.Close) {
@@ -241,7 +241,7 @@ export const updatePoints = (commands: ParsePath<number>) => {
     const circle = {
       id: command.id,
       radius: "10",
-      fill: "red",
+      fill: "white",
       cy: "0",
       cx: "0",
     };
@@ -262,6 +262,16 @@ export const updatePoints = (commands: ParsePath<number>) => {
 
       return;
     }
+
+    if (command.letter === lineCommands.Arc) {
+      circle.cx = command.coordinates[5].toString();
+      circle.cy = command.coordinates[6].toString();
+      lastPositionX = command.coordinates[5].toString();
+      lastPositionY = command.coordinates[6].toString();
+      points.push(circle);
+
+      return;
+    }
     command.coordinates.forEach((coordinate, index) => {
       if (index % 2 === 0) {
         circle.cx = coordinate.toString();
@@ -276,70 +286,3 @@ export const updatePoints = (commands: ParsePath<number>) => {
 
   return points;
 };
-
-// const rotate = (originX: string, originY: string, angle: number) => {
-//   const commands = parsePath() || [];
-//   const parsedOriginX = parseFloat(originX);
-//   const parsedOriginY = parseFloat(originY);
-
-//   var radians = (Math.PI / 180) * angle,
-//     cos = Math.cos(radians),
-//     sin = Math.sin(radians);
-
-//   //   nx = cos * (x - originX) + sin * (y - originY) + originX,
-//   //   ny = cos * (y - originY) - sin * (x - originX) + originY;
-//   commands.forEach((command) => {
-//     const letter = command.letter;
-
-//     if (letter === "V") {
-//       var parsedCoordinate = parseFloat(command.coordinates[0]);
-//       command.coordinates[0] = (
-//         cos * (parsedCoordinate - parsedOriginY) -
-//         sin * (0 - parsedOriginX) +
-//         parsedOriginY
-//       ;
-//     }
-
-//     if (letter === "A") {
-//       // 2 === X-axis-rotation
-//       // 5 === X
-//       // 6 === Y
-//       command.coordinates[2] = (
-//         (parseFloat(command.coordinates[2]) + angle) %
-//         360
-//       ).toString();
-
-//       var parsedCoordinateX = parseFloat(command.coordinates[5]);
-//       var parsedCoordinateY = parseFloat(command.coordinates[6]);
-//       command.coordinates[5] = (
-//         cos * (parsedCoordinateX - parsedOriginX) +
-//         sin * (parsedCoordinateY - parsedOriginY) +
-//         parsedOriginX
-//       ).toString();
-//       command.coordinates[6] = (
-//         cos * (parsedCoordinateY - parsedOriginY) -
-//         sin * (parsedCoordinateX - parsedOriginX) +
-//         parsedOriginY
-//       ).toString();
-//     }
-
-//     for (let i = 0; i < command.coordinates.length; i += 2) {
-//       const xCoordinate = parseFloat(command.coordinates[i]);
-//       const yCoordinate = parseFloat(command.coordinates[i + 1]);
-
-//       if (isNaN(xCoordinate) || isNaN(yCoordinate))
-//         throw new Error("Invalid coordinates in rotation");
-
-//       command.coordinates[i] = (
-//         cos * (xCoordinate - parsedOriginX) +
-//         sin * (yCoordinate - parsedOriginY) +
-//         parsedOriginX
-//       ).toString();
-//       command.coordinates[i + 1] = (
-//         cos * (yCoordinate - parsedOriginY) -
-//         sin * (xCoordinate - parsedOriginX) +
-//         parsedOriginY
-//       ).toString();
-//     }
-//   });
-// };

@@ -2,6 +2,8 @@
 import { useRef, useState } from "react";
 import Sidebar from "./Sidebar";
 import { Viewbox } from "../types/Viewbox";
+import { SvgDimensions } from "@/app/types/Svg";
+
 import Svg from "./Svg";
 
 export default function MainSvg() {
@@ -12,18 +14,35 @@ export default function MainSvg() {
     height: "1000",
   });
 
+  const [svgDimensions, setSvgDimensions] = useState<SvgDimensions>({
+    width: 0,
+    height: 0,
+  });
+
+  const svgRef = useRef<SVGSVGElement>(null);
+
   // Type for updateViewbox function
-  const updateViewbox = (key: keyof Viewbox, value: string) => {
+  const updateViewbox = (newObject: Viewbox) => {
     setViewbox((prevState) => ({
       ...prevState,
-      [key]: value,
+      ...newObject,
     }));
   };
 
   return (
     <>
-      <Svg viewbox={viewbox}></Svg>
-      <Sidebar viewbox={viewbox} updateViewbox={updateViewbox} />
+      <Svg
+        ref={svgRef}
+        svgDimensions={svgDimensions}
+        setSvgDimensions={setSvgDimensions}
+        viewbox={viewbox}
+        updateViewbox={updateViewbox}
+      ></Svg>
+      <Sidebar
+        svgDimensions={svgDimensions}
+        viewbox={viewbox}
+        updateViewbox={updateViewbox}
+      />
     </>
   );
 }
