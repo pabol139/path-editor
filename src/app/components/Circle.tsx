@@ -20,6 +20,7 @@ export function Circle({
   const handlePointerDown = (event: React.PointerEvent<SVGCircleElement>) => {
     setDragging(true);
     (event.target as HTMLElement).setPointerCapture(event.pointerId);
+    event.stopPropagation();
   };
 
   const handlePointerMove = (event: React.PointerEvent<SVGCircleElement>) => {
@@ -41,6 +42,7 @@ export function Circle({
       x: parseFloat(svgPoint.x.toFixed(2)),
       y: parseFloat(svgPoint.y.toFixed(2)),
     });
+    event.stopPropagation();
   };
 
   return (
@@ -48,10 +50,12 @@ export function Circle({
       className="hover:cursor-pointer"
       onPointerLeave={() => {
         setDragging(false);
+        event.stopPropagation();
       }}
       onPointerUp={(event) => {
         setDragging(false);
         (event.target as HTMLElement).releasePointerCapture(event.pointerId);
+        event.stopPropagation();
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}

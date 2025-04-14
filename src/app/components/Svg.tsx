@@ -25,6 +25,8 @@ export default forwardRef(function Svg(
   ref: React.ForwardedRef<SVGSVGElement | null>
 ) {
   const { pathObject, updateCommands } = usePathObject();
+  const [dragging, setDragging] = useState(false);
+  const [lastPosition, setLastPosition] = useState(null);
   const circles = updatePoints(pathObject.commands);
   const svgRef = ref as React.RefObject<SVGSVGElement>;
 
@@ -118,8 +120,57 @@ export default forwardRef(function Svg(
     updateCommands(newCommands);
   };
 
+  const handlePointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
+    setDragging(true);
+    const svg = svgRef.current;
+
+    const point = svg.createSVGPoint();
+    point.x = event.clientX;
+    point.y = event.clientY;
+    const svgPoint = point.matrixTransform(svg.getScreenCTM()?.inverse());
+    setLastPosition({
+      x: svgPoint.x,
+      y: svgPoint.y,
+    });
+    (event.target as HTMLElement).setPointerCapture(event.pointerId);
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
+    if (!dragging) {
+      return;
+    }
+    const svg = svgRef.current;
+
+    const point = svg.createSVGPoint();
+    point.x = event.clientX;
+    point.y = event.clientY;
+    const svgPoint = point.matrixTransform(svg.getScreenCTM()?.inverse());
+
+    const deltaX = -(svgPoint.x - lastPosition.x);
+    const deltaY = -(svgPoint.y - lastPosition.y);
+    console.log("Viewbox X:" + svgPoint.x);
+
+    updateViewbox({
+      width: viewbox.width,
+      height: viewbox.height,
+      x: String(parseFloat(viewbox.x) + deltaX),
+      y: String(parseFloat(viewbox.y) + deltaY),
+    });
+  };
+
   return (
     <svg
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={() => {
+        setDragging(false);
+        setLastPosition(null);
+      }}
+      onPointerUp={(event) => {
+        setDragging(false);
+        setLastPosition(null);
+        (event.target as HTMLElement).releasePointerCapture(event.pointerId);
+      }}
       ref={ref}
       className="w-[calc(100%-var(--aside-width))] h-full"
       viewBox={`${viewbox.x.replace(/\.$/, "")} ${viewbox.y.replace(
