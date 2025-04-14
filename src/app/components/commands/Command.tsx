@@ -14,9 +14,9 @@ export default function Command({
         return (
           <div
             key={key}
-            className="overflow-auto  flex items-center bg-secondary text-xs border-r border-gray300 w-10 justify-center  last:rounded-tr-md last:rounded-br-md last:border-none"
+            className="flex items-center bg-secondary text-xs border-r border-gray300 w-10 justify-center  last:rounded-tr-md last:rounded-br-md last:border-none"
           >
-            <span className="px-1">{coordinate}</span>
+            <span className="px-1 overflow-auto">{coordinate}</span>
           </div>
         );
       })}
