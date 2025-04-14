@@ -120,7 +120,7 @@ export const getPathBBox = (path: string) => {
   return BBox;
 };
 
-const formatNumber = (number: number, decimals: number): string => {
+export const formatNumber = (number: number, decimals: number): string => {
   return number
     .toFixed(decimals)
     .replace(/^(-?[0-9]*\.([0-9]*[1-9])?)0*$/, "$1") // Search for meaningful decimals (non zero)

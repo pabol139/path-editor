@@ -6,7 +6,7 @@ import { convertPathToString, parsePath } from "../utils/pathUtils";
 interface PathProviderProps {
   children: React.ReactNode;
 }
-const DEFAULT_PATH = "M 200 500 H 500 L 500 220 L 200 220 Z";
+const DEFAULT_PATH = "M 200 500 H 500 L 500 200 L 200 200 Z";
 
 type PathContextType = {
   pathObject: PathObject;

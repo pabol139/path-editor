@@ -17,7 +17,7 @@ export default function Input({ leftText, value, setter }: InputProps) {
       </label>
       <input
         id={leftText}
-        className="rounded-md text-sm py-2 pr-3 pl-12 max-w-28 bg-secondary"
+        className="rounded-md text-sm py-2 pr-3 pl-12 max-w-28 bg-secondary tabular-nums"
         type="text"
         value={value}
         onChange={(e) => setter(e.target.value)}

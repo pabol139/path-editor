@@ -4,7 +4,7 @@ import { CollapsedSection } from "./CollapsedSection";
 
 type ViewboxSectionProps = {
   viewbox: Viewbox;
-  updateViewbox: (viewbox: Viewbox) => void;
+  updateViewbox: (viewbox: Viewbox, adaptAspectRatio: Boolean) => void;
 };
 
 const viewboxArray = [
@@ -41,7 +41,7 @@ export default function ViewboxSection({
               setter={(value) => {
                 const newObject = { ...viewbox };
                 newObject[item.value] = value;
-                updateViewbox({ ...viewbox, ...newObject });
+                updateViewbox({ ...viewbox, ...newObject }, true);
               }}
               key={index}
             />

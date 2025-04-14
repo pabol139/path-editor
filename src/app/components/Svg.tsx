@@ -2,7 +2,7 @@ import { usePathObject } from "../context/PathContext";
 import { Viewbox } from "../types/Viewbox";
 import { updatePoints } from "../utils/pathUtils";
 import { Circle } from "./Circle";
-import { forwardRef, useEffect } from "react";
+import { forwardRef, useEffect, useState } from "react";
 
 type Coordinates = {
   id: string;
@@ -26,39 +26,53 @@ export default forwardRef(function Svg(
 ) {
   const { pathObject, updateCommands } = usePathObject();
   const circles = updatePoints(pathObject.commands);
+  const svgRef = ref as React.RefObject<SVGSVGElement>;
 
   useEffect(() => {
-    if (ref?.current) {
+    if (svgRef?.current) {
       function updateResize() {
-        const path = ref?.current.querySelector("path");
+        const path = svgRef.current?.querySelector("path");
+        if (!path) return;
+
+        const svgWidth = svgRef.current.getBoundingClientRect().width || 0;
+        const svgHeight = svgRef.current.getBoundingClientRect().height || 0;
         const bbox = path.getBBox();
-        const svgWidth = ref?.current.getBoundingClientRect().width || 0;
-        const svgHeight = ref?.current.getBoundingClientRect().height || 0;
-        let pathWidth = bbox.width + 2;
-        let pathHeight = bbox.height + 2;
+
+        let pathWidth = bbox.width;
+        let pathHeight = bbox.height;
+        let pathX = bbox.x;
+        let pathY = bbox.y;
+
         const svgAspectRatio = svgHeight / svgWidth;
         const pathAspectRatio = pathHeight / pathWidth;
+
         if (svgAspectRatio < pathAspectRatio) {
           pathWidth = pathHeight / svgAspectRatio;
         } else {
           pathHeight = svgAspectRatio * pathWidth;
         }
 
+        const percentFactorWidth = pathWidth * 0.1;
+        const percentFactorHeight = pathHeight * 0.1;
+
+        // Center svg on screen
+        pathX = pathX - (pathWidth + percentFactorWidth - bbox.width) / 2;
+        pathY = pathY - (pathHeight + percentFactorHeight - bbox.height) / 2;
+
         updateViewbox({
-          x: String(bbox.x - 1),
-          y: String(bbox.y - 1),
-          width: String(pathWidth),
-          height: String(pathHeight),
+          x: String(pathX),
+          y: String(pathY),
+          width: String(pathWidth + percentFactorWidth),
+          height: String(pathHeight + percentFactorHeight),
         });
 
         setSvgDimensions({
-          width: ref?.current.getBoundingClientRect().width || 0,
-          height: ref?.current.getBoundingClientRect().height || 0,
+          width: svgRef.current.getBoundingClientRect().width || 0,
+          height: svgRef.current.getBoundingClientRect().height || 0,
         });
       }
 
       updateResize();
-
       window.addEventListener("resize", updateResize);
 
       return () => {
@@ -120,13 +134,17 @@ export default forwardRef(function Svg(
         d={pathObject.path}
         fill="#ffffff40"
         stroke="#fff"
-        strokeWidth={parseFloat(viewbox.width) / svgDimensions.width}
+        strokeWidth={String(
+          (1.5 * parseFloat(viewbox.width)) / svgDimensions.width
+        )}
       ></path>
       {circles.map((circle) => (
         <Circle
           key={circle.id}
           id={circle.id}
-          radius={String(3 * (parseFloat(viewbox.width) / svgDimensions.width))}
+          radius={String(
+            (3.5 * parseFloat(viewbox.width)) / svgDimensions.width
+          )}
           cx={circle.cx}
           cy={circle.cy}
           fill={circle.fill}

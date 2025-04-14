@@ -21,8 +21,10 @@ export default function PathInput({
     const svgHeight = svgDimensions.height;
     const pathBBox = getPathBBox(value);
 
-    let pathWidth = pathBBox.width + 2;
-    let pathHeight = pathBBox.height + 2;
+    let pathWidth = pathBBox.width;
+    let pathHeight = pathBBox.height;
+    let pathX = pathBBox.x;
+    let pathY = pathBBox.y;
     const svgAspectRatio = svgHeight / svgWidth;
     const pathAspectRatio = pathHeight / pathWidth;
     if (svgAspectRatio < pathAspectRatio) {
@@ -30,14 +32,21 @@ export default function PathInput({
     } else {
       pathHeight = svgAspectRatio * pathWidth;
     }
-    const newObject: Viewbox = {
-      x: String(pathBBox.x - 1),
-      y: String(pathBBox.y - 1),
-      width: String(pathWidth),
-      height: String(pathHeight),
-    };
 
-    updateViewbox(newObject);
+    const percentFactorWidth = pathWidth * 0.1;
+    const percentFactorHeight = pathHeight * 0.1;
+
+    pathX = pathX - (pathWidth + percentFactorWidth - pathBBox.width) / 2;
+    pathY = pathY - (pathHeight + percentFactorHeight - pathBBox.height) / 2;
+
+    updateViewbox({
+      x: String(pathX),
+      y: String(pathY),
+      width: String(pathWidth + percentFactorWidth),
+      height: String(pathHeight + percentFactorHeight),
+    });
+
+    // updateViewbox(newObject);
     updatePath(value);
   };
 
