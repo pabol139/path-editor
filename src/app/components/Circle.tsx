@@ -48,7 +48,7 @@ export function Circle({
   return (
     <circle
       className="hover:cursor-pointer"
-      onPointerLeave={() => {
+      onPointerLeave={(event) => {
         setDragging(false);
         event.stopPropagation();
       }}

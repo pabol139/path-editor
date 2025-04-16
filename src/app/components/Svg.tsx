@@ -26,7 +26,7 @@ export default forwardRef(function Svg(
 ) {
   const { pathObject, updateCommands } = usePathObject();
   const [dragging, setDragging] = useState(false);
-  const [lastPosition, setLastPosition] = useState(null);
+  const [lastPosition, setLastPosition] = useState({ x: 0, y: 0 });
   const circles = updatePoints(pathObject.commands);
   const svgRef = ref as React.RefObject<SVGSVGElement>;
 
@@ -148,7 +148,6 @@ export default forwardRef(function Svg(
 
     const deltaX = -(svgPoint.x - lastPosition.x);
     const deltaY = -(svgPoint.y - lastPosition.y);
-    console.log("Viewbox X:" + svgPoint.x);
 
     updateViewbox({
       width: viewbox.width,
@@ -158,17 +157,66 @@ export default forwardRef(function Svg(
     });
   };
 
+  const handleZoom = (event: React.WheelEvent<SVGSVGElement>) => {
+    let scale = 1.125;
+    let scaledWidth = 0;
+    let scaledHeight = 0;
+    let scaledX = 0;
+    let scaledY = 0;
+
+    const svg = svgRef.current;
+    const point = svg.createSVGPoint();
+    point.x = event.clientX;
+    point.y = event.clientY;
+
+    if (event.deltaY > 0) {
+      // Zoom out
+      scaledWidth = parseFloat(viewbox.width) * scale;
+      scaledHeight = parseFloat(viewbox.height) * scale;
+
+      scaledX =
+        parseFloat(viewbox.x) -
+        (scaledWidth - parseFloat(viewbox.width)) *
+          (point.x / svg.getBoundingClientRect().width);
+      scaledY =
+        parseFloat(viewbox.y) -
+        (scaledHeight - parseFloat(viewbox.height)) *
+          (point.y / svg.getBoundingClientRect().height);
+    } else {
+      // Zoom in
+      scaledWidth = parseFloat(viewbox.width) / scale;
+      scaledHeight = parseFloat(viewbox.height) / scale;
+      scaledX =
+        parseFloat(viewbox.x) -
+        (scaledWidth - parseFloat(viewbox.width)) *
+          (point.x / svg.getBoundingClientRect().width);
+
+      scaledY =
+        parseFloat(viewbox.y) -
+        (scaledHeight - parseFloat(viewbox.height)) *
+          (point.y / svg.getBoundingClientRect().height);
+    }
+
+    updateViewbox({
+      width: String(scaledWidth),
+      height: String(scaledHeight),
+      x: String(scaledX),
+      y: String(scaledY),
+    });
+  };
+
   return (
     <svg
+      onWheel={handleZoom}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerLeave={() => {
         setDragging(false);
-        setLastPosition(null);
+        setLastPosition({ x: 0, y: 0 });
       }}
       onPointerUp={(event) => {
         setDragging(false);
-        setLastPosition(null);
+        setLastPosition({ x: 0, y: 0 });
         (event.target as HTMLElement).releasePointerCapture(event.pointerId);
       }}
       ref={ref}
