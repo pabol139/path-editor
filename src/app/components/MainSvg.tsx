@@ -43,8 +43,8 @@ export default function MainSvg() {
         ...prevState,
         x: formatNumber(parseFloat(newObject.x), 1),
         y: formatNumber(parseFloat(newObject.y), 1),
-        width: formatNumber(parseFloat(newObject.width), 1),
-        height: formatNumber(parseFloat(newObject.height), 1),
+        width: formatNumber(Math.max(parseFloat(newObject.width), 0), 1),
+        height: formatNumber(Math.max(parseFloat(newObject.height), 0), 1),
       };
     });
   };
