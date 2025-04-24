@@ -2,7 +2,8 @@ import { usePathObject } from "../context/PathContext";
 import { Viewbox } from "../types/Viewbox";
 import { updatePoints } from "../utils/pathUtils";
 import { Circle } from "./Circle";
-import { forwardRef, useEffect, useState } from "react";
+import { forwardRef, useEffect, useLayoutEffect, useState } from "react";
+import { usePanZoom } from "../hooks/usePanZoom";
 
 type Coordinates = {
   id: string;
@@ -25,8 +26,14 @@ export default forwardRef(function Svg(
   ref: React.ForwardedRef<SVGSVGElement | null>
 ) {
   const { pathObject, updateCommands } = usePathObject();
-  const [dragging, setDragging] = useState(false);
-  const [lastPosition, setLastPosition] = useState({ x: 0, y: 0 });
+  const [isVisible, setIsVisible] = useState(false);
+  const {
+    handlePointerDown,
+    handlePointerLeave,
+    handlePointerMove,
+    handlePointerUp,
+    handleZoom,
+  } = usePanZoom(viewbox, updateViewbox);
   const circles = updatePoints(pathObject.commands);
   const svgRef = ref as React.RefObject<SVGSVGElement>;
 
@@ -75,6 +82,7 @@ export default forwardRef(function Svg(
       }
 
       updateResize();
+      setIsVisible(true);
       window.addEventListener("resize", updateResize);
 
       return () => {
@@ -120,105 +128,13 @@ export default forwardRef(function Svg(
     updateCommands(newCommands);
   };
 
-  const handlePointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
-    setDragging(true);
-    const svg = svgRef.current;
-
-    const point = svg.createSVGPoint();
-    point.x = event.clientX;
-    point.y = event.clientY;
-    const svgPoint = point.matrixTransform(svg.getScreenCTM()?.inverse());
-    setLastPosition({
-      x: svgPoint.x,
-      y: svgPoint.y,
-    });
-    (event.target as HTMLElement).setPointerCapture(event.pointerId);
-  };
-
-  const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
-    if (!dragging) {
-      return;
-    }
-    const svg = svgRef.current;
-
-    const point = svg.createSVGPoint();
-    point.x = event.clientX;
-    point.y = event.clientY;
-    const svgPoint = point.matrixTransform(svg.getScreenCTM()?.inverse());
-
-    const deltaX = -(svgPoint.x - lastPosition.x);
-    const deltaY = -(svgPoint.y - lastPosition.y);
-
-    updateViewbox({
-      width: viewbox.width,
-      height: viewbox.height,
-      x: String(parseFloat(viewbox.x) + deltaX),
-      y: String(parseFloat(viewbox.y) + deltaY),
-    });
-  };
-
-  const handleZoom = (event: React.WheelEvent<SVGSVGElement>) => {
-    let scale = 1.125;
-    let scaledWidth = 0;
-    let scaledHeight = 0;
-    let scaledX = 0;
-    let scaledY = 0;
-
-    const svg = svgRef.current;
-    const point = svg.createSVGPoint();
-    point.x = event.clientX;
-    point.y = event.clientY;
-
-    if (event.deltaY > 0) {
-      // Zoom out
-      scaledWidth = parseFloat(viewbox.width) * scale;
-      scaledHeight = parseFloat(viewbox.height) * scale;
-
-      scaledX =
-        parseFloat(viewbox.x) -
-        (scaledWidth - parseFloat(viewbox.width)) *
-          (point.x / svg.getBoundingClientRect().width);
-      scaledY =
-        parseFloat(viewbox.y) -
-        (scaledHeight - parseFloat(viewbox.height)) *
-          (point.y / svg.getBoundingClientRect().height);
-    } else {
-      // Zoom in
-      scaledWidth = parseFloat(viewbox.width) / scale;
-      scaledHeight = parseFloat(viewbox.height) / scale;
-      scaledX =
-        parseFloat(viewbox.x) -
-        (scaledWidth - parseFloat(viewbox.width)) *
-          (point.x / svg.getBoundingClientRect().width);
-
-      scaledY =
-        parseFloat(viewbox.y) -
-        (scaledHeight - parseFloat(viewbox.height)) *
-          (point.y / svg.getBoundingClientRect().height);
-    }
-
-    updateViewbox({
-      width: String(scaledWidth),
-      height: String(scaledHeight),
-      x: String(scaledX),
-      y: String(scaledY),
-    });
-  };
-
   return (
     <svg
       onWheel={handleZoom}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
-      onPointerLeave={() => {
-        setDragging(false);
-        setLastPosition({ x: 0, y: 0 });
-      }}
-      onPointerUp={(event) => {
-        setDragging(false);
-        setLastPosition({ x: 0, y: 0 });
-        (event.target as HTMLElement).releasePointerCapture(event.pointerId);
-      }}
+      onPointerLeave={handlePointerLeave}
+      onPointerUp={handlePointerUp}
       ref={ref}
       className="w-[calc(100%-var(--aside-width))] h-full"
       viewBox={`${viewbox.x.replace(/\.$/, "")} ${viewbox.y.replace(
@@ -229,27 +145,55 @@ export default forwardRef(function Svg(
         ""
       )}`}
     >
-      <path
-        d={pathObject.path}
-        fill="#ffffff40"
-        stroke="#fff"
-        strokeWidth={String(
-          (1.5 * parseFloat(viewbox.width)) / svgDimensions.width
-        )}
-      ></path>
-      {circles.map((circle) => (
-        <Circle
-          key={circle.id}
-          id={circle.id}
-          radius={String(
-            (3.5 * parseFloat(viewbox.width)) / svgDimensions.width
-          )}
-          cx={circle.cx}
-          cy={circle.cy}
-          fill={circle.fill}
-          handleMove={handleMove}
-        ></Circle>
-      ))}
+      {isVisible ? (
+        <>
+          <path
+            d={pathObject.path}
+            fill="#ffffff40"
+            stroke="#fff"
+            strokeWidth={String(
+              (1.5 * parseFloat(viewbox.width)) / svgDimensions.width
+            )}
+          ></path>
+          {circles.map((circle) => (
+            <Circle
+              key={circle.id}
+              id={circle.id}
+              radius={String(
+                (3.5 * parseFloat(viewbox.width)) / svgDimensions.width
+              )}
+              cx={circle.cx}
+              cy={circle.cy}
+              fill={circle.fill}
+              handleMove={handleMove}
+            ></Circle>
+          ))}
+        </>
+      ) : (
+        <svg className="opacity-0">
+          <path
+            d={pathObject.path}
+            fill="#ffffff40"
+            stroke="#fff"
+            strokeWidth={String(
+              (1.5 * parseFloat(viewbox.width)) / svgDimensions.width
+            )}
+          ></path>
+          {circles.map((circle) => (
+            <Circle
+              key={circle.id}
+              id={circle.id}
+              radius={String(
+                (3.5 * parseFloat(viewbox.width)) / svgDimensions.width
+              )}
+              cx={circle.cx}
+              cy={circle.cy}
+              fill={circle.fill}
+              handleMove={handleMove}
+            ></Circle>
+          ))}
+        </svg>
+      )}
     </svg>
   );
 });

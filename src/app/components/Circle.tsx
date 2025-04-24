@@ -47,7 +47,7 @@ export function Circle({
 
   return (
     <circle
-      className="hover:cursor-pointer"
+      className="hover:cursor-pointer text-white hover:text-yellow-400"
       onPointerLeave={(event) => {
         setDragging(false);
         event.stopPropagation();
@@ -62,7 +62,7 @@ export function Circle({
       r={radius}
       cx={cx}
       cy={cy}
-      fill={fill}
+      fill="currentColor"
     ></circle>
   );
 }
