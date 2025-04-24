@@ -59,7 +59,7 @@ const lineCommands = {
 
 export const parsePath = (path: string): ParsePath<number> => {
   const commands = [];
-  var i = 0;
+  let i = 0;
 
   while (i < path.length) {
     const match = path.slice(i).match(kCommandTypeRegex);
@@ -74,12 +74,12 @@ export const parsePath = (path: string): ParsePath<number> => {
       throw new Error("malformed path (first error at " + i + ")");
     }
     i = i + commandLetterWithSpaces.length;
-    var regexTable = kGrammar[commandLetter] || [];
-    var j = 0;
-    var coordinates = [];
+    let regexTable = kGrammar[commandLetter] || [];
+    let j = 0;
+    let coordinates = [];
     while (j < regexTable.length) {
-      var regex = regexTable[j];
-      var newMatch = path.slice(i).match(regex);
+      let regex = regexTable[j];
+      let newMatch = path.slice(i).match(regex);
 
       if (!newMatch)
         throw new Error("malformed path (first error at " + i + ")");
@@ -165,21 +165,21 @@ export const translate = (
     const letter = command.letter;
 
     if (letter === lineCommands.Vertical) {
-      var parsedCoordinate = command.coordinates[0];
+      let parsedCoordinate = command.coordinates[0];
       command.coordinates[0] = parsedCoordinate + yValue;
     }
 
     if (letter === lineCommands.Arc) {
       // 5 === X
       // 6 === Y
-      var parsedCoordinateX = command.coordinates[5];
-      var parsedCoordinateY = command.coordinates[6];
+      let parsedCoordinateX = command.coordinates[5];
+      let parsedCoordinateY = command.coordinates[6];
       command.coordinates[5] = parsedCoordinateX + xValue;
       command.coordinates[6] = parsedCoordinateY + yValue;
     }
 
     command.coordinates.forEach((coordinate, i) => {
-      var newCoordinate = coordinate;
+      let newCoordinate = coordinate;
 
       if (i % 2 === 0) {
         command.coordinates[i] = newCoordinate + xValue;
@@ -209,7 +209,7 @@ export const scale = (
     const letter = command.letter;
 
     if (letter === lineCommands.Vertical) {
-      var parsedCoordinate = command.coordinates[0];
+      let parsedCoordinate = command.coordinates[0];
       command.coordinates[0] = parsedCoordinate * yValue;
     }
 
@@ -217,7 +217,7 @@ export const scale = (
     }
 
     command.coordinates.forEach((coordinate, i) => {
-      var newCoordinate = coordinate;
+      let newCoordinate = coordinate;
 
       if (i % 2 === 0) {
         command.coordinates[i] = newCoordinate * xValue;
@@ -229,9 +229,9 @@ export const scale = (
 };
 
 export const updatePoints = (commands: ParsePath<number>) => {
-  var lastPositionX = "0";
-  var lastPositionY = "0";
-  var points: Circle[] = [];
+  let lastPositionX = "0";
+  let lastPositionY = "0";
+  let points: Circle[] = [];
 
   commands.forEach((command) => {
     if (command.letter === lineCommands.Close) {
