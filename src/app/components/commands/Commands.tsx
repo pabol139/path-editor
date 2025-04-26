@@ -1,6 +1,6 @@
-import Command from "./Command";
-import { usePathObject } from "../../context/PathContext";
-import { CollapsedSection } from "../CollapsedSection";
+import Command from "@/components/commands/Command";
+import { usePathObject } from "@/context/PathContext";
+import { CollapsedSection } from "@/components/CollapsedSection";
 
 export default function CommandsSection() {
   const { pathObject } = usePathObject();

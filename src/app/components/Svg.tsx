@@ -1,9 +1,9 @@
-import { usePathObject } from "../context/PathContext";
-import { Viewbox } from "../types/Viewbox";
-import { updatePoints } from "../utils/pathUtils";
-import { Circle } from "./Circle";
-import { forwardRef, useEffect, useLayoutEffect, useState } from "react";
-import { usePanZoom } from "../hooks/usePanZoom";
+import { forwardRef, useEffect, useState } from "react";
+import { usePathObject } from "@/context/PathContext";
+import { Viewbox } from "@/types/Viewbox";
+import { updatePoints } from "@/utils/pathUtils";
+import { Circle } from "@/components/Circle";
+import { usePanZoom } from "@/hooks/usePanZoom";
 
 type Coordinates = {
   id: string;
@@ -156,7 +156,6 @@ export default forwardRef(function Svg(
               radius={String((3.5 * viewbox.width) / svgDimensions.width)}
               cx={circle.cx}
               cy={circle.cy}
-              fill={circle.fill}
               handleMove={handleMove}
             ></Circle>
           ))}
@@ -176,7 +175,6 @@ export default forwardRef(function Svg(
               radius={String((3.5 * viewbox.width) / svgDimensions.width)}
               cx={circle.cx}
               cy={circle.cy}
-              fill={circle.fill}
               handleMove={handleMove}
             ></Circle>
           ))}

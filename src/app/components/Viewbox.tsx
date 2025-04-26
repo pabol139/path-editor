@@ -1,6 +1,6 @@
-import Input from "./inputs/Input";
-import { Viewbox } from "../types/Viewbox";
-import { CollapsedSection } from "./CollapsedSection";
+import Input from "@/components/inputs/Input";
+import { Viewbox } from "@/types/Viewbox";
+import { CollapsedSection } from "@/components/CollapsedSection";
 
 type ViewboxSectionProps = {
   viewbox: Viewbox;

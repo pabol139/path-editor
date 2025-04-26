@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Viewbox } from "../types/Viewbox";
+import { Viewbox } from "@/types/Viewbox";
 
 export function usePanZoom(
   viewbox: Viewbox,

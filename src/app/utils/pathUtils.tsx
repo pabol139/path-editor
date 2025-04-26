@@ -1,12 +1,5 @@
-import { ParsePath } from "../types/Path";
-
-type Circle = {
-  id: string;
-  radius: string;
-  fill: string;
-  cy: string;
-  cx: string;
-};
+import { ParsePath } from "@/types/Path";
+import { CircleType } from "@/types/Circle";
 
 /** Regex based on https://github.com/Yqnn/svg-path-editor/blob/master/src/lib/path-parser.ts */
 const kCommandTypeRegex = /^[\t\n\f\r ]*([MLHVZCSQTAmlhvzcsqta])[\t\n\f\r ]*/;
@@ -231,7 +224,7 @@ export const scale = (
 export const updatePoints = (commands: ParsePath<number>) => {
   let lastPositionX = "0";
   let lastPositionY = "0";
-  let points: Circle[] = [];
+  let points: CircleType[] = [];
 
   commands.forEach((command) => {
     if (command.letter === lineCommands.Close) {
@@ -241,7 +234,6 @@ export const updatePoints = (commands: ParsePath<number>) => {
     const circle = {
       id: command.id,
       radius: "10",
-      fill: "white",
       cy: "0",
       cx: "0",
     };

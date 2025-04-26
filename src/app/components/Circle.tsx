@@ -1,20 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { CircleType } from "@/types/Circle";
 
-export function Circle({
-  id,
-  radius,
-  cx,
-  cy,
-  fill,
-  handleMove,
-}: {
-  id: string;
-  radius: string;
-  cx: string;
-  cy: string;
-  fill: string;
+interface CircleElement extends CircleType {
   handleMove: ({ id, x, y }: { id: string; x: number; y: number }) => any;
-}) {
+}
+
+export function Circle({ id, radius, cx, cy, handleMove }: CircleElement) {
   const [dragging, setDragging] = useState(false);
 
   const handlePointerDown = (event: React.PointerEvent<SVGCircleElement>) => {

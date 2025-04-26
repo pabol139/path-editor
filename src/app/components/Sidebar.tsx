@@ -1,11 +1,9 @@
-import { Viewbox } from "../types/Viewbox";
-import ViewboxSection from "./Viewbox";
-import TransformSection from "./transformations/Transforms";
-import PathSection from "./path/Path";
-import StyleSection from "./Styles";
-import { SvgDimensions } from "../types/Svg";
-import CommandsSection from "./commands/Commands";
-import { RefObject } from "react";
+import { Viewbox } from "@/types/Viewbox";
+import ViewboxSection from "@/components/Viewbox";
+import TransformSection from "@/components/transformations/Transforms";
+import PathSection from "@/components/path/Path";
+import { SvgDimensions } from "@/types/Svg";
+import CommandsSection from "@/components/commands/Commands";
 
 type SiderbarProps = {
   svgDimensions: SvgDimensions;

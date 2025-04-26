@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
-import { usePathObject } from "../../context/PathContext";
-import { Viewbox } from "../../types/Viewbox";
-import { SvgDimensions } from "@/app/types/Svg";
-import { getPathBBox } from "@/app/utils/pathUtils";
+import { usePathObject } from "@/context/PathContext";
+import { Viewbox } from "@/types/Viewbox";
+import { SvgDimensions } from "@/types/Svg";
+import { getPathBBox } from "@/utils/pathUtils";
 import { Copy } from "react-feather";
 
 export default function PathInput({

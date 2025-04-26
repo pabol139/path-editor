@@ -1,8 +1,8 @@
 "use client";
 import { useRef, useState } from "react";
-import Sidebar from "./Sidebar";
-import { Viewbox } from "../types/Viewbox";
-import { SvgDimensions } from "@/app/types/Svg";
+import Sidebar from "@/components/Sidebar";
+import { Viewbox } from "@/types/Viewbox";
+import { SvgDimensions } from "@/types/Svg";
 
 import Svg from "./Svg";
 import { formatNumber } from "../utils/pathUtils";

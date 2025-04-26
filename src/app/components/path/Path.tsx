@@ -1,6 +1,6 @@
-import PathInput from "./PathInput";
-import { Viewbox } from "../../types/Viewbox";
-import { SvgDimensions } from "@/app/types/Svg";
+import PathInput from "@/components/path/PathInput";
+import { Viewbox } from "@/types/Viewbox";
+import { SvgDimensions } from "@/types/Svg";
 
 export default function PathSection({
   svgDimensions,

@@ -1,6 +1,6 @@
-import Slider from "./inputs/InputSlider";
-import InputColor from "./inputs/InputColor";
-import { CollapsedSection } from "./CollapsedSection";
+import Slider from "@/components/inputs/InputSlider";
+import InputColor from "@/components/inputs/InputColor";
+import { CollapsedSection } from "@/components/CollapsedSection";
 
 export default function StyleSection() {
   return (
