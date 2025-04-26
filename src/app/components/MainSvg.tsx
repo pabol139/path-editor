@@ -9,10 +9,10 @@ import { formatNumber } from "../utils/pathUtils";
 
 export default function MainSvg() {
   const [viewbox, setViewbox] = useState<Viewbox>({
-    x: "0",
-    y: "0",
-    width: "1000",
-    height: "1000",
+    x: 0,
+    y: 0,
+    width: 1000,
+    height: 1000,
   });
 
   const [svgDimensions, setSvgDimensions] = useState<SvgDimensions>({
@@ -29,22 +29,21 @@ export default function MainSvg() {
   ) => {
     setViewbox((prevState) => {
       if (adaptAspectRatio) {
-        const height = parseFloat(prevState.height);
-        const width = parseFloat(prevState.width);
+        const height = prevState.height;
+        const width = prevState.width;
         const aspectRatio = height / width;
 
         if (newObject.height !== prevState.height)
-          newObject.width = String(parseFloat(newObject.height) / aspectRatio);
-        else
-          newObject.height = String(parseFloat(newObject.width) * aspectRatio);
+          newObject.width = newObject.height / aspectRatio;
+        else newObject.height = newObject.width * aspectRatio;
       }
 
       return {
         ...prevState,
-        x: formatNumber(parseFloat(newObject.x), 1),
-        y: formatNumber(parseFloat(newObject.y), 1),
-        width: formatNumber(Math.max(parseFloat(newObject.width), 0), 1),
-        height: formatNumber(Math.max(parseFloat(newObject.height), 0), 1),
+        x: parseFloat(formatNumber(newObject.x, 1)),
+        y: parseFloat(formatNumber(newObject.y, 1)),
+        width: parseFloat(formatNumber(Math.max(newObject.width, 0), 1)),
+        height: parseFloat(formatNumber(Math.max(newObject.height, 0), 1)),
       };
     });
   };

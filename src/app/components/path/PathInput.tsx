@@ -40,10 +40,10 @@ export default function PathInput({
     pathY = pathY - (pathHeight + percentFactorHeight - pathBBox.height) / 2;
 
     updateViewbox({
-      x: String(pathX),
-      y: String(pathY),
-      width: String(pathWidth + percentFactorWidth),
-      height: String(pathHeight + percentFactorHeight),
+      x: pathX,
+      y: pathY,
+      width: pathWidth + percentFactorWidth,
+      height: pathHeight + percentFactorHeight,
     });
 
     // updateViewbox(newObject);

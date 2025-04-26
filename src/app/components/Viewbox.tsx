@@ -37,10 +37,10 @@ export default function ViewboxSection({
           return (
             <Input
               leftText={item.char}
-              value={viewbox[item.value]}
+              value={String(viewbox[item.value])}
               setter={(value) => {
                 const newObject = { ...viewbox };
-                newObject[item.value] = value;
+                newObject[item.value] = parseFloat(value);
                 updateViewbox({ ...viewbox, ...newObject }, true);
               }}
               key={index}

@@ -42,12 +42,14 @@ export function usePanZoom(
     updateViewbox({
       width: viewbox.width,
       height: viewbox.height,
-      x: String(parseFloat(viewbox.x) + deltaX),
-      y: String(parseFloat(viewbox.y) + deltaY),
+      x: viewbox.x + deltaX,
+      y: viewbox.y + deltaY,
     });
   };
 
   const handleZoom = (event: React.WheelEvent<SVGSVGElement>) => {
+    event.preventDefault();
+
     let scale = 1.125;
     let scaledWidth = 0;
     let scaledHeight = 0;
@@ -61,29 +63,29 @@ export function usePanZoom(
 
     if (event.deltaY > 0) {
       // Zoom out
-      scaledWidth = parseFloat(viewbox.width) * scale;
-      scaledHeight = parseFloat(viewbox.height) * scale;
+      scaledWidth = viewbox.width * scale;
+      scaledHeight = viewbox.height * scale;
     } else {
       // Zoom in
-      scaledWidth = parseFloat(viewbox.width) / scale;
-      scaledHeight = parseFloat(viewbox.height) / scale;
+      scaledWidth = viewbox.width / scale;
+      scaledHeight = viewbox.height / scale;
     }
 
     scaledX =
-      parseFloat(viewbox.x) -
-      (scaledWidth - parseFloat(viewbox.width)) *
+      viewbox.x -
+      (scaledWidth - viewbox.width) *
         (point.x / svg.getBoundingClientRect().width);
 
     scaledY =
-      parseFloat(viewbox.y) -
-      (scaledHeight - parseFloat(viewbox.height)) *
+      viewbox.y -
+      (scaledHeight - viewbox.height) *
         (point.y / svg.getBoundingClientRect().height);
 
     updateViewbox({
-      width: String(scaledWidth),
-      height: String(scaledHeight),
-      x: String(scaledX),
-      y: String(scaledY),
+      width: scaledWidth,
+      height: scaledHeight,
+      x: scaledX,
+      y: scaledY,
     });
   };
 

@@ -69,10 +69,10 @@ export default forwardRef(function Svg(
         pathY = pathY - (pathHeight + percentFactorHeight - bbox.height) / 2;
 
         updateViewbox({
-          x: String(pathX),
-          y: String(pathY),
-          width: String(pathWidth + percentFactorWidth),
-          height: String(pathHeight + percentFactorHeight),
+          x: pathX,
+          y: pathY,
+          width: pathWidth + percentFactorWidth,
+          height: pathHeight + percentFactorHeight,
         });
 
         setSvgDimensions({
@@ -137,13 +137,9 @@ export default forwardRef(function Svg(
       onPointerUp={handlePointerUp}
       ref={ref}
       className="w-[calc(100%-var(--aside-width))] h-full"
-      viewBox={`${viewbox.x.replace(/\.$/, "")} ${viewbox.y.replace(
-        /\.$/,
-        ""
-      )} ${viewbox.width.replace(/\.$/, "")} ${viewbox.height.replace(
-        /\.$/,
-        ""
-      )}`}
+      viewBox={`${String(viewbox.x)} ${String(viewbox.y)} ${String(
+        viewbox.width
+      )} ${String(viewbox.height)}`}
     >
       {isVisible ? (
         <>
@@ -151,17 +147,13 @@ export default forwardRef(function Svg(
             d={pathObject.path}
             fill="#ffffff40"
             stroke="#fff"
-            strokeWidth={String(
-              (1.5 * parseFloat(viewbox.width)) / svgDimensions.width
-            )}
+            strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}
           ></path>
           {circles.map((circle) => (
             <Circle
               key={circle.id}
               id={circle.id}
-              radius={String(
-                (3.5 * parseFloat(viewbox.width)) / svgDimensions.width
-              )}
+              radius={String((3.5 * viewbox.width) / svgDimensions.width)}
               cx={circle.cx}
               cy={circle.cy}
               fill={circle.fill}
@@ -175,17 +167,13 @@ export default forwardRef(function Svg(
             d={pathObject.path}
             fill="#ffffff40"
             stroke="#fff"
-            strokeWidth={String(
-              (1.5 * parseFloat(viewbox.width)) / svgDimensions.width
-            )}
+            strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}
           ></path>
           {circles.map((circle) => (
             <Circle
               key={circle.id}
               id={circle.id}
-              radius={String(
-                (3.5 * parseFloat(viewbox.width)) / svgDimensions.width
-              )}
+              radius={String((3.5 * viewbox.width) / svgDimensions.width)}
               cx={circle.cx}
               cy={circle.cy}
               fill={circle.fill}
