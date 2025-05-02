@@ -1,9 +1,8 @@
-import Input from "../inputs/Input";
-import { usePathObject, useSetPath } from "../../context/PathContext";
-import { scale, translate } from "../../utils/pathUtils";
 import { useState } from "react";
-import { CollapsedSection } from "../CollapsedSection";
-import { TransformRow } from "./TransformRow";
+import { usePathObject } from "@/context/PathContext";
+import { scale, translate } from "@/utils/pathUtils";
+import { CollapsedSection } from "@/components/CollapsedSection";
+import { TransformRow } from "@/components/transformations/TransformRow";
 
 type Coordinates = {
   translate: AxisValues;
@@ -19,8 +18,6 @@ type AxisValues = {
 };
 
 type Action = "translate" | "rotate" | "scale";
-
-const axis = ["x", "y"];
 
 export default function TransformSection() {
   const { pathObject, updateCommands } = usePathObject();
@@ -41,10 +38,13 @@ export default function TransformSection() {
   });
 
   const updatePosition = (action: Action, axis: Axis, value: string) => {
-    setCoordinates((prev) => ({
-      ...prev,
-      [action]: { ...prev[action], [axis]: value },
-    }));
+    setCoordinates((prev) => {
+      const finalValue = parseFloat(value) || "";
+      return {
+        ...prev,
+        [action]: { ...prev[action], [axis]: finalValue },
+      };
+    });
   };
 
   const handleTranslate = () => {
@@ -73,7 +73,7 @@ export default function TransformSection() {
 
   return (
     <CollapsedSection title="Transforms">
-      <div className="px-5 pb-5  space-y-4">
+      <div className="px-5 pb-5 space-y-4">
         <TransformRow
           title="Translate"
           action="translate"

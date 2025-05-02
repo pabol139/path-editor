@@ -12,6 +12,7 @@ type PathContextType = {
   pathObject: PathObject;
   updatePath: (newPath: string) => void;
   updateCommands: (newValues: any) => void;
+  error: string | null;
 };
 
 export const PathContext = createContext<PathContextType | undefined>(
@@ -27,23 +28,42 @@ export function PathProvider({ children }: PathProviderProps) {
     path: DEFAULT_PATH,
     commands: parsePath(DEFAULT_PATH),
   });
+  const [error, setError] = useState(null);
 
   function updatePath(path: string) {
-    setPathObject((prevObject) => ({
-      path: path,
-      commands: parsePath(path),
-    }));
+    try {
+      const parsedCommands = parsePath(path);
+      setPathObject((prevObject) => ({
+        path: path,
+        commands: parsedCommands,
+      }));
+      setError(null);
+    } catch (e: any) {
+      setPathObject((prevObject) => ({
+        path: path,
+        commands: prevObject.commands,
+      }));
+      setError(e.message);
+    }
   }
 
   function updateCommands(commands: ParsePath<number>) {
-    setPathObject((prevObject) => ({
-      path: convertPathToString(commands),
-      commands: commands,
-    }));
+    try {
+      const newPath = convertPathToString(commands);
+      setPathObject((prevObject) => ({
+        path: newPath,
+        commands: commands,
+      }));
+      setError(null);
+    } catch (e: any) {
+      setError(e.message);
+    }
   }
 
   return (
-    <PathContext.Provider value={{ pathObject, updatePath, updateCommands }}>
+    <PathContext.Provider
+      value={{ pathObject, updatePath, updateCommands, error }}
+    >
       {children}
     </PathContext.Provider>
   );

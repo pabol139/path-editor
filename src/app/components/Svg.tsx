@@ -137,9 +137,7 @@ export default forwardRef(function Svg(
       onPointerUp={handlePointerUp}
       ref={ref}
       className="w-[calc(100%-var(--aside-width))] h-full"
-      viewBox={`${String(viewbox.x)} ${String(viewbox.y)} ${String(
-        viewbox.width
-      )} ${String(viewbox.height)}`}
+      viewBox={`${viewbox.x} ${viewbox.y} ${viewbox.width} ${viewbox.height}`}
     >
       {isVisible ? (
         <>

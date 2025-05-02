@@ -12,11 +12,16 @@ export default function PathInput({
   svgDimensions: SvgDimensions;
   updateViewbox: (viewbox: Viewbox) => void;
 }) {
-  const { pathObject, updatePath } = usePathObject();
+  const { pathObject, updatePath, error } = usePathObject();
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = event.target.value;
+    if (!value.trim()) {
+      updatePath(value);
+      return;
+    }
+
     const svgWidth = svgDimensions.width;
     const svgHeight = svgDimensions.height;
     const pathBBox = getPathBBox(value);
@@ -78,7 +83,9 @@ export default function PathInput({
   return (
     <>
       <textarea
-        className="mt-2 w-full bg-secondary text-base tabular-nums"
+        className={`mt-2 w-full bg-secondary text-base tabular-nums ${
+          error ? "border-b border-red-600 text-[red]" : ""
+        }`}
         name=""
         id=""
         cols={30}

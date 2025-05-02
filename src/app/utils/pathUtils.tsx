@@ -144,15 +144,18 @@ export const translate = (
   x: string,
   y: string
 ) => {
-  if (commands.length === 0) throw new Error("No commands available");
+  if (commands.length === 0) {
+    return [];
+  }
 
   const formatedCommands = commands;
 
   const xValue = parseFloat(x);
   const yValue = parseFloat(y);
 
-  if (isNaN(xValue) || isNaN(yValue))
-    throw new Error("Invalid translate parameters");
+  if (isNaN(xValue) || isNaN(yValue)) {
+    return formatedCommands;
+  }
 
   formatedCommands.forEach((command) => {
     const letter = command.letter;
@@ -188,16 +191,18 @@ export const scale = (
   rawXFactor: string,
   rawYFactor: string
 ) => {
-  if (commands.length === 0) throw new Error("No commands available");
+  if (commands.length === 0) {
+    return [];
+  }
 
   const formatedCommands = commands;
 
   const xValue = parseFloat(rawXFactor);
   const yValue = parseFloat(rawYFactor);
 
-  if (isNaN(xValue) || isNaN(yValue))
-    throw new Error("Invalid translate parameters");
-
+  if (isNaN(xValue) || isNaN(yValue)) {
+    return formatedCommands;
+  }
   formatedCommands.forEach((command) => {
     const letter = command.letter;
 

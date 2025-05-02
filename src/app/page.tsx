@@ -1,4 +1,4 @@
-import MainSvg from "./components/MainSvg";
+import MainSvg from "@/components/MainSvg";
 
 export default function Home() {
   return (

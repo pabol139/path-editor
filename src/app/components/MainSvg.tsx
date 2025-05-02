@@ -1,11 +1,10 @@
 "use client";
 import { useRef, useState } from "react";
 import Sidebar from "@/components/Sidebar";
+import Svg from "@/components/Svg";
 import { Viewbox } from "@/types/Viewbox";
 import { SvgDimensions } from "@/types/Svg";
-
-import Svg from "./Svg";
-import { formatNumber } from "../utils/pathUtils";
+import { formatNumber } from "@/utils/pathUtils";
 
 export default function MainSvg() {
   const [viewbox, setViewbox] = useState<Viewbox>({
@@ -21,29 +20,33 @@ export default function MainSvg() {
   });
 
   const svgRef = useRef<SVGSVGElement>(null);
-
   // Type for updateViewbox function
   const updateViewbox = (
     newObject: Viewbox,
     adaptAspectRatio: Boolean = false
   ) => {
     setViewbox((prevState) => {
-      if (adaptAspectRatio) {
-        const height = prevState.height;
-        const width = prevState.width;
-        const aspectRatio = height / width;
+      const { height: oldHeight, width: oldWidth } = prevState;
+      const { height, width } = newObject;
 
-        if (newObject.height !== prevState.height)
+      if (adaptAspectRatio) {
+        const aspectRatio = oldHeight / oldWidth || 0;
+
+        if (newObject.height !== oldHeight) {
           newObject.width = newObject.height / aspectRatio;
-        else newObject.height = newObject.width * aspectRatio;
+          newObject.width = newObject.height / aspectRatio;
+        } else {
+          newObject.height = newObject.width * aspectRatio;
+          newObject.height = newObject.width * aspectRatio;
+        }
       }
 
       return {
         ...prevState,
-        x: parseFloat(formatNumber(newObject.x, 1)),
-        y: parseFloat(formatNumber(newObject.y, 1)),
-        width: parseFloat(formatNumber(Math.max(newObject.width, 0), 1)),
-        height: parseFloat(formatNumber(Math.max(newObject.height, 0), 1)),
+        x: parseFloat(formatNumber(newObject.x, 2)),
+        y: parseFloat(formatNumber(newObject.y, 2)),
+        width: parseFloat(formatNumber(Math.max(newObject.width, 0), 2)),
+        height: parseFloat(formatNumber(Math.max(newObject.height, 0), 2)),
       };
     });
   };

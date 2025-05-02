@@ -4,7 +4,12 @@ type InputProps = {
   setter: (value: string) => void;
 };
 
-export default function Input({ leftText, value, setter }: InputProps) {
+export default function Input({
+  leftText,
+  value,
+  setter,
+  ...props
+}: InputProps) {
   return (
     <div className="relative">
       <label
@@ -19,6 +24,7 @@ export default function Input({ leftText, value, setter }: InputProps) {
         type="text"
         value={value}
         onChange={(e) => setter(e.target.value)}
+        {...props}
       />
     </div>
   );

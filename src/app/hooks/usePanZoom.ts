@@ -39,12 +39,7 @@ export function usePanZoom(
     const deltaX = -(svgPoint.x - lastPosition.x);
     const deltaY = -(svgPoint.y - lastPosition.y);
 
-    updateViewbox({
-      width: viewbox.width,
-      height: viewbox.height,
-      x: viewbox.x + deltaX,
-      y: viewbox.y + deltaY,
-    });
+    updateViewbox({ ...viewbox, x: viewbox.x + deltaX, y: viewbox.y + deltaY });
   };
 
   const handleZoom = (event: React.WheelEvent<SVGSVGElement>) => {
@@ -82,10 +77,10 @@ export function usePanZoom(
         (point.y / svg.getBoundingClientRect().height);
 
     updateViewbox({
-      width: scaledWidth,
-      height: scaledHeight,
       x: scaledX,
       y: scaledY,
+      width: scaledWidth,
+      height: scaledHeight,
     });
   };
 
