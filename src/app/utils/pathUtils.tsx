@@ -1,5 +1,6 @@
 import { ParsePath } from "@/types/Path";
 import { CircleType } from "@/types/Circle";
+import { comma } from "postcss/lib/list";
 
 /** Regex based on https://github.com/Yqnn/svg-path-editor/blob/master/src/lib/path-parser.ts */
 const kCommandTypeRegex = /^[\t\n\f\r ]*([MLHVZCSQTAmlhvzcsqta])[\t\n\f\r ]*/;
@@ -231,16 +232,27 @@ export const updatePoints = (commands: ParsePath<number>) => {
   let lastPositionY = "0";
   let points: CircleType[] = [];
 
+  const generateCircleId = (
+    commandId: string,
+    coordIndex: number,
+    type?: string
+  ) => {
+    return `circle_${commandId}_${coordIndex}${type ? `_${type}` : ""}`;
+  };
+
   commands.forEach((command) => {
     if (command.letter === lineCommands.Close) {
       return;
     }
 
     const circle = {
-      id: command.id,
+      id: generateCircleId(command.id, 0),
+      id_command: command.id,
+      coordinate_index: 0,
       radius: "10",
       cy: "0",
       cx: "0",
+      control: false,
     };
 
     if (command.letter === lineCommands.Vertical) {
@@ -252,6 +264,7 @@ export const updatePoints = (commands: ParsePath<number>) => {
     }
 
     if (command.letter === lineCommands.Horizontal) {
+      circle.id = generateCircleId(command.id, 0);
       circle.cx = command.coordinates[0].toString();
       circle.cy = lastPositionY;
       lastPositionX = command.coordinates[0].toString();
@@ -261,6 +274,8 @@ export const updatePoints = (commands: ParsePath<number>) => {
     }
 
     if (command.letter === lineCommands.Arc) {
+      circle.id = generateCircleId(command.id, 5);
+      circle.coordinate_index = 5;
       circle.cx = command.coordinates[5].toString();
       circle.cy = command.coordinates[6].toString();
       lastPositionX = command.coordinates[5].toString();
@@ -269,6 +284,67 @@ export const updatePoints = (commands: ParsePath<number>) => {
 
       return;
     }
+
+    if (command.letter === lineCommands.Curve) {
+      const controlPointStart = {
+        ...circle,
+        id: generateCircleId(command.id, 0),
+        coordinate_index: 0,
+        control: true,
+      };
+      const controlPointEnd = {
+        ...circle,
+        id: generateCircleId(command.id, 2),
+        coordinate_index: 2,
+        control: true,
+      };
+      const coordinates = {
+        ...circle,
+        id: generateCircleId(command.id, 4),
+        coordinate_index: 4,
+      };
+
+      controlPointStart.cx = command.coordinates[0].toString();
+      controlPointStart.cy = command.coordinates[1].toString();
+      controlPointEnd.cx = command.coordinates[2].toString();
+      controlPointEnd.cy = command.coordinates[3].toString();
+      coordinates.cx = command.coordinates[4].toString();
+      coordinates.cy = command.coordinates[5].toString();
+
+      lastPositionX = command.coordinates[4].toString();
+      lastPositionY = command.coordinates[5].toString();
+
+      points.push(controlPointStart);
+      points.push(controlPointEnd);
+      points.push(coordinates);
+
+      return;
+    }
+
+    if (command.letter === lineCommands.QuadraticCurve) {
+      const controlPointStart = {
+        ...circle,
+        id: generateCircleId(command.id, 0),
+        coordinate_index: 0,
+        control: true,
+      };
+      const controlPointEnd = {
+        ...circle,
+        id: generateCircleId(command.id, 2),
+        coordinate_index: 2,
+      };
+
+      controlPointStart.cx = command.coordinates[0].toString();
+      controlPointStart.cy = command.coordinates[1].toString();
+      controlPointEnd.cx = command.coordinates[2].toString();
+      controlPointEnd.cy = command.coordinates[3].toString();
+
+      points.push(controlPointStart);
+      points.push(controlPointEnd);
+
+      return;
+    }
+
     command.coordinates.forEach((coordinate, index) => {
       if (index % 2 === 0) {
         circle.cx = coordinate.toString();
@@ -280,6 +356,5 @@ export const updatePoints = (commands: ParsePath<number>) => {
     });
     points.push(circle);
   });
-
   return points;
 };

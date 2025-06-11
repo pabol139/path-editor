@@ -5,7 +5,15 @@ interface CircleElement extends CircleType {
   handleMove: ({ id, x, y }: { id: string; x: number; y: number }) => any;
 }
 
-export function Circle({ id, radius, cx, cy, handleMove }: CircleElement) {
+export function Circle({
+  id,
+  id_command,
+  radius,
+  cx,
+  cy,
+  handleMove,
+  fill,
+}: CircleElement) {
   const [dragging, setDragging] = useState(false);
 
   const handlePointerDown = (event: React.PointerEvent<SVGCircleElement>) => {
@@ -27,7 +35,6 @@ export function Circle({ id, radius, cx, cy, handleMove }: CircleElement) {
     point.x = event.clientX;
     point.y = event.clientY;
     const svgPoint = point.matrixTransform(svg.getScreenCTM()?.inverse());
-
     handleMove({
       id: id,
       x: parseFloat(svgPoint.x.toFixed(2)),
@@ -38,7 +45,10 @@ export function Circle({ id, radius, cx, cy, handleMove }: CircleElement) {
 
   return (
     <circle
-      className="hover:cursor-pointer text-white hover:text-yellow-400"
+      style={{
+        fill: fill || "#808080", // fallback color
+      }}
+      className={` hover:cursor-pointer hover:!fill-yellow-400`}
       onPointerLeave={(event) => {
         setDragging(false);
         event.stopPropagation();

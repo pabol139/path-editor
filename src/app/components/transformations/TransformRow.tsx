@@ -1,3 +1,4 @@
+import { act } from "react";
 import Input from "../inputs/Input";
 
 type Axis = "x" | "y";
@@ -38,6 +39,14 @@ export function TransformRow({
               key={index}
               value={coordinates[action][char as Axis]}
               setter={(value) => updatePosition(action, char as Axis, value)}
+              onBlur={() => {
+                const parsedValue =
+                  parseFloat(coordinates[action][char as Axis]) ||
+                  action === "scale"
+                    ? 1
+                    : 0;
+                updatePosition(action, char as Axis, String(parsedValue));
+              }}
             />
           );
         })}

@@ -38,11 +38,11 @@ export default function TransformSection() {
   });
 
   const updatePosition = (action: Action, axis: Axis, value: string) => {
+    var formattedValue = value.replace(/,/g, ".").replace(/[^0-9\.-]/g, "");
     setCoordinates((prev) => {
-      const finalValue = parseFloat(value) || "";
       return {
         ...prev,
-        [action]: { ...prev[action], [axis]: finalValue },
+        [action]: { ...prev[action], [axis]: formattedValue },
       };
     });
   };

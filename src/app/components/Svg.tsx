@@ -27,6 +27,9 @@ export default forwardRef(function Svg(
 ) {
   const { pathObject, updateCommands } = usePathObject();
   const [isVisible, setIsVisible] = useState(false);
+
+  const circles = updatePoints(pathObject.commands);
+
   const {
     handlePointerDown,
     handlePointerLeave,
@@ -34,9 +37,9 @@ export default forwardRef(function Svg(
     handlePointerUp,
     handleZoom,
   } = usePanZoom(viewbox, updateViewbox);
-  const circles = updatePoints(pathObject.commands);
-  const svgRef = ref as React.RefObject<SVGSVGElement>;
 
+  const svgRef = ref as React.RefObject<SVGSVGElement>;
+  console.log({ circles });
   useEffect(() => {
     if (svgRef?.current) {
       function updateResize() {
@@ -92,34 +95,40 @@ export default forwardRef(function Svg(
   }, []);
 
   const handleMove = (values: Coordinates) => {
-    const newCommands = pathObject.commands.map((command) => {
-      if (command.id !== values.id) return command; // Return unmodified command
+    console.log(values);
+    console.log(pathObject.commands);
 
+    const circleInfo = circles.find((circle) => circle.id === values.id);
+    if (!circleInfo) return;
+
+    const newCommands = pathObject.commands.map((command) => {
+      if (command.id !== circleInfo.id_command) return command; // Return unmodified command
+      const coordinate_index = circleInfo.coordinate_index;
       // Create a new coordinates array to ensure immutability
       const newCoordinates = [...command.coordinates];
 
       switch (command.letter) {
         case "H":
-          newCoordinates[0] = values.x;
+          newCoordinates[coordinate_index] = values.x;
           break;
         case "V":
-          newCoordinates[0] = values.y;
+          newCoordinates[coordinate_index] = values.y;
           break;
         case "A":
-          newCoordinates[5] = values.x;
-          newCoordinates[6] = values.y;
+          newCoordinates[coordinate_index] = values.x;
+          newCoordinates[coordinate_index + 1] = values.y;
           break;
         case "C":
-          newCoordinates[4] = values.x;
-          newCoordinates[5] = values.y;
+          newCoordinates[coordinate_index] = values.x;
+          newCoordinates[coordinate_index + 1] = values.y;
           break;
         case "Q":
-          newCoordinates[2] = values.x;
-          newCoordinates[3] = values.y;
+          newCoordinates[coordinate_index] = values.x;
+          newCoordinates[coordinate_index + 1] = values.y;
           break;
         default:
-          newCoordinates[0] = values.x;
-          newCoordinates[1] = values.y;
+          newCoordinates[coordinate_index] = values.x;
+          newCoordinates[coordinate_index + 1] = values.y;
       }
 
       return { ...command, coordinates: newCoordinates }; // Return new object
@@ -147,16 +156,37 @@ export default forwardRef(function Svg(
             stroke="#fff"
             strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}
           ></path>
-          {circles.map((circle) => (
-            <Circle
-              key={circle.id}
-              id={circle.id}
-              radius={String((3.5 * viewbox.width) / svgDimensions.width)}
-              cx={circle.cx}
-              cy={circle.cy}
-              handleMove={handleMove}
-            ></Circle>
-          ))}
+          {circles.map((circle, index) => {
+            const command = pathObject.commands.find(
+              (command) => command.id === circle.id_command
+            );
+
+            return (
+              (command?.letter === "C" || command?.letter === "Q") && (
+                <Line
+                  letter={command.letter}
+                  circles={circles}
+                  circle={circle}
+                  viewbox={viewbox}
+                  svgDimensions={svgDimensions}
+                  index={index}
+                ></Line>
+              )
+            );
+          })}
+          {circles.map((circle) => {
+            return (
+              <Circle
+                id={circle.id}
+                id_command={circle.id_command}
+                radius={String((3.5 * viewbox.width) / svgDimensions.width)}
+                cx={circle.cx}
+                cy={circle.cy}
+                handleMove={handleMove}
+                fill={circle.control ? "#808080" : "#fff"}
+              ></Circle>
+            );
+          })}
         </>
       ) : (
         <svg className="opacity-0">
@@ -166,18 +196,56 @@ export default forwardRef(function Svg(
             stroke="#fff"
             strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}
           ></path>
-          {circles.map((circle) => (
-            <Circle
-              key={circle.id}
-              id={circle.id}
-              radius={String((3.5 * viewbox.width) / svgDimensions.width)}
-              cx={circle.cx}
-              cy={circle.cy}
-              handleMove={handleMove}
-            ></Circle>
-          ))}
         </svg>
       )}
     </svg>
   );
 });
+
+function Line({ circles, circle, letter, viewbox, svgDimensions, index }) {
+  const coordinate_index = circle.coordinate_index;
+
+  let x1 = 0;
+  let y1 = 0;
+  let x2 = 0;
+  let y2 = 0;
+
+  if (letter === "C") {
+    if (coordinate_index === 0) {
+      x1 = circles[index - 1].cx;
+      y1 = circles[index - 1].cy;
+      x2 = circle.cx;
+      y2 = circle.cy;
+    } else if (coordinate_index === 2) {
+      x1 = circles[index + 1].cx;
+      y1 = circles[index + 1].cy;
+      x2 = circle.cx;
+      y2 = circle.cy;
+    } else {
+      return <></>;
+    }
+  } else {
+    // Q
+    if (coordinate_index === 0) {
+      x1 = circles[index - 1].cx;
+      y1 = circles[index - 1].cy;
+      x2 = circle.cx;
+      y2 = circle.cy;
+    } else {
+      x1 = circles[index - 1].cx;
+      y1 = circles[index - 1].cy;
+      x2 = circles[index].cx;
+      y2 = circles[index].cy;
+    }
+  }
+  return (
+    <line
+      stroke="gray"
+      strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}
+      x1={x1}
+      y1={y1}
+      x2={x2}
+      y2={y2}
+    ></line>
+  );
+}

@@ -1,9 +1,10 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathObject } from "@/context/PathContext";
 import { Viewbox } from "@/types/Viewbox";
 import { SvgDimensions } from "@/types/Svg";
 import { getPathBBox } from "@/utils/pathUtils";
-import { Copy } from "react-feather";
+import { Copy, Check } from "react-feather";
+import clsx from "clsx";
 
 export default function PathInput({
   svgDimensions,
@@ -13,6 +14,7 @@ export default function PathInput({
   updateViewbox: (viewbox: Viewbox) => void;
 }) {
   const { pathObject, updatePath, error } = usePathObject();
+  const [copied, setCopied] = useState(false);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -51,7 +53,6 @@ export default function PathInput({
       height: pathHeight + percentFactorHeight,
     });
 
-    // updateViewbox(newObject);
     updatePath(value);
   };
 
@@ -59,18 +60,12 @@ export default function PathInput({
     navigator.clipboard.writeText(pathObject.path).then(
       () => {
         if (!buttonRef.current) return;
-        const textElement = buttonRef.current.querySelector("span");
-
-        buttonRef.current.classList.add("copied");
-        if (textElement) textElement.innerText = "Copied!";
-
-        setTimeout(() => {
-          if (!buttonRef.current) return;
-          const textElement = buttonRef.current.querySelector("span");
-
-          buttonRef.current.classList.remove("copied");
-          if (textElement) textElement.innerText = "Copy";
-        }, 4000);
+        if (!copied) {
+          setCopied(true);
+          setTimeout(() => {
+            setCopied(false);
+          }, 4000);
+        }
 
         /* clipboard successfully set */
       },
@@ -96,10 +91,22 @@ export default function PathInput({
       <button
         ref={buttonRef}
         onClick={handleCopy}
-        className="bg-[#2A2A2A] [&.copied]:bg-purple px-2 py-1 flex gap-2 text-sm items-center border border-tertiary rounded-md"
+        className={clsx(
+          "bg-[#2A2A2A] transition-colors [&.copied]:bg-purple px-2 py-1 flex gap-2 text-sm items-center border border-tertiary rounded-md",
+          copied && "copied"
+        )}
       >
-        <Copy size={16}></Copy>
-        <span>Copy</span>
+        {copied ? (
+          <>
+            <Check size={16}></Check>
+            <span>Copied!</span>
+          </>
+        ) : (
+          <>
+            <Copy size={16}></Copy>
+            <span>Copy</span>
+          </>
+        )}
       </button>
     </>
   );
