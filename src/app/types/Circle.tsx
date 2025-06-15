@@ -6,4 +6,8 @@ export interface CircleType {
   cy: string;
   cx: string;
   control: boolean;
+  strokeWidth: string;
+  fill: string;
+  hovered: boolean;
+  selected: boolean;
 }

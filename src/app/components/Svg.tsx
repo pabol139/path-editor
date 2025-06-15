@@ -1,7 +1,17 @@
-import { forwardRef, useEffect, useState } from "react";
+import { forwardRef, useEffect, useMemo, useState } from "react";
 import { usePathObject } from "@/context/PathContext";
 import { Viewbox } from "@/types/Viewbox";
-import { updatePoints } from "@/utils/pathUtils";
+import {
+  absoluteToRelative,
+  centerViewbox,
+  convertAbsoluteToRelative,
+  convertPathToString,
+  createPathFromHoveredCommands,
+  getCurrentPositionBeforeCommand,
+  getLastControlPoint,
+  isRelativeCommand,
+  updatePoints,
+} from "@/utils/pathUtils";
 import { Circle } from "@/components/Circle";
 import { usePanZoom } from "@/hooks/usePanZoom";
 
@@ -27,9 +37,16 @@ export default forwardRef(function Svg(
 ) {
   const { pathObject, updateCommands } = usePathObject();
   const [isVisible, setIsVisible] = useState(false);
+  const [hasActivePath, setHasActivePath] = useState(false);
+  const circles = useMemo(
+    () => updatePoints(pathObject.commands),
+    [viewbox.height, viewbox.width, pathObject.commands]
+  );
+  let activePath = "";
 
-  const circles = updatePoints(pathObject.commands);
-
+  if (hasActivePath) {
+    activePath = createPathFromHoveredCommands(pathObject.commands);
+  }
   const {
     handlePointerDown,
     handlePointerLeave,
@@ -39,7 +56,14 @@ export default forwardRef(function Svg(
   } = usePanZoom(viewbox, updateViewbox);
 
   const svgRef = ref as React.RefObject<SVGSVGElement>;
-  console.log({ circles });
+
+  useEffect(() => {
+    if (svgRef?.current) {
+      centerViewbox(svgRef, updateViewbox, setSvgDimensions);
+      setIsVisible(true);
+    }
+  }, []);
+
   useEffect(() => {
     if (svgRef?.current) {
       function updateResize() {
@@ -49,33 +73,15 @@ export default forwardRef(function Svg(
         const svgWidth = svgRef.current.getBoundingClientRect().width || 0;
         const svgHeight = svgRef.current.getBoundingClientRect().height || 0;
         const bbox = path.getBBox();
-
-        let pathWidth = bbox.width;
-        let pathHeight = bbox.height;
-        let pathX = bbox.x;
-        let pathY = bbox.y;
-
         const svgAspectRatio = svgHeight / svgWidth;
-        const pathAspectRatio = pathHeight / pathWidth;
 
-        if (svgAspectRatio < pathAspectRatio) {
-          pathWidth = pathHeight / svgAspectRatio;
-        } else {
-          pathHeight = svgAspectRatio * pathWidth;
-        }
+        let pathHeight = bbox.height;
 
-        const percentFactorWidth = pathWidth * 0.1;
-        const percentFactorHeight = pathHeight * 0.1;
-
-        // Center svg on screen
-        pathX = pathX - (pathWidth + percentFactorWidth - bbox.width) / 2;
-        pathY = pathY - (pathHeight + percentFactorHeight - bbox.height) / 2;
+        pathHeight = svgAspectRatio * viewbox.width;
 
         updateViewbox({
-          x: pathX,
-          y: pathY,
-          width: pathWidth + percentFactorWidth,
-          height: pathHeight + percentFactorHeight,
+          ...viewbox,
+          height: pathHeight,
         });
 
         setSvgDimensions({
@@ -84,20 +90,15 @@ export default forwardRef(function Svg(
         });
       }
 
-      updateResize();
-      setIsVisible(true);
       window.addEventListener("resize", updateResize);
 
       return () => {
         window.removeEventListener("resize", updateResize);
       };
     }
-  }, []);
+  }, [viewbox]);
 
   const handleMove = (values: Coordinates) => {
-    console.log(values);
-    console.log(pathObject.commands);
-
     const circleInfo = circles.find((circle) => circle.id === values.id);
     if (!circleInfo) return;
 
@@ -106,35 +107,72 @@ export default forwardRef(function Svg(
       const coordinate_index = circleInfo.coordinate_index;
       // Create a new coordinates array to ensure immutability
       const newCoordinates = [...command.coordinates];
+      let finalX = values.x;
+      let finalY = values.y;
+      const isRelative = isRelativeCommand(command.letter);
 
-      switch (command.letter) {
+      // If the command is relative, convert absolute drag coordinates to relative
+      if (isRelative) {
+        const currentPos = getCurrentPositionBeforeCommand(
+          pathObject.commands,
+          command.id
+        );
+        const relativeCoords = absoluteToRelative(
+          values.x,
+          values.y,
+          currentPos
+        );
+        finalX = relativeCoords.x;
+        finalY = relativeCoords.y;
+      }
+      switch (command.letter.toUpperCase()) {
         case "H":
-          newCoordinates[coordinate_index] = values.x;
+          newCoordinates[coordinate_index] = finalX;
           break;
         case "V":
-          newCoordinates[coordinate_index] = values.y;
+          newCoordinates[coordinate_index] = finalY;
           break;
         case "A":
-          newCoordinates[coordinate_index] = values.x;
-          newCoordinates[coordinate_index + 1] = values.y;
+          newCoordinates[coordinate_index] = finalX;
+          newCoordinates[coordinate_index + 1] = finalY;
           break;
         case "C":
-          newCoordinates[coordinate_index] = values.x;
-          newCoordinates[coordinate_index + 1] = values.y;
+          newCoordinates[coordinate_index] = finalX;
+          newCoordinates[coordinate_index + 1] = finalY;
           break;
         case "Q":
-          newCoordinates[coordinate_index] = values.x;
-          newCoordinates[coordinate_index + 1] = values.y;
+          newCoordinates[coordinate_index] = finalX;
+          newCoordinates[coordinate_index + 1] = finalY;
           break;
         default:
-          newCoordinates[coordinate_index] = values.x;
-          newCoordinates[coordinate_index + 1] = values.y;
+          newCoordinates[coordinate_index] = finalX;
+          newCoordinates[coordinate_index + 1] = finalY;
       }
 
       return { ...command, coordinates: newCoordinates }; // Return new object
     });
-
     updateCommands(newCommands);
+  };
+
+  const handleEnter = (id_command: string) => {
+    const { commands } = pathObject;
+
+    const newCommands = commands.map((command) => {
+      if (command.id !== id_command) return command; // Return unmodified command
+
+      return { ...command, hovered: true }; // Return new object
+    });
+
+    setHasActivePath(true);
+    updateCommands(newCommands);
+  };
+
+  const handleLeave = () => {
+    const newCommands = pathObject.commands.map((command) => {
+      return { ...command, hovered: false }; // Return new object
+    });
+    updateCommands(newCommands);
+    setHasActivePath(false);
   };
 
   return (
@@ -164,6 +202,7 @@ export default forwardRef(function Svg(
             return (
               (command?.letter === "C" || command?.letter === "Q") && (
                 <Line
+                  key={"line_" + circle.id}
                   letter={command.letter}
                   circles={circles}
                   circle={circle}
@@ -174,16 +213,24 @@ export default forwardRef(function Svg(
               )
             );
           })}
+          {hasActivePath && activePath && (
+            <path
+              d={activePath}
+              stroke="deepskyblue"
+              fill="transparent"
+              strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}
+            ></path>
+          )}
           {circles.map((circle) => {
             return (
               <Circle
-                id={circle.id}
-                id_command={circle.id_command}
+                key={circle.id}
+                circleObject={circle}
                 radius={String((3.5 * viewbox.width) / svgDimensions.width)}
-                cx={circle.cx}
-                cy={circle.cy}
+                strokeWidth={String((13 * viewbox.width) / svgDimensions.width)}
                 handleMove={handleMove}
-                fill={circle.control ? "#808080" : "#fff"}
+                handleEnter={handleEnter}
+                handleLeave={handleLeave}
               ></Circle>
             );
           })}

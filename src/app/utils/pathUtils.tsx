@@ -68,13 +68,12 @@ export const parsePath = (path: string): ParsePath<number> => {
       throw new Error("malformed path (first error at " + i + ")");
     }
     i = i + commandLetterWithSpaces.length;
-    let regexTable = kGrammar[commandLetter] || [];
+    let regexTable = kGrammar[commandLetter.toUpperCase()] || [];
     let j = 0;
     let coordinates = [];
     while (j < regexTable.length) {
       let regex = regexTable[j];
       let newMatch = path.slice(i).match(regex);
-
       if (!newMatch)
         throw new Error("malformed path (first error at " + i + ")");
 
@@ -90,12 +89,13 @@ export const parsePath = (path: string): ParsePath<number> => {
 
     commands.push({
       id: crypto.randomUUID(),
-      letter: commandLetter.toUpperCase(),
+      letter: commandLetter,
       coordinates: coordinates,
+      hovered: false,
+      selected: false,
     });
   }
 
-  updatePoints(commands);
   return commands;
 };
 
@@ -121,13 +121,161 @@ export const formatNumber = (number: number, decimals: number): string => {
     .replace(/\.$/, ""); // Removes any trailing point
 };
 
+export const centerViewbox = (svgRef, viewboxSetter, svgDimensionsSetter) => {
+  const path = svgRef.current?.querySelector("path");
+  if (!path) return;
+
+  const svgWidth = svgRef.current.getBoundingClientRect().width || 0;
+  const svgHeight = svgRef.current.getBoundingClientRect().height || 0;
+  const bbox = path.getBBox();
+
+  let pathWidth = bbox.width;
+  let pathHeight = bbox.height;
+  let pathX = bbox.x;
+  let pathY = bbox.y;
+  const svgAspectRatio = svgHeight / svgWidth;
+  const pathAspectRatio = pathHeight / pathWidth;
+  if (svgAspectRatio < pathAspectRatio) {
+    pathWidth = pathHeight / svgAspectRatio;
+  } else {
+    pathHeight = svgAspectRatio * pathWidth;
+  }
+
+  const percentFactorWidth = pathWidth * 0.1;
+  const percentFactorHeight = pathHeight * 0.1;
+
+  // Center svg on screen
+  pathX = pathX - (pathWidth + percentFactorWidth - bbox.width) / 2;
+  pathY = pathY - (pathHeight + percentFactorHeight - bbox.height) / 2;
+
+  viewboxSetter({
+    x: pathX,
+    y: pathY,
+    width: pathWidth + percentFactorWidth,
+    height: pathHeight + percentFactorHeight,
+  });
+
+  svgDimensionsSetter({
+    width: svgRef.current.getBoundingClientRect().width || 0,
+    height: svgRef.current.getBoundingClientRect().height || 0,
+  });
+};
+
+export const createPathFromHoveredCommands = (commands: ParsePath<number>) => {
+  let commandPosition = 0;
+  const command = commands.find((command, index) => {
+    if (command.hovered === true) {
+      commandPosition = index;
+      return true;
+    }
+    return false;
+  });
+  let finalCommand = {};
+
+  if (!command || command.letter === "M" || commandPosition === 0) return "";
+
+  const prevCommand = getCurrentPositionBeforeCommand(commands, command.id);
+
+  const moveToCommand = {
+    coordinates: [prevCommand.x, prevCommand.y],
+    id: String(Math.random()),
+    letter: "M",
+  };
+
+  if (command.letter === "T") {
+    const prevControlPoint = getLastControlPoint(commands, commandPosition);
+    let controlPoint;
+
+    if (prevControlPoint) {
+      // Calculate the reflected control point
+      controlPoint = {
+        x: 2 * prevCommand.x - prevControlPoint.x,
+        y: 2 * prevCommand.y - prevControlPoint.y,
+      };
+    } else {
+      // If no previous control point, the control point is the current position
+      controlPoint = { x: prevCommand.x, y: prevCommand.y };
+    }
+
+    finalCommand = {
+      letter: "Q",
+      id: String(Math.random()),
+      coordinates: [
+        controlPoint.x,
+        controlPoint.y,
+        command.coordinates[0],
+        command.coordinates[1],
+      ],
+    };
+  } else {
+    finalCommand = command;
+  }
+  console.log(moveToCommand);
+  return convertPathToString([moveToCommand, finalCommand]) ?? "";
+};
+
+export const getLastControlPoint = (commands: any, currentIndex: number) => {
+  // Look backwards for the last command that has a control point
+  for (let i = currentIndex - 1; i >= 0; i--) {
+    const command = commands[i];
+    switch (command.letter) {
+      case "Q":
+        return {
+          x: command.coordinates[0],
+          y: command.coordinates[1],
+        };
+      case "C":
+        return {
+          x: command.coordinates[2], // Second control point of cubic curve
+          y: command.coordinates[3],
+        };
+      case "T":
+        // For T commands, we need to calculate what the implicit control point was
+        const prevCommand = commands[i - 1];
+
+        const prevCommandX =
+          prevCommand.coordinates[prevCommand.coordinates.length - 2];
+        const prevCommandY =
+          prevCommand.coordinates[prevCommand.coordinates.length - 1];
+        const prevControlPoint = getLastControlPoint(commands, i);
+
+        if (prevControlPoint) {
+          // The control point for T is the reflection of the previous control point
+          return {
+            x: 2 * prevCommandX - prevControlPoint.x,
+            y: 2 * prevCommandY - prevControlPoint.y,
+          };
+        }
+        break;
+      case "S":
+        // S command also has an implicit control point
+        const prevCommandS = commands[i - 1];
+
+        const prevCommandSX =
+          prevCommand.coordinates[prevCommand.coordinates.length - 2];
+        const prevCommandSY =
+          prevCommand.coordinates[prevCommand.coordinates.length - 1];
+        const sPrevControlPoint = getLastControlPoint(commands, i);
+        if (sPrevControlPoint) {
+          return {
+            x: 2 * prevCommandSX - sPrevControlPoint.x,
+            y: 2 * prevCommandSY - sPrevControlPoint.y,
+          };
+        }
+        break;
+    }
+  }
+
+  return null;
+};
+
 export const convertPathToString = (commands: ParsePath<number>) => {
   return commands
     .map((command) => {
       if (command.letter.toUpperCase() === lineCommands.Close) {
         return command.letter;
       }
-
+      console.log;
       return (
         command.letter +
         " " +
@@ -227,10 +375,483 @@ export const scale = (
   return formatedCommands;
 };
 
+export const isRelativeCommand = (commandLetter: string): boolean => {
+  return commandLetter === commandLetter.toLowerCase();
+};
+
+const isAbsoluteCommand = (commandLetter: string): boolean => {
+  return commandLetter === commandLetter.toUpperCase();
+};
+
+// Command pairs mapping
+const commandPairs = {
+  // Absolute -> Relative
+  M: "m",
+  L: "l",
+  H: "h",
+  V: "v",
+  C: "c",
+  S: "s",
+  Q: "q",
+  T: "t",
+  A: "a",
+  Z: "z",
+  // Relative -> Absolute
+  m: "M",
+  l: "L",
+  h: "H",
+  v: "V",
+  c: "C",
+  s: "S",
+  q: "Q",
+  t: "T",
+  a: "A",
+  z: "Z",
+};
+
+// Get the opposite command type
+const getOppositeCommand = (commandLetter: string): string => {
+  return commandPairs[commandLetter] || commandLetter;
+};
+
+// Convert absolute coordinates to relative
+export const convertAbsoluteToRelative = (
+  command: { letter: string; coordinates: number[] },
+  currentPosition: { x: number; y: number }
+) => {
+  if (isRelativeCommand(command.letter)) {
+    return { ...command }; // Already relative
+  }
+
+  const newCoordinates = [...command.coordinates];
+  const newLetter = getOppositeCommand(command.letter);
+
+  switch (command.letter.toLowerCase()) {
+    case "m":
+    case "l":
+      // Subtract current position from absolute coordinates
+      for (let i = 0; i < newCoordinates.length; i += 2) {
+        newCoordinates[i] -= currentPosition.x;
+        newCoordinates[i + 1] -= currentPosition.y;
+      }
+      break;
+
+    case "h":
+      // Horizontal line - subtract current x
+      newCoordinates[0] -= currentPosition.x;
+      break;
+
+    case "v":
+      // Vertical line - subtract current y
+      newCoordinates[0] -= currentPosition.y;
+      break;
+
+    case "c":
+      // Cubic bezier - subtract current position from all coordinate pairs
+      for (let i = 0; i < newCoordinates.length; i += 2) {
+        newCoordinates[i] -= currentPosition.x;
+        newCoordinates[i + 1] -= currentPosition.y;
+      }
+      break;
+
+    case "s":
+      // Smooth cubic bezier
+      newCoordinates[0] -= currentPosition.x; // control point x
+      newCoordinates[1] -= currentPosition.y; // control point y
+      newCoordinates[2] -= currentPosition.x; // end point x
+      newCoordinates[3] -= currentPosition.y; // end point y
+      break;
+
+    case "q":
+      // Quadratic bezier
+      newCoordinates[0] -= currentPosition.x; // control point x
+      newCoordinates[1] -= currentPosition.y; // control point y
+      newCoordinates[2] -= currentPosition.x; // end point x
+      newCoordinates[3] -= currentPosition.y; // end point y
+      break;
+
+    case "t":
+      // Smooth quadratic bezier
+      newCoordinates[0] -= currentPosition.x;
+      newCoordinates[1] -= currentPosition.y;
+      break;
+
+    case "a":
+      // Arc - subtract current position from end point
+      newCoordinates[5] -= currentPosition.x;
+      newCoordinates[6] -= currentPosition.y;
+      break;
+  }
+
+  return {
+    ...command,
+    letter: newLetter,
+    coordinates: newCoordinates,
+  };
+};
+
+export function getCurrentPositionBeforeCommand(commands, targetCommandId) {
+  let currentX = 0;
+  let currentY = 0;
+  let startX = 0;
+  let startY = 0;
+
+  for (const command of commands) {
+    if (command.id === targetCommandId) {
+      break; // Stop before processing the target command
+    }
+
+    const { letter, coordinates } = command;
+
+    switch (letter.toLowerCase()) {
+      case "m":
+        if (letter === "M" || commands.indexOf(command) === 0) {
+          // Absolute move or first move
+          currentX = coordinates[0];
+          currentY = coordinates[1];
+        } else {
+          // Relative move
+          currentX += coordinates[0];
+          currentY += coordinates[1];
+        }
+        startX = currentX;
+        startY = currentY;
+        break;
+
+      case "l":
+        if (letter === "L") {
+          currentX = coordinates[0];
+          currentY = coordinates[1];
+        } else {
+          currentX += coordinates[0];
+          currentY += coordinates[1];
+        }
+        break;
+
+      case "h":
+        if (letter === "H") {
+          currentX = coordinates[0];
+        } else {
+          currentX += coordinates[0];
+        }
+        break;
+
+      case "v":
+        if (letter === "V") {
+          currentY = coordinates[0];
+        } else {
+          currentY += coordinates[0];
+        }
+        break;
+
+      case "c":
+        if (letter === "C") {
+          currentX = coordinates[4];
+          currentY = coordinates[5];
+        } else {
+          currentX += coordinates[4];
+          currentY += coordinates[5];
+        }
+        break;
+
+      case "s":
+        if (letter === "S") {
+          currentX = coordinates[2];
+          currentY = coordinates[3];
+        } else {
+          currentX += coordinates[2];
+          currentY += coordinates[3];
+        }
+        break;
+
+      case "q":
+        if (letter === "Q") {
+          currentX = coordinates[2];
+          currentY = coordinates[3];
+        } else {
+          currentX += coordinates[2];
+          currentY += coordinates[3];
+        }
+        break;
+
+      case "t":
+        if (letter === "T") {
+          currentX = coordinates[0];
+          currentY = coordinates[1];
+        } else {
+          currentX += coordinates[0];
+          currentY += coordinates[1];
+        }
+        break;
+
+      case "a":
+        if (letter === "A") {
+          currentX = coordinates[5];
+          currentY = coordinates[6];
+        } else {
+          currentX += coordinates[5];
+          currentY += coordinates[6];
+        }
+        break;
+
+      case "z":
+        currentX = startX;
+        currentY = startY;
+        break;
+    }
+  }
+
+  return { x: currentX, y: currentY };
+}
+
+/**
+ * Converts absolute coordinates to relative based on current cursor position
+ * @param {number} absoluteX - Absolute X coordinate
+ * @param {number} absoluteY - Absolute Y coordinate
+ * @param {Object} currentPosition - Current cursor position { x, y }
+ * @returns {Object} { x, y } relative coordinates
+ */
+export function absoluteToRelative(absoluteX, absoluteY, currentPosition) {
+  return {
+    x: absoluteX - currentPosition.x,
+    y: absoluteY - currentPosition.y,
+  };
+}
+
+// Convert relative coordinates to absolute
+// const convertRelativeToAbsolute = (
+//   command: { letter: string; coordinates: number[] },
+//   currentPosition: { x: number; y: number }
+// ) => {
+//   if (isAbsoluteCommand(command.letter)) {
+//     return { ...command }; // Already absolute
+//   }
+
+//   const newCoordinates = [...command.coordinates];
+//   const newLetter = getOppositeCommand(command.letter);
+
+//   switch (command.letter.toLowerCase()) {
+//     case "m":
+//     case "l":
+//       // Add current position to relative coordinates
+//       for (let i = 0; i < newCoordinates.length; i += 2) {
+//         newCoordinates[i] += currentPosition.x;
+//         newCoordinates[i + 1] += currentPosition.y;
+//       }
+//       break;
+
+//     case "h":
+//       // Horizontal line - add current x
+//       newCoordinates[0] += currentPosition.x;
+//       break;
+
+//     case "v":
+//       // Vertical line - add current y
+//       newCoordinates[0] += currentPosition.y;
+//       break;
+
+//     case "c":
+//       // Cubic bezier - add current position to all coordinate pairs
+//       for (let i = 0; i < newCoordinates.length; i += 2) {
+//         newCoordinates[i] += currentPosition.x;
+//         newCoordinates[i + 1] += currentPosition.y;
+//       }
+//       break;
+
+//     case "s":
+//       // Smooth cubic bezier - add current position to control and end points
+//       newCoordinates[0] += currentPosition.x; // control point x
+//       newCoordinates[1] += currentPosition.y; // control point y
+//       newCoordinates[2] += currentPosition.x; // end point x
+//       newCoordinates[3] += currentPosition.y; // end point y
+//       break;
+
+//     case "q":
+//       // Quadratic bezier - add current position to control and end points
+//       newCoordinates[0] += currentPosition.x; // control point x
+//       newCoordinates[1] += currentPosition.y; // control point y
+//       newCoordinates[2] += currentPosition.x; // end point x
+//       newCoordinates[3] += currentPosition.y; // end point y
+//       break;
+
+//     case "t":
+//       // Smooth quadratic bezier - add current position to end point
+//       newCoordinates[0] += currentPosition.x;
+//       newCoordinates[1] += currentPosition.y;
+//       break;
+
+//     case "a":
+//       // Arc - add current position to end point (coordinates 5,6)
+//       newCoordinates[5] += currentPosition.x;
+//       newCoordinates[6] += currentPosition.y;
+//       break;
+//   }
+
+//   return {
+//     ...command,
+//     letter: newLetter,
+//     coordinates: newCoordinates,
+//   };
+// };
+
+export function convertRelativeToAbsolute(commands) {
+  let currentX = 0;
+  let currentY = 0;
+  let startX = 0; // For Z command
+  let startY = 0; // For Z command
+
+  return commands.map((command, index) => {
+    const { letter, coordinates } = command;
+    const newCommand = { ...command };
+
+    // Handle different command types
+    switch (letter.toLowerCase()) {
+      case "m": // Move to
+        if (letter === "m" && index > 0) {
+          // Relative move (not the first M)
+          newCommand.letter = "M";
+          newCommand.coordinates = [
+            currentX + coordinates[0],
+            currentY + coordinates[1],
+          ];
+        } else {
+          // First M is always absolute, or already absolute
+          newCommand.letter = "M";
+        }
+        currentX = newCommand.coordinates[0];
+        currentY = newCommand.coordinates[1];
+        startX = currentX;
+        startY = currentY;
+        break;
+
+      case "l": // Line to
+        if (letter === "l") {
+          newCommand.letter = "L";
+          newCommand.coordinates = [
+            currentX + coordinates[0],
+            currentY + coordinates[1],
+          ];
+        }
+        currentX = newCommand.coordinates[0];
+        currentY = newCommand.coordinates[1];
+        break;
+
+      case "h": // Horizontal line
+        if (letter === "h") {
+          newCommand.letter = "H";
+          newCommand.coordinates = [currentX + coordinates[0]];
+        }
+        currentX = newCommand.coordinates[0];
+        break;
+
+      case "v": // Vertical line
+        if (letter === "v") {
+          newCommand.letter = "V";
+          newCommand.coordinates = [currentY + coordinates[0]];
+        }
+        currentY = newCommand.coordinates[0];
+        break;
+
+      case "c": // Cubic Bézier curve
+        if (letter === "c") {
+          newCommand.letter = "C";
+          newCommand.coordinates = [
+            currentX + coordinates[0], // x1
+            currentY + coordinates[1], // y1
+            currentX + coordinates[2], // x2
+            currentY + coordinates[3], // y2
+            currentX + coordinates[4], // x
+            currentY + coordinates[5], // y
+          ];
+        }
+        currentX = newCommand.coordinates[4];
+        currentY = newCommand.coordinates[5];
+        break;
+
+      case "s": // Smooth cubic Bézier curve
+        if (letter === "s") {
+          newCommand.letter = "S";
+          newCommand.coordinates = [
+            currentX + coordinates[0], // x2
+            currentY + coordinates[1], // y2
+            currentX + coordinates[2], // x
+            currentY + coordinates[3], // y
+          ];
+        }
+        currentX = newCommand.coordinates[2];
+        currentY = newCommand.coordinates[3];
+        break;
+
+      case "q": // Quadratic Bézier curve
+        if (letter === "q") {
+          newCommand.letter = "Q";
+          newCommand.coordinates = [
+            currentX + coordinates[0], // x1
+            currentY + coordinates[1], // y1
+            currentX + coordinates[2], // x
+            currentY + coordinates[3], // y
+          ];
+        }
+        currentX = newCommand.coordinates[2];
+        currentY = newCommand.coordinates[3];
+        break;
+
+      case "t": // Smooth quadratic Bézier curve
+        if (letter === "t") {
+          newCommand.letter = "T";
+          newCommand.coordinates = [
+            currentX + coordinates[0], // x
+            currentY + coordinates[1], // y
+          ];
+        }
+        currentX = newCommand.coordinates[0];
+        currentY = newCommand.coordinates[1];
+        break;
+
+      case "a": // Elliptical arc
+        if (letter === "a") {
+          newCommand.letter = "A";
+          newCommand.coordinates = [
+            coordinates[0], // rx (unchanged)
+            coordinates[1], // ry (unchanged)
+            coordinates[2], // x-axis-rotation (unchanged)
+            coordinates[3], // large-arc-flag (unchanged)
+            coordinates[4], // sweep-flag (unchanged)
+            currentX + coordinates[5], // x
+            currentY + coordinates[6], // y
+          ];
+        }
+        currentX = newCommand.coordinates[5];
+        currentY = newCommand.coordinates[6];
+        break;
+
+      case "z": // Close path
+        newCommand.letter = "Z";
+        currentX = startX;
+        currentY = startY;
+        break;
+
+      default:
+        // Already absolute or unrecognized command
+        if (letter !== letter.toLowerCase()) {
+          currentX = coordinates[coordinates.length - 2] || currentX;
+          currentY = coordinates[coordinates.length - 1] || currentY;
+        }
+        break;
+    }
+
+    return newCommand;
+  });
+}
+
 export const updatePoints = (commands: ParsePath<number>) => {
   let lastPositionX = "0";
   let lastPositionY = "0";
   let points: CircleType[] = [];
+  let currentPosition = {
+    x: 0,
+    y: 0,
+  };
 
   const generateCircleId = (
     commandId: string,
@@ -240,79 +861,83 @@ export const updatePoints = (commands: ParsePath<number>) => {
     return `circle_${commandId}_${coordIndex}${type ? `_${type}` : ""}`;
   };
 
-  commands.forEach((command) => {
-    if (command.letter === lineCommands.Close) {
+  const absoluteCommands = convertRelativeToAbsolute(commands);
+
+  absoluteCommands.forEach((absoluteCommand, index) => {
+    if (absoluteCommand.letter === lineCommands.Close) {
       return;
     }
 
     const circle = {
-      id: generateCircleId(command.id, 0),
-      id_command: command.id,
+      id: generateCircleId(absoluteCommand.id, 0),
+      id_command: absoluteCommand.id,
       coordinate_index: 0,
       radius: "10",
       cy: "0",
       cx: "0",
       control: false,
+      hovered: absoluteCommand.hovered,
+      selected: absoluteCommand.selected,
     };
 
-    if (command.letter === lineCommands.Vertical) {
+    if (absoluteCommand.letter === lineCommands.Vertical) {
       circle.cx = lastPositionX;
-      circle.cy = command.coordinates[0].toString();
-      lastPositionY = command.coordinates[0].toString();
+      circle.cy = absoluteCommand.coordinates[0].toString();
+      lastPositionY = absoluteCommand.coordinates[0].toString();
       points.push(circle);
       return;
     }
 
-    if (command.letter === lineCommands.Horizontal) {
-      circle.id = generateCircleId(command.id, 0);
-      circle.cx = command.coordinates[0].toString();
+    if (absoluteCommand.letter === lineCommands.Horizontal) {
+      circle.id = generateCircleId(absoluteCommand.id, 0);
+      circle.cx = absoluteCommand.coordinates[0].toString();
       circle.cy = lastPositionY;
-      lastPositionX = command.coordinates[0].toString();
+      lastPositionX = absoluteCommand.coordinates[0].toString();
       points.push(circle);
 
       return;
     }
 
-    if (command.letter === lineCommands.Arc) {
-      circle.id = generateCircleId(command.id, 5);
+    if (absoluteCommand.letter === lineCommands.Arc) {
+      circle.id = generateCircleId(absoluteCommand.id, 5);
       circle.coordinate_index = 5;
-      circle.cx = command.coordinates[5].toString();
-      circle.cy = command.coordinates[6].toString();
-      lastPositionX = command.coordinates[5].toString();
-      lastPositionY = command.coordinates[6].toString();
+      circle.cx = absoluteCommand.coordinates[5].toString();
+      circle.cy = absoluteCommand.coordinates[6].toString();
+      lastPositionX = absoluteCommand.coordinates[5].toString();
+      lastPositionY = absoluteCommand.coordinates[6].toString();
       points.push(circle);
 
       return;
     }
 
-    if (command.letter === lineCommands.Curve) {
+    if (absoluteCommand.letter === lineCommands.Curve) {
       const controlPointStart = {
         ...circle,
-        id: generateCircleId(command.id, 0),
+        id: generateCircleId(absoluteCommand.id, 0),
         coordinate_index: 0,
         control: true,
       };
       const controlPointEnd = {
         ...circle,
-        id: generateCircleId(command.id, 2),
+        id: generateCircleId(absoluteCommand.id, 2),
         coordinate_index: 2,
         control: true,
       };
       const coordinates = {
         ...circle,
-        id: generateCircleId(command.id, 4),
+        id: generateCircleId(absoluteCommand.id, 4),
         coordinate_index: 4,
       };
 
-      controlPointStart.cx = command.coordinates[0].toString();
-      controlPointStart.cy = command.coordinates[1].toString();
-      controlPointEnd.cx = command.coordinates[2].toString();
-      controlPointEnd.cy = command.coordinates[3].toString();
-      coordinates.cx = command.coordinates[4].toString();
-      coordinates.cy = command.coordinates[5].toString();
+      controlPointStart.cx = absoluteCommand.coordinates[0].toString();
+      controlPointStart.cy = absoluteCommand.coordinates[1].toString();
+      controlPointEnd.cx = absoluteCommand.coordinates[2].toString();
+      controlPointEnd.cy = absoluteCommand.coordinates[3].toString();
+      coordinates.cx = absoluteCommand.coordinates[4].toString();
+      coordinates.cy = absoluteCommand.coordinates[5].toString();
 
-      lastPositionX = command.coordinates[4].toString();
-      lastPositionY = command.coordinates[5].toString();
+      lastPositionX = absoluteCommand.coordinates[4].toString();
+      lastPositionY = absoluteCommand.coordinates[5].toString();
 
       points.push(controlPointStart);
       points.push(controlPointEnd);
@@ -321,23 +946,23 @@ export const updatePoints = (commands: ParsePath<number>) => {
       return;
     }
 
-    if (command.letter === lineCommands.QuadraticCurve) {
+    if (absoluteCommand.letter === lineCommands.QuadraticCurve) {
       const controlPointStart = {
         ...circle,
-        id: generateCircleId(command.id, 0),
+        id: generateCircleId(absoluteCommand.id, 0),
         coordinate_index: 0,
         control: true,
       };
       const controlPointEnd = {
         ...circle,
-        id: generateCircleId(command.id, 2),
+        id: generateCircleId(absoluteCommand.id, 2),
         coordinate_index: 2,
       };
 
-      controlPointStart.cx = command.coordinates[0].toString();
-      controlPointStart.cy = command.coordinates[1].toString();
-      controlPointEnd.cx = command.coordinates[2].toString();
-      controlPointEnd.cy = command.coordinates[3].toString();
+      controlPointStart.cx = absoluteCommand.coordinates[0].toString();
+      controlPointStart.cy = absoluteCommand.coordinates[1].toString();
+      controlPointEnd.cx = absoluteCommand.coordinates[2].toString();
+      controlPointEnd.cy = absoluteCommand.coordinates[3].toString();
 
       points.push(controlPointStart);
       points.push(controlPointEnd);
@@ -345,7 +970,7 @@ export const updatePoints = (commands: ParsePath<number>) => {
       return;
     }
 
-    command.coordinates.forEach((coordinate, index) => {
+    absoluteCommand.coordinates.forEach((coordinate, index) => {
       if (index % 2 === 0) {
         circle.cx = coordinate.toString();
         lastPositionX = coordinate.toString();
