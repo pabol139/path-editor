@@ -27,8 +27,6 @@ export default function MainSvg() {
   ) => {
     setViewbox((prevState) => {
       const { height: oldHeight, width: oldWidth } = prevState;
-      const { height, width } = newObject;
-
       if (adaptAspectRatio) {
         const aspectRatio = oldHeight / oldWidth || 0;
 
