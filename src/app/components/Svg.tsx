@@ -63,7 +63,6 @@ export default forwardRef(function Svg(
       setIsVisible(true);
     }
   }, []);
-  console.log(pathObject.commands);
   useEffect(() => {
     if (svgRef?.current) {
       function updateResize() {
@@ -200,7 +199,9 @@ export default forwardRef(function Svg(
             );
 
             return (
-              (command?.letter === "C" || command?.letter === "Q") && (
+              (command?.letter.toLocaleUpperCase() === "C" ||
+                command?.letter.toLocaleUpperCase() === "Q" ||
+                command?.letter.toLocaleUpperCase() === "S") && (
                 <Line
                   key={"line_" + circle.id}
                   letter={command.letter}
@@ -257,7 +258,7 @@ function Line({ circles, circle, letter, viewbox, svgDimensions, index }) {
   let x2 = 0;
   let y2 = 0;
 
-  if (letter === "C") {
+  if (letter.toUpperCase() === "C") {
     if (coordinate_index === 0) {
       x1 = circles[index - 1].cx;
       y1 = circles[index - 1].cy;
@@ -271,7 +272,7 @@ function Line({ circles, circle, letter, viewbox, svgDimensions, index }) {
     } else {
       return <></>;
     }
-  } else {
+  } else if (letter.toUpperCase() === "Q") {
     // Q
     if (coordinate_index === 0) {
       x1 = circles[index - 1].cx;
@@ -283,6 +284,15 @@ function Line({ circles, circle, letter, viewbox, svgDimensions, index }) {
       y1 = circles[index - 1].cy;
       x2 = circles[index].cx;
       y2 = circles[index].cy;
+    }
+  } else if (letter.toUpperCase() === "S") {
+    if (coordinate_index === 0) {
+      x1 = circles[index + 1].cx;
+      y1 = circles[index + 1].cy;
+      x2 = circle.cx;
+      y2 = circle.cy;
+    } else {
+      return <></>;
     }
   }
   return (
