@@ -63,7 +63,7 @@ export default forwardRef(function Svg(
       setIsVisible(true);
     }
   }, []);
-
+  console.log(pathObject.commands);
   useEffect(() => {
     if (svgRef?.current) {
       function updateResize() {

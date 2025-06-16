@@ -45,6 +45,7 @@ export function PathProvider({ children }: PathProviderProps) {
         commands: prevObject.commands,
       }));
       setError(e.message);
+      console.log(e);
     }
   }
 

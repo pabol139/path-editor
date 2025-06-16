@@ -52,9 +52,8 @@ const lineCommands = {
 };
 
 export const parsePath = (path: string): ParsePath<number> => {
-  const commands = [];
+  let commands: ParsePath<number> = [];
   let i = 0;
-
   while (i < path.length) {
     const match = path.slice(i).match(kCommandTypeRegex);
 
@@ -68,14 +67,43 @@ export const parsePath = (path: string): ParsePath<number> => {
       throw new Error("malformed path (first error at " + i + ")");
     }
     i = i + commandLetterWithSpaces.length;
-    let regexTable = kGrammar[commandLetter.toUpperCase()] || [];
+    const [updatedI, updatedCommands] = generateCommands(
+      commandLetter,
+      i,
+      path
+    );
+    i = updatedI;
+
+    commands = [...commands, ...updatedCommands];
+  }
+
+  return commands;
+};
+
+const generateCommands = (
+  commandLetter: string,
+  i: number,
+  path: string
+): [number, ParsePath<number>] => {
+  let regexTable = kGrammar[commandLetter.toUpperCase()] || [];
+  const generatedCommands: ParsePath<number> = [];
+  while (i <= path.length) {
     let j = 0;
-    let coordinates = [];
+    let coordinates: number[] = [];
+    const command = {
+      letter: commandLetter,
+      coordinates: coordinates,
+      hovered: false,
+      selected: false,
+    };
     while (j < regexTable.length) {
       let regex = regexTable[j];
       let newMatch = path.slice(i).match(regex);
-      if (!newMatch)
-        throw new Error("malformed path (first error at " + i + ")");
+      if (!newMatch) {
+        if (coordinates.length === 0 && generatedCommands.length >= 1) {
+          return [i, generatedCommands];
+        } else throw new Error("malformed path (first error at " + i + ")");
+      }
 
       coordinates.push(parseFloat(newMatch[0]));
       i = i + newMatch[0].length;
@@ -87,16 +115,15 @@ export const parsePath = (path: string): ParsePath<number> => {
       j++;
     }
 
-    commands.push({
+    generatedCommands.push({
+      ...command,
       id: crypto.randomUUID(),
-      letter: commandLetter,
-      coordinates: coordinates,
-      hovered: false,
-      selected: false,
     });
+
+    if (regexTable.length === 0) return [i, generatedCommands];
   }
 
-  return commands;
+  throw new Error("malformed path (first error at " + i + ")");
 };
 
 export const getPathBBox = (path: string) => {
@@ -210,7 +237,6 @@ export const createPathFromHoveredCommands = (commands: ParsePath<number>) => {
   } else {
     finalCommand = command;
   }
-  console.log(moveToCommand);
   return convertPathToString([moveToCommand, finalCommand]) ?? "";
 };
 
@@ -275,7 +301,6 @@ export const convertPathToString = (commands: ParsePath<number>) => {
       if (command.letter.toUpperCase() === lineCommands.Close) {
         return command.letter;
       }
-      console.log;
       return (
         command.letter +
         " " +
@@ -694,16 +719,14 @@ export function absoluteToRelative(absoluteX, absoluteY, currentPosition) {
 //   };
 // };
 
-export function convertRelativeToAbsolute(commands) {
+export function convertRelativeToAbsolute(commands: ParsePath<number>) {
   let currentX = 0;
   let currentY = 0;
   let startX = 0; // For Z command
   let startY = 0; // For Z command
-
   return commands.map((command, index) => {
     const { letter, coordinates } = command;
     const newCommand = { ...command };
-
     // Handle different command types
     switch (letter.toLowerCase()) {
       case "m": // Move to
@@ -862,7 +885,6 @@ export const updatePoints = (commands: ParsePath<number>) => {
   };
 
   const absoluteCommands = convertRelativeToAbsolute(commands);
-
   absoluteCommands.forEach((absoluteCommand, index) => {
     if (absoluteCommand.letter === lineCommands.Close) {
       return;
