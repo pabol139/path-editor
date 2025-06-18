@@ -38,6 +38,327 @@ const kGrammar: { [key: string]: RegExp[] } = {
   Z: [],
 };
 
+interface CommandHandler {
+  // extractPoints: (coords: number[], commandId: string) => Point[];
+  updateCoordinates: (
+    coords: number[],
+    x: number,
+    y: number,
+    pointIndex: number,
+    currentPosition: { x: number; y: number }
+  ) => number[];
+  toAbsolute: (
+    coords: number[],
+    currentPosition: { x: number; y: number }
+  ) => [string, number[]];
+  toRelative: (
+    coords: number[],
+    currentPosition: { x: number; y: number }
+  ) => number[];
+  getAccumulatedPosition: (
+    currentPosition: { x: number; y: number },
+    coords: number[]
+  ) => { x: number; y: number };
+  validate?: (coords: number[]) => boolean;
+}
+
+export const commandHandlers: Record<string, CommandHandler> = {
+  M: {
+    updateCoordinates: (coords, x, y, pointIndex) => [x, y],
+    toAbsolute: (coords, currentPosition) => ["M", coords], // Already absolute
+    toRelative: (absoluteCoords, currentPosition) => [
+      absoluteCoords[0] - currentPosition.x,
+      absoluteCoords[1] - currentPosition.y,
+    ],
+    getAccumulatedPosition: (currentPosition, coords) => ({
+      x: coords[0],
+      y: coords[1],
+    }),
+  },
+  m: {
+    updateCoordinates: (coords, x, y, pointIndex, currentPosition) => {
+      // Convert new absolute position back to relative coordinates
+      return [x - currentPosition.x, y - currentPosition.y];
+    },
+    toAbsolute: (coords, currentPosition) => [
+      "M",
+      [currentPosition.x + coords[0], currentPosition.y + coords[1]],
+    ],
+    toRelative: (absoluteCoords, currentPosition) => absoluteCoords, // Already relative
+    getAccumulatedPosition: (currentPosition, coords) => ({
+      x: coords[0] + currentPosition.x,
+      y: coords[1] + currentPosition.y,
+    }),
+  },
+  L: {
+    updateCoordinates: (coords, x, y, pointIndex) => [x, y],
+    toAbsolute: (coords, currentPosition) => ["L", coords], // Already absolute
+    toRelative: (absoluteCoords, currentPosition) => [
+      absoluteCoords[0] - currentPosition.x,
+      absoluteCoords[1] - currentPosition.y,
+    ],
+    getAccumulatedPosition: (currentPosition, coords) => ({
+      x: coords[0],
+      y: coords[1],
+    }),
+  },
+  l: {
+    updateCoordinates: (coords, x, y, pointIndex, currentPosition) => {
+      // Convert new absolute position back to relative coordinates
+      return [x - currentPosition.x, y - currentPosition.y];
+    },
+    toAbsolute: (coords, currentPosition) => [
+      "L",
+      [currentPosition.x + coords[0], currentPosition.y + coords[1]],
+    ], // Already absolute
+    toRelative: (coords, currentPosition) => coords,
+    getAccumulatedPosition: (currentPosition, coords) => ({
+      x: coords[0] + currentPosition.x,
+      y: coords[1] + currentPosition.y,
+    }),
+  },
+  H: {
+    updateCoordinates: (coords, x, y, pointIndex) => [x],
+    toAbsolute: (coords, currentPosition) => ["H", coords], // Already absolute
+    toRelative: (absoluteCoords, currentPosition) => [
+      absoluteCoords[0] - currentPosition.x,
+    ],
+    getAccumulatedPosition: (currentPosition, coords) => ({
+      x: coords[0],
+      y: currentPosition.y,
+    }),
+  },
+  h: {
+    updateCoordinates: (coords, x, y, pointIndex, currentPosition) => {
+      // Convert new absolute position back to relative coordinates
+      return [x - currentPosition.x];
+    },
+    toAbsolute: (coords, currentPosition) => [
+      "H",
+      [currentPosition.x + coords[0]],
+    ], // Already absolute
+    toRelative: (coords, currentPosition) => coords,
+    getAccumulatedPosition: (currentPosition, coords) => ({
+      x: coords[0] + currentPosition.x,
+      y: currentPosition.y,
+    }),
+  },
+
+  V: {
+    updateCoordinates: (coords, x, y, pointIndex) => [y],
+    toAbsolute: (coords, currentPosition) => ["V", coords], // Already absolute
+    toRelative: (absoluteCoords, currentPosition) => [
+      absoluteCoords[0] - currentPosition.y,
+    ],
+    getAccumulatedPosition: (currentPosition, coords) => ({
+      x: currentPosition.x,
+      y: coords[0],
+    }),
+  },
+  v: {
+    updateCoordinates: (coords, x, y, pointIndex, currentPosition) => {
+      // Convert new absolute position back to relative coordinates
+      return [y - currentPosition.y];
+    },
+    toAbsolute: (coords, currentPosition) => [
+      "V",
+      [currentPosition.y + coords[0]],
+    ], // Already absolute
+    toRelative: (coords, currentPosition) => coords,
+    getAccumulatedPosition: (currentPosition, coords) => ({
+      x: currentPosition.x,
+      y: coords[0] + currentPosition.y,
+    }),
+  },
+  Q: {
+    updateCoordinates: (coords, x, y, pointIndex) => {
+      const newCoords = [...coords];
+      newCoords[pointIndex] = x;
+      newCoords[pointIndex + 1] = y;
+      return newCoords;
+    },
+    toAbsolute: (coords, currentPosition) => ["Q", coords], // Already absolute
+    toRelative: (absoluteCoords, currentPosition) => [
+      absoluteCoords[0] - currentPosition.x,
+      absoluteCoords[1] - currentPosition.y,
+      absoluteCoords[2] - currentPosition.x,
+      absoluteCoords[3] - currentPosition.y,
+    ],
+    getAccumulatedPosition: (currentPosition, coords) => ({
+      x: coords[2],
+      y: coords[3],
+    }),
+  },
+
+  q: {
+    updateCoordinates: (coords, x, y, pointIndex, currentPosition) => {
+      const newCoords = [...coords];
+      newCoords[pointIndex] = x - currentPosition.x;
+      newCoords[pointIndex + 1] = y - currentPosition.x;
+      return newCoords;
+    },
+    toAbsolute: (coords, currentPosition) => [
+      "Q",
+      [
+        coords[0] + currentPosition.x,
+        coords[1] + currentPosition.y,
+        coords[2] + currentPosition.x,
+        coords[3] + currentPosition.y,
+      ],
+    ], // Already absolute
+    toRelative: (coords, currentPosition) => coords,
+    getAccumulatedPosition: (currentPosition, coords) => ({
+      x: coords[2] + currentPosition.x,
+      y: coords[3] + currentPosition.y,
+    }),
+  },
+  T: {
+    updateCoordinates: (coords, x, y, pointIndex) => [x, y],
+    toAbsolute: (coords, currentPosition) => ["T", coords], // Already absolute
+    toRelative: (absoluteCoords, currentPosition) => [
+      absoluteCoords[0] - currentPosition.x,
+      absoluteCoords[1] - currentPosition.y,
+    ],
+    getAccumulatedPosition: (currentPosition, coords) => ({
+      x: coords[0],
+      y: coords[1],
+    }),
+  },
+  t: {
+    updateCoordinates: (coords, x, y, pointIndex, currentPosition) => {
+      // Convert new absolute position back to relative coordinates
+      return [x - currentPosition.x, y - currentPosition.y];
+    },
+    toAbsolute: (coords, currentPosition) => [
+      "T",
+      [currentPosition.x + coords[0], currentPosition.y + coords[1]],
+    ], // Already absolute
+    toRelative: (coords, currentPosition) => coords,
+    getAccumulatedPosition: (currentPosition, coords) => ({
+      x: coords[0] + currentPosition.x,
+      y: coords[1] + currentPosition.y,
+    }),
+  },
+  C: {
+    updateCoordinates: (coords, x, y, pointIndex) => {
+      const newCoords = [...coords];
+      newCoords[pointIndex] = x;
+      newCoords[pointIndex + 1] = y;
+      return newCoords;
+    },
+    toAbsolute: (coords, currentPosition) => ["C", coords], // Already absolute
+    toRelative: (absoluteCoords, currentPosition) =>
+      absoluteCoords.map((absoluteCoord, index) =>
+        index % 2 === 0
+          ? absoluteCoord - currentPosition.x
+          : absoluteCoord - currentPosition.y
+      ),
+    getAccumulatedPosition: (currentPosition, coords) => ({
+      x: coords[4],
+      y: coords[5],
+    }),
+  },
+  c: {
+    updateCoordinates: (coords, x, y, pointIndex, currentPosition) => {
+      // Convert new absolute position back to relative coordinates
+      const newCoords = [...coords];
+      newCoords[pointIndex] = x - currentPosition.x;
+      newCoords[pointIndex + 1] = y - currentPosition.y;
+      return newCoords;
+    },
+    toAbsolute: (coords, currentPosition) => [
+      "C",
+      coords.map((coord, index) =>
+        index % 2 === 0 ? coord + currentPosition.x : coord + currentPosition.y
+      ),
+    ], // Already absolute
+    toRelative: (coords, currentPosition) => coords,
+    getAccumulatedPosition: (currentPosition, coords) => ({
+      x: coords[4] + currentPosition.x,
+      y: coords[5] + currentPosition.y,
+    }),
+  },
+  S: {
+    updateCoordinates: (coords, x, y, pointIndex) => {
+      const newCoords = [...coords];
+      newCoords[pointIndex] = x;
+      newCoords[pointIndex + 1] = y;
+      return newCoords;
+    },
+    toAbsolute: (coords, currentPosition) => ["S", coords], // Already absolute
+    toRelative: (absoluteCoords, currentPosition) => [
+      absoluteCoords[0] - currentPosition.x,
+      absoluteCoords[1] - currentPosition.y,
+      absoluteCoords[2] - currentPosition.x,
+      absoluteCoords[3] - currentPosition.y,
+    ],
+    getAccumulatedPosition: (currentPosition, coords) => ({
+      x: coords[2],
+      y: coords[3],
+    }),
+  },
+  s: {
+    updateCoordinates: (coords, x, y, pointIndex, currentPosition) => {
+      // Convert new absolute position back to relative coordinates
+      const newCoords = [...coords];
+      newCoords[pointIndex] = x - currentPosition.x;
+      newCoords[pointIndex + 1] = y - currentPosition.y;
+      return newCoords;
+    },
+    toAbsolute: (coords, currentPosition) => [
+      "S",
+      [
+        coords[0] + currentPosition.x,
+        coords[1] + currentPosition.y,
+        coords[2] + currentPosition.x,
+        coords[3] + currentPosition.y,
+      ],
+    ],
+    toRelative: (coords, currentPosition) => coords,
+    getAccumulatedPosition: (currentPosition, coords) => ({
+      x: coords[2] + currentPosition.x,
+      y: coords[3] + currentPosition.y,
+    }),
+  },
+  A: {
+    updateCoordinates: (coords, x, y, pointIndex) => {
+      const newCoords = [...coords];
+      newCoords[pointIndex] = x;
+      newCoords[pointIndex + 1] = y;
+      return newCoords;
+    },
+    toAbsolute: (coords, currentPosition) => ["A", coords], // Already absolute
+    toRelative: (absoluteCoords, currentPosition) => [
+      absoluteCoords[5] - currentPosition.x,
+      absoluteCoords[6] - currentPosition.y,
+    ],
+    getAccumulatedPosition: (currentPosition, coords) => ({
+      x: coords[5],
+      y: coords[6],
+    }),
+  },
+  a: {
+    updateCoordinates: (coords, x, y, pointIndex, currentPosition) => {
+      // Convert new absolute position back to relative coordinates
+      const newCoords = [...coords];
+      newCoords[pointIndex] = x - currentPosition.x;
+      newCoords[pointIndex + 1] = y - currentPosition.y;
+      return newCoords;
+    },
+    toAbsolute: (coords, currentPosition) => [
+      "A",
+      [coords[5] + currentPosition.x, coords[6] + currentPosition.y],
+    ],
+    toRelative: (coords, currentPosition) => coords,
+    getAccumulatedPosition: (currentPosition, coords) => ({
+      x: coords[5] + currentPosition.x,
+      y: coords[6] + currentPosition.y,
+    }),
+  },
+
+  // ... other commands
+};
+
 const lineCommands = {
   MoveTo: "M",
   LineTo: "L",
@@ -192,7 +513,6 @@ export const createPathFromHoveredCommands = (commands: ParsePath<number>) => {
   let commandPosition = 0;
 
   const absoluteCommands = convertRelativeToAbsolute(commands);
-
   const command = absoluteCommands.find((command, index) => {
     if (command.hovered === true) {
       commandPosition = index;
@@ -254,7 +574,6 @@ export const createPathFromHoveredCommands = (commands: ParsePath<number>) => {
 
     if (prevControlPoint) {
       // Calculate the reflected control point
-      console.log({ prevCommand, prevControlPoint });
       controlPoint = {
         x: 2 * prevCommand.x - prevControlPoint.x,
         y: 2 * prevCommand.y - prevControlPoint.y,
@@ -560,113 +879,22 @@ export function getCurrentPositionBeforeCommand(commands, targetCommandId) {
   let currentY = 0;
   let startX = 0;
   let startY = 0;
+  let currentPosition = { x: 0, y: 0 };
 
   for (const command of commands) {
     if (command.id === targetCommandId) {
       break; // Stop before processing the target command
     }
-
     const { letter, coordinates } = command;
 
-    switch (letter.toLowerCase()) {
-      case "m":
-        if (letter === "M" || commands.indexOf(command) === 0) {
-          // Absolute move or first move
-          currentX = coordinates[0];
-          currentY = coordinates[1];
-        } else {
-          // Relative move
-          currentX += coordinates[0];
-          currentY += coordinates[1];
-        }
-        startX = currentX;
-        startY = currentY;
-        break;
-
-      case "l":
-        if (letter === "L") {
-          currentX = coordinates[0];
-          currentY = coordinates[1];
-        } else {
-          currentX += coordinates[0];
-          currentY += coordinates[1];
-        }
-        break;
-
-      case "h":
-        if (letter === "H") {
-          currentX = coordinates[0];
-        } else {
-          currentX += coordinates[0];
-        }
-        break;
-
-      case "v":
-        if (letter === "V") {
-          currentY = coordinates[0];
-        } else {
-          currentY += coordinates[0];
-        }
-        break;
-
-      case "c":
-        if (letter === "C") {
-          currentX = coordinates[4];
-          currentY = coordinates[5];
-        } else {
-          currentX += coordinates[4];
-          currentY += coordinates[5];
-        }
-        break;
-
-      case "s":
-        if (letter === "S") {
-          currentX = coordinates[2];
-          currentY = coordinates[3];
-        } else {
-          currentX += coordinates[2];
-          currentY += coordinates[3];
-        }
-        break;
-
-      case "q":
-        if (letter === "Q") {
-          currentX = coordinates[2];
-          currentY = coordinates[3];
-        } else {
-          currentX += coordinates[2];
-          currentY += coordinates[3];
-        }
-        break;
-
-      case "t":
-        if (letter === "T") {
-          currentX = coordinates[0];
-          currentY = coordinates[1];
-        } else {
-          currentX += coordinates[0];
-          currentY += coordinates[1];
-        }
-        break;
-
-      case "a":
-        if (letter === "A") {
-          currentX = coordinates[5];
-          currentY = coordinates[6];
-        } else {
-          currentX += coordinates[5];
-          currentY += coordinates[6];
-        }
-        break;
-
-      case "z":
-        currentX = startX;
-        currentY = startY;
-        break;
-    }
+    const handler = commandHandlers[letter];
+    currentPosition = handler.getAccumulatedPosition(
+      currentPosition,
+      coordinates
+    );
   }
 
-  return { x: currentX, y: currentY };
+  return currentPosition;
 }
 
 /**
@@ -683,227 +911,26 @@ export function absoluteToRelative(absoluteX, absoluteY, currentPosition) {
   };
 }
 
-// Convert relative coordinates to absolute
-const convertRelativeToAbsoluteSingle = (
-  command: { letter: string; coordinates: number[] },
-  currentPosition: { x: number; y: number }
-) => {
-  if (isAbsoluteCommand(command.letter)) {
-    return { ...command }; // Already absolute
-  }
-
-  const newCoordinates = [...command.coordinates];
-  const newLetter = getOppositeCommand(command.letter);
-
-  switch (command.letter.toLowerCase()) {
-    case "m":
-    case "l":
-      // Add current position to relative coordinates
-      for (let i = 0; i < newCoordinates.length; i += 2) {
-        newCoordinates[i] += currentPosition.x;
-        newCoordinates[i + 1] += currentPosition.y;
-      }
-      break;
-
-    case "h":
-      // Horizontal line - add current x
-      newCoordinates[0] += currentPosition.x;
-      break;
-
-    case "v":
-      // Vertical line - add current y
-      newCoordinates[0] += currentPosition.y;
-      break;
-
-    case "c":
-      // Cubic bezier - add current position to all coordinate pairs
-      for (let i = 0; i < newCoordinates.length; i += 2) {
-        newCoordinates[i] += currentPosition.x;
-        newCoordinates[i + 1] += currentPosition.y;
-      }
-      break;
-
-    case "s":
-      // Smooth cubic bezier - add current position to control and end points
-      newCoordinates[0] += currentPosition.x; // control point x
-      newCoordinates[1] += currentPosition.y; // control point y
-      newCoordinates[2] += currentPosition.x; // end point x
-      newCoordinates[3] += currentPosition.y; // end point y
-      break;
-
-    case "q":
-      // Quadratic bezier - add current position to control and end points
-      newCoordinates[0] += currentPosition.x; // control point x
-      newCoordinates[1] += currentPosition.y; // control point y
-      newCoordinates[2] += currentPosition.x; // end point x
-      newCoordinates[3] += currentPosition.y; // end point y
-      break;
-
-    case "t":
-      // Smooth quadratic bezier - add current position to end point
-      newCoordinates[0] += currentPosition.x;
-      newCoordinates[1] += currentPosition.y;
-      break;
-
-    case "a":
-      // Arc - add current position to end point (coordinates 5,6)
-      newCoordinates[5] += currentPosition.x;
-      newCoordinates[6] += currentPosition.y;
-      break;
-  }
-
-  return {
-    ...command,
-    letter: newLetter,
-    coordinates: newCoordinates,
-  };
-};
-
 export function convertRelativeToAbsolute(commands: ParsePath<number>) {
-  let currentX = 0;
-  let currentY = 0;
-  let startX = 0; // For Z command
-  let startY = 0; // For Z command
-  return commands.map((command, index) => {
-    const { letter, coordinates } = command;
-    const newCommand = { ...command };
-    // Handle different command types
-    switch (letter.toLowerCase()) {
-      case "m": // Move to
-        if (letter === "m" && index > 0) {
-          // Relative move (not the first M)
-          newCommand.letter = "M";
-          newCommand.coordinates = [
-            currentX + coordinates[0],
-            currentY + coordinates[1],
-          ];
-        } else {
-          // First M is always absolute, or already absolute
-          newCommand.letter = "M";
-        }
-        currentX = newCommand.coordinates[0];
-        currentY = newCommand.coordinates[1];
-        startX = currentX;
-        startY = currentY;
-        break;
+  return commands.map((command) => {
+    const { letter, coordinates, id } = command;
 
-      case "l": // Line to
-        if (letter === "l") {
-          newCommand.letter = "L";
-          newCommand.coordinates = [
-            currentX + coordinates[0],
-            currentY + coordinates[1],
-          ];
-        }
-        currentX = newCommand.coordinates[0];
-        currentY = newCommand.coordinates[1];
-        break;
+    if (letter.toLocaleUpperCase() === lineCommands.Close)
+      return { ...command };
 
-      case "h": // Horizontal line
-        if (letter === "h") {
-          newCommand.letter = "H";
-          newCommand.coordinates = [currentX + coordinates[0]];
-        }
-        currentX = newCommand.coordinates[0];
-        break;
+    const handler = commandHandlers[letter];
+    const currentPosition = getCurrentPositionBeforeCommand(commands, id);
 
-      case "v": // Vertical line
-        if (letter === "v") {
-          newCommand.letter = "V";
-          newCommand.coordinates = [currentY + coordinates[0]];
-        }
-        currentY = newCommand.coordinates[0];
-        break;
+    const [updatedLetter, updatedCoordinates] = handler.toAbsolute(
+      coordinates,
+      currentPosition
+    );
 
-      case "c": // Cubic Bézier curve
-        if (letter === "c") {
-          newCommand.letter = "C";
-          newCommand.coordinates = [
-            currentX + coordinates[0], // x1
-            currentY + coordinates[1], // y1
-            currentX + coordinates[2], // x2
-            currentY + coordinates[3], // y2
-            currentX + coordinates[4], // x
-            currentY + coordinates[5], // y
-          ];
-        }
-        currentX = newCommand.coordinates[4];
-        currentY = newCommand.coordinates[5];
-        break;
-
-      case "s": // Smooth cubic Bézier curve
-        if (letter === "s") {
-          newCommand.letter = "S";
-          newCommand.coordinates = [
-            currentX + coordinates[0], // x2
-            currentY + coordinates[1], // y2
-            currentX + coordinates[2], // x
-            currentY + coordinates[3], // y
-          ];
-        }
-        currentX = newCommand.coordinates[2];
-        currentY = newCommand.coordinates[3];
-        break;
-
-      case "q": // Quadratic Bézier curve
-        if (letter === "q") {
-          newCommand.letter = "Q";
-          newCommand.coordinates = [
-            currentX + coordinates[0], // x1
-            currentY + coordinates[1], // y1
-            currentX + coordinates[2], // x
-            currentY + coordinates[3], // y
-          ];
-        }
-        currentX = newCommand.coordinates[2];
-        currentY = newCommand.coordinates[3];
-        break;
-
-      case "t": // Smooth quadratic Bézier curve
-        if (letter === "t") {
-          newCommand.letter = "T";
-          newCommand.coordinates = [
-            currentX + coordinates[0], // x
-            currentY + coordinates[1], // y
-          ];
-        }
-        currentX = newCommand.coordinates[0];
-        currentY = newCommand.coordinates[1];
-        break;
-
-      case "a": // Elliptical arc
-        if (letter === "a") {
-          newCommand.letter = "A";
-          newCommand.coordinates = [
-            coordinates[0], // rx (unchanged)
-            coordinates[1], // ry (unchanged)
-            coordinates[2], // x-axis-rotation (unchanged)
-            coordinates[3], // large-arc-flag (unchanged)
-            coordinates[4], // sweep-flag (unchanged)
-            currentX + coordinates[5], // x
-            currentY + coordinates[6], // y
-          ];
-        }
-        currentX = newCommand.coordinates[5];
-        currentY = newCommand.coordinates[6];
-        break;
-
-      case "z": // Close path
-        newCommand.letter = "Z";
-        currentX = startX;
-        currentY = startY;
-        break;
-
-      default:
-        // Already absolute or unrecognized command
-        if (letter !== letter.toLowerCase()) {
-          currentX = coordinates[coordinates.length - 2] || currentX;
-          currentY = coordinates[coordinates.length - 1] || currentY;
-        }
-        break;
-    }
-
-    return newCommand;
+    return {
+      ...command,
+      letter: updatedLetter,
+      coordinates: updatedCoordinates,
+    };
   });
 }
 
@@ -925,8 +952,9 @@ export const updatePoints = (commands: ParsePath<number>) => {
   };
 
   const absoluteCommands = convertRelativeToAbsolute(commands);
+
   absoluteCommands.forEach((absoluteCommand, index) => {
-    if (absoluteCommand.letter === lineCommands.Close) {
+    if (absoluteCommand.letter.toLocaleUpperCase() === lineCommands.Close) {
       return;
     }
 

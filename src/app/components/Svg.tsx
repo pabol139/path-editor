@@ -4,6 +4,7 @@ import { Viewbox } from "@/types/Viewbox";
 import {
   absoluteToRelative,
   centerViewbox,
+  commandHandlers,
   convertAbsoluteToRelative,
   convertPathToString,
   createPathFromHoveredCommands,
@@ -104,49 +105,22 @@ export default forwardRef(function Svg(
     const newCommands = pathObject.commands.map((command) => {
       if (command.id !== circleInfo.id_command) return command; // Return unmodified command
       const coordinate_index = circleInfo.coordinate_index;
-      // Create a new coordinates array to ensure immutability
-      const newCoordinates = [...command.coordinates];
-      let finalX = values.x;
-      let finalY = values.y;
-      const isRelative = isRelativeCommand(command.letter);
+      const handler = commandHandlers[command.letter];
 
-      // If the command is relative, convert absolute drag coordinates to relative
-      if (isRelative) {
-        const currentPos = getCurrentPositionBeforeCommand(
-          pathObject.commands,
-          command.id
-        );
-        const relativeCoords = absoluteToRelative(
-          values.x,
-          values.y,
-          currentPos
-        );
-        finalX = relativeCoords.x;
-        finalY = relativeCoords.y;
-      }
-      switch (command.letter.toUpperCase()) {
-        case "H":
-          newCoordinates[coordinate_index] = finalX;
-          break;
-        case "V":
-          newCoordinates[coordinate_index] = finalY;
-          break;
-        case "A":
-          newCoordinates[coordinate_index] = finalX;
-          newCoordinates[coordinate_index + 1] = finalY;
-          break;
-        case "C":
-          newCoordinates[coordinate_index] = finalX;
-          newCoordinates[coordinate_index + 1] = finalY;
-          break;
-        case "Q":
-          newCoordinates[coordinate_index] = finalX;
-          newCoordinates[coordinate_index + 1] = finalY;
-          break;
-        default:
-          newCoordinates[coordinate_index] = finalX;
-          newCoordinates[coordinate_index + 1] = finalY;
-      }
+      // Current point position to convert absolute to relative and viceversa
+      const currentPos = getCurrentPositionBeforeCommand(
+        pathObject.commands,
+        command.id
+      );
+
+      // Create a new coordinates array to ensure immutability
+      const newCoordinates = handler.updateCoordinates(
+        command.coordinates,
+        values.x,
+        values.y,
+        coordinate_index,
+        currentPos
+      );
 
       return { ...command, coordinates: newCoordinates }; // Return new object
     });
@@ -155,9 +129,9 @@ export default forwardRef(function Svg(
 
   const handleEnter = (id_command: string) => {
     const { commands } = pathObject;
-
     const newCommands = commands.map((command) => {
       if (command.id !== id_command) return command; // Return unmodified command
+      console.log(command);
 
       return { ...command, hovered: true }; // Return new object
     });
