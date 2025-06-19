@@ -1,4 +1,4 @@
-type Command<T> = {
+export type Command<T> = {
   id: string;
   letter: string;
   coordinates: T[];

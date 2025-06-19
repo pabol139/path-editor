@@ -1,6 +1,6 @@
-import { ParsePath } from "@/types/Path";
+import { Command, ParsePath } from "@/types/Path";
 import { CircleType } from "@/types/Circle";
-import { comma } from "postcss/lib/list";
+import { Point } from "@/types/Point";
 
 /** Regex based on https://github.com/Yqnn/svg-path-editor/blob/master/src/lib/path-parser.ts */
 const kCommandTypeRegex = /^[\t\n\f\r ]*([MLHVZCSQTAmlhvzcsqta])[\t\n\f\r ]*/;
@@ -39,7 +39,7 @@ const kGrammar: { [key: string]: RegExp[] } = {
 };
 
 interface CommandHandler {
-  // extractPoints: (coords: number[], commandId: string) => Point[];
+  extractPoints?: (command: Command<number>) => Point[];
   updateCoordinates: (
     coords: number[],
     x: number,
@@ -60,10 +60,41 @@ interface CommandHandler {
     coords: number[]
   ) => { x: number; y: number };
   validate?: (coords: number[]) => boolean;
+  getEndPosition?: (
+    coordinates: number[],
+    currentPosition: { x: number; y: number }
+  ) => { x: number; y: number };
 }
+
+const generateBasePoint = (
+  command: Command<number>,
+  coordIndex: number,
+  type?: string
+) => {
+  const { id, hovered, selected } = command;
+
+  return {
+    id: `circle_${id}_${coordIndex}${type ? `_${type}` : ""}`,
+    id_command: id,
+    coordinate_index: coordIndex,
+    radius: "10",
+    cx: "0",
+    cy: "0",
+    control: false,
+    hovered: hovered,
+    selected: selected,
+  };
+};
 
 export const commandHandlers: Record<string, CommandHandler> = {
   M: {
+    extractPoints: (command) => [
+      {
+        ...generateBasePoint(command, 0),
+        cx: String(command.coordinates[0]),
+        cy: String(command.coordinates[1]),
+      },
+    ],
     updateCoordinates: (coords, x, y, pointIndex) => [x, y],
     toAbsolute: (coords, currentPosition) => ["M", coords], // Already absolute
     toRelative: (absoluteCoords, currentPosition) => [
@@ -74,6 +105,7 @@ export const commandHandlers: Record<string, CommandHandler> = {
       x: coords[0],
       y: coords[1],
     }),
+    getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
   },
   m: {
     updateCoordinates: (coords, x, y, pointIndex, currentPosition) => {
@@ -91,6 +123,13 @@ export const commandHandlers: Record<string, CommandHandler> = {
     }),
   },
   L: {
+    extractPoints: (command) => [
+      {
+        ...generateBasePoint(command, 0),
+        cx: String(command.coordinates[0]),
+        cy: String(command.coordinates[1]),
+      },
+    ],
     updateCoordinates: (coords, x, y, pointIndex) => [x, y],
     toAbsolute: (coords, currentPosition) => ["L", coords], // Already absolute
     toRelative: (absoluteCoords, currentPosition) => [
@@ -101,6 +140,7 @@ export const commandHandlers: Record<string, CommandHandler> = {
       x: coords[0],
       y: coords[1],
     }),
+    getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
   },
   l: {
     updateCoordinates: (coords, x, y, pointIndex, currentPosition) => {
@@ -118,12 +158,23 @@ export const commandHandlers: Record<string, CommandHandler> = {
     }),
   },
   H: {
+    extractPoints: (command) => [
+      {
+        ...generateBasePoint(command, 0),
+        cx: String(command.coordinates[0]),
+        cy: String(command.coordinates[1]),
+      },
+    ],
     updateCoordinates: (coords, x, y, pointIndex) => [x],
     toAbsolute: (coords, currentPosition) => ["H", coords], // Already absolute
     toRelative: (absoluteCoords, currentPosition) => [
       absoluteCoords[0] - currentPosition.x,
     ],
     getAccumulatedPosition: (currentPosition, coords) => ({
+      x: coords[0],
+      y: currentPosition.y,
+    }),
+    getEndPosition: (coords, currentPosition) => ({
       x: coords[0],
       y: currentPosition.y,
     }),
@@ -145,12 +196,23 @@ export const commandHandlers: Record<string, CommandHandler> = {
   },
 
   V: {
+    extractPoints: (command) => [
+      {
+        ...generateBasePoint(command, 0),
+        cx: String(command.coordinates[0]),
+        cy: String(command.coordinates[1]),
+      },
+    ],
     updateCoordinates: (coords, x, y, pointIndex) => [y],
     toAbsolute: (coords, currentPosition) => ["V", coords], // Already absolute
     toRelative: (absoluteCoords, currentPosition) => [
       absoluteCoords[0] - currentPosition.y,
     ],
     getAccumulatedPosition: (currentPosition, coords) => ({
+      x: currentPosition.x,
+      y: coords[0],
+    }),
+    getEndPosition: (coords, currentPosition) => ({
       x: currentPosition.x,
       y: coords[0],
     }),
@@ -171,6 +233,19 @@ export const commandHandlers: Record<string, CommandHandler> = {
     }),
   },
   Q: {
+    extractPoints: (command) => [
+      {
+        ...generateBasePoint(command, 0),
+        cx: String(command.coordinates[0]),
+        cy: String(command.coordinates[1]),
+        control: true,
+      },
+      {
+        ...generateBasePoint(command, 2),
+        cx: String(command.coordinates[2]),
+        cy: String(command.coordinates[3]),
+      },
+    ],
     updateCoordinates: (coords, x, y, pointIndex) => {
       const newCoords = [...coords];
       newCoords[pointIndex] = x;
@@ -188,13 +263,14 @@ export const commandHandlers: Record<string, CommandHandler> = {
       x: coords[2],
       y: coords[3],
     }),
+    getEndPosition: (coords) => ({ x: coords[2], y: coords[3] }),
   },
 
   q: {
     updateCoordinates: (coords, x, y, pointIndex, currentPosition) => {
       const newCoords = [...coords];
       newCoords[pointIndex] = x - currentPosition.x;
-      newCoords[pointIndex + 1] = y - currentPosition.x;
+      newCoords[pointIndex + 1] = y - currentPosition.y;
       return newCoords;
     },
     toAbsolute: (coords, currentPosition) => [
@@ -213,6 +289,13 @@ export const commandHandlers: Record<string, CommandHandler> = {
     }),
   },
   T: {
+    extractPoints: (command) => [
+      {
+        ...generateBasePoint(command, 0),
+        cx: String(command.coordinates[0]),
+        cy: String(command.coordinates[1]),
+      },
+    ],
     updateCoordinates: (coords, x, y, pointIndex) => [x, y],
     toAbsolute: (coords, currentPosition) => ["T", coords], // Already absolute
     toRelative: (absoluteCoords, currentPosition) => [
@@ -223,6 +306,7 @@ export const commandHandlers: Record<string, CommandHandler> = {
       x: coords[0],
       y: coords[1],
     }),
+    getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
   },
   t: {
     updateCoordinates: (coords, x, y, pointIndex, currentPosition) => {
@@ -240,6 +324,25 @@ export const commandHandlers: Record<string, CommandHandler> = {
     }),
   },
   C: {
+    extractPoints: (command) => [
+      {
+        ...generateBasePoint(command, 0),
+        cx: String(command.coordinates[0]),
+        cy: String(command.coordinates[1]),
+        control: true,
+      },
+      {
+        ...generateBasePoint(command, 2),
+        cx: String(command.coordinates[2]),
+        cy: String(command.coordinates[3]),
+        control: true,
+      },
+      {
+        ...generateBasePoint(command, 4),
+        cx: String(command.coordinates[4]),
+        cy: String(command.coordinates[5]),
+      },
+    ],
     updateCoordinates: (coords, x, y, pointIndex) => {
       const newCoords = [...coords];
       newCoords[pointIndex] = x;
@@ -257,6 +360,7 @@ export const commandHandlers: Record<string, CommandHandler> = {
       x: coords[4],
       y: coords[5],
     }),
+    getEndPosition: (coords) => ({ x: coords[4], y: coords[5] }),
   },
   c: {
     updateCoordinates: (coords, x, y, pointIndex, currentPosition) => {
@@ -279,6 +383,20 @@ export const commandHandlers: Record<string, CommandHandler> = {
     }),
   },
   S: {
+    extractPoints: (command) => [
+      {
+        ...generateBasePoint(command, 0),
+        cx: String(command.coordinates[0]),
+        cy: String(command.coordinates[1]),
+        control: true,
+      },
+      {
+        ...generateBasePoint(command, 2),
+        cx: String(command.coordinates[2]),
+        cy: String(command.coordinates[3]),
+        control: true,
+      },
+    ],
     updateCoordinates: (coords, x, y, pointIndex) => {
       const newCoords = [...coords];
       newCoords[pointIndex] = x;
@@ -296,6 +414,7 @@ export const commandHandlers: Record<string, CommandHandler> = {
       x: coords[2],
       y: coords[3],
     }),
+    getEndPosition: (coords) => ({ x: coords[2], y: coords[3] }),
   },
   s: {
     updateCoordinates: (coords, x, y, pointIndex, currentPosition) => {
@@ -321,6 +440,13 @@ export const commandHandlers: Record<string, CommandHandler> = {
     }),
   },
   A: {
+    extractPoints: (command) => [
+      {
+        ...generateBasePoint(command, 5),
+        cx: String(command.coordinates[5]),
+        cy: String(command.coordinates[6]),
+      },
+    ],
     updateCoordinates: (coords, x, y, pointIndex) => {
       const newCoords = [...coords];
       newCoords[pointIndex] = x;
@@ -336,6 +462,7 @@ export const commandHandlers: Record<string, CommandHandler> = {
       x: coords[5],
       y: coords[6],
     }),
+    getEndPosition: (coords) => ({ x: coords[5], y: coords[6] }),
   },
   a: {
     updateCoordinates: (coords, x, y, pointIndex, currentPosition) => {
@@ -355,8 +482,6 @@ export const commandHandlers: Record<string, CommandHandler> = {
       y: coords[6] + currentPosition.y,
     }),
   },
-
-  // ... other commands
 };
 
 const lineCommands = {
@@ -875,10 +1000,6 @@ export const convertAbsoluteToRelative = (
 };
 
 export function getCurrentPositionBeforeCommand(commands, targetCommandId) {
-  let currentX = 0;
-  let currentY = 0;
-  let startX = 0;
-  let startY = 0;
   let currentPosition = { x: 0, y: 0 };
 
   for (const command of commands) {
@@ -935,21 +1056,8 @@ export function convertRelativeToAbsolute(commands: ParsePath<number>) {
 }
 
 export const updatePoints = (commands: ParsePath<number>) => {
-  let lastPositionX = "0";
-  let lastPositionY = "0";
-  let points: CircleType[] = [];
-  let currentPosition = {
-    x: 0,
-    y: 0,
-  };
-
-  const generateCircleId = (
-    commandId: string,
-    coordIndex: number,
-    type?: string
-  ) => {
-    return `circle_${commandId}_${coordIndex}${type ? `_${type}` : ""}`;
-  };
+  let currentPosition = { x: 0, y: 0 };
+  let points: Point[] = [];
 
   const absoluteCommands = convertRelativeToAbsolute(commands);
 
@@ -957,148 +1065,28 @@ export const updatePoints = (commands: ParsePath<number>) => {
     if (absoluteCommand.letter.toLocaleUpperCase() === lineCommands.Close) {
       return;
     }
+    const handler = commandHandlers[absoluteCommand.letter];
 
-    const circle = {
-      id: generateCircleId(absoluteCommand.id, 0),
-      id_command: absoluteCommand.id,
-      coordinate_index: 0,
-      radius: "10",
-      cy: "0",
-      cx: "0",
-      control: false,
-      hovered: absoluteCommand.hovered,
-      selected: absoluteCommand.selected,
-    };
+    if (absoluteCommand.letter.toUpperCase() === lineCommands.Vertical)
+      absoluteCommand.coordinates = [
+        Number(currentPosition.x),
+        absoluteCommand.coordinates[0],
+      ];
 
-    if (absoluteCommand.letter === lineCommands.Vertical) {
-      circle.cx = lastPositionX;
-      circle.cy = absoluteCommand.coordinates[0].toString();
-      lastPositionY = absoluteCommand.coordinates[0].toString();
-      points.push(circle);
-      return;
-    }
+    if (absoluteCommand.letter.toUpperCase() === lineCommands.Horizontal)
+      absoluteCommand.coordinates = [
+        absoluteCommand.coordinates[0],
+        Number(currentPosition.y),
+      ];
 
-    if (absoluteCommand.letter === lineCommands.Horizontal) {
-      circle.id = generateCircleId(absoluteCommand.id, 0);
-      circle.cx = absoluteCommand.coordinates[0].toString();
-      circle.cy = lastPositionY;
-      lastPositionX = absoluteCommand.coordinates[0].toString();
-      points.push(circle);
+    const generatedPoints = handler.extractPoints(absoluteCommand);
+    points.push(...generatedPoints);
 
-      return;
-    }
-
-    if (absoluteCommand.letter === lineCommands.Arc) {
-      circle.id = generateCircleId(absoluteCommand.id, 5);
-      circle.coordinate_index = 5;
-      circle.cx = absoluteCommand.coordinates[5].toString();
-      circle.cy = absoluteCommand.coordinates[6].toString();
-      lastPositionX = absoluteCommand.coordinates[5].toString();
-      lastPositionY = absoluteCommand.coordinates[6].toString();
-      points.push(circle);
-
-      return;
-    }
-
-    if (absoluteCommand.letter === lineCommands.Curve) {
-      const controlPointStart = {
-        ...circle,
-        id: generateCircleId(absoluteCommand.id, 0),
-        coordinate_index: 0,
-        control: true,
-      };
-      const controlPointEnd = {
-        ...circle,
-        id: generateCircleId(absoluteCommand.id, 2),
-        coordinate_index: 2,
-        control: true,
-      };
-      const coordinates = {
-        ...circle,
-        id: generateCircleId(absoluteCommand.id, 4),
-        coordinate_index: 4,
-      };
-
-      controlPointStart.cx = absoluteCommand.coordinates[0].toString();
-      controlPointStart.cy = absoluteCommand.coordinates[1].toString();
-      controlPointEnd.cx = absoluteCommand.coordinates[2].toString();
-      controlPointEnd.cy = absoluteCommand.coordinates[3].toString();
-      coordinates.cx = absoluteCommand.coordinates[4].toString();
-      coordinates.cy = absoluteCommand.coordinates[5].toString();
-
-      lastPositionX = absoluteCommand.coordinates[4].toString();
-      lastPositionY = absoluteCommand.coordinates[5].toString();
-
-      points.push(controlPointStart);
-      points.push(controlPointEnd);
-      points.push(coordinates);
-
-      return;
-    }
-
-    if (absoluteCommand.letter === lineCommands.SmoothCurve) {
-      const controlPointStart = {
-        ...circle,
-        id: generateCircleId(absoluteCommand.id, 0),
-        coordinate_index: 0,
-        control: true,
-      };
-      const controlPointEnd = {
-        ...circle,
-        id: generateCircleId(absoluteCommand.id, 2),
-        coordinate_index: 2,
-        control: true,
-      };
-
-      controlPointStart.cx = absoluteCommand.coordinates[0].toString();
-      controlPointStart.cy = absoluteCommand.coordinates[1].toString();
-      controlPointEnd.cx = absoluteCommand.coordinates[2].toString();
-      controlPointEnd.cy = absoluteCommand.coordinates[3].toString();
-
-      lastPositionX = absoluteCommand.coordinates[2].toString();
-      lastPositionY = absoluteCommand.coordinates[3].toString();
-
-      points.push(controlPointStart);
-      points.push(controlPointEnd);
-
-      return;
-    }
-
-    if (absoluteCommand.letter === lineCommands.QuadraticCurve) {
-      const controlPointStart = {
-        ...circle,
-        id: generateCircleId(absoluteCommand.id, 0),
-        coordinate_index: 0,
-        control: true,
-      };
-      const controlPointEnd = {
-        ...circle,
-        id: generateCircleId(absoluteCommand.id, 2),
-        coordinate_index: 2,
-      };
-
-      controlPointStart.cx = absoluteCommand.coordinates[0].toString();
-      controlPointStart.cy = absoluteCommand.coordinates[1].toString();
-      controlPointEnd.cx = absoluteCommand.coordinates[2].toString();
-      controlPointEnd.cy = absoluteCommand.coordinates[3].toString();
-
-      points.push(controlPointStart);
-      points.push(controlPointEnd);
-
-      return;
-    }
-
-    absoluteCommand.coordinates.forEach((coordinate, index) => {
-      if (index % 2 === 0) {
-        circle.cx = coordinate.toString();
-        lastPositionX = coordinate.toString();
-      } else {
-        circle.cy = coordinate.toString();
-        lastPositionY = coordinate.toString();
-      }
-    });
-    points.push(circle);
+    currentPosition = handler.getEndPosition(
+      absoluteCommand.coordinates,
+      currentPosition
+    );
   });
-  console.log(points);
+
   return points;
 };
