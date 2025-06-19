@@ -2,19 +2,15 @@ import { forwardRef, useEffect, useMemo, useState } from "react";
 import { usePathObject } from "@/context/PathContext";
 import { Viewbox } from "@/types/Viewbox";
 import {
-  absoluteToRelative,
   centerViewbox,
-  commandHandlers,
-  convertAbsoluteToRelative,
-  convertPathToString,
   createPathFromHoveredCommands,
   getCurrentPositionBeforeCommand,
-  getLastControlPoint,
   isRelativeCommand,
   updatePoints,
 } from "@/utils/pathUtils";
 import { Circle } from "@/components/Circle";
 import { usePanZoom } from "@/hooks/usePanZoom";
+import { commandHandlers } from "@/utils/path-handler";
 
 type Coordinates = {
   id: string;
@@ -113,13 +109,15 @@ export default forwardRef(function Svg(
         command.id
       );
 
+      const isRelative = isRelativeCommand(command.letter);
       // Create a new coordinates array to ensure immutability
       const newCoordinates = handler.updateCoordinates(
         command.coordinates,
         values.x,
         values.y,
         coordinate_index,
-        currentPos
+        currentPos,
+        isRelative
       );
 
       return { ...command, coordinates: newCoordinates }; // Return new object

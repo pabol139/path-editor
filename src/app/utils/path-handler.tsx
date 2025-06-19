@@ -1,0 +1,604 @@
+import { LINE_COMMANDS } from "@/constants/path";
+import { Command } from "@/types/Path";
+import { Point } from "@/types/Point";
+
+interface CommandHandler {
+  extractPoints?: (command: Command<number>) => Point[];
+  updateCoordinates: (
+    coords: number[],
+    x: number,
+    y: number,
+    pointIndex: number,
+    currentPosition: { x: number; y: number },
+    isRelative: boolean
+  ) => number[];
+  toAbsolute: (
+    coords: number[],
+    currentPosition: { x: number; y: number },
+    isRelative: boolean
+  ) => [string, number[]];
+  toRelative: (
+    coords: number[],
+    currentPosition: { x: number; y: number },
+    isRelative: boolean
+  ) => number[];
+  getAccumulatedPosition: (
+    currentPosition: { x: number; y: number },
+    coords: number[],
+    isRelative: boolean
+  ) => { x: number; y: number };
+  validate?: (coords: number[]) => boolean;
+  getEndPosition?: (
+    coordinates: number[],
+    currentPosition: { x: number; y: number }
+  ) => { x: number; y: number };
+}
+
+const generateBasePoint = (
+  command: Command<number>,
+  coordIndex: number,
+  type?: string
+) => {
+  const { id, hovered, selected } = command;
+
+  return {
+    id: `circle_${id}_${coordIndex}${type ? `_${type}` : ""}`,
+    id_command: id,
+    coordinate_index: coordIndex,
+    radius: "10",
+    cx: "0",
+    cy: "0",
+    control: false,
+    hovered: hovered,
+    selected: selected,
+  };
+};
+
+export const commandHandlers: Record<string, CommandHandler> = {
+  [LINE_COMMANDS.MoveTo]: {
+    extractPoints: (command) => [
+      {
+        ...generateBasePoint(command, 0),
+        cx: String(command.coordinates[0]),
+        cy: String(command.coordinates[1]),
+      },
+    ],
+    updateCoordinates: (
+      coords,
+      x,
+      y,
+      pointIndex,
+      currentPosition,
+      isRelative
+    ) => {
+      if (isRelative) return [x - currentPosition.x, y - currentPosition.y];
+
+      return [x, y];
+    },
+    toAbsolute: (coords, currentPosition, isRelative) => {
+      if (isRelative)
+        return [
+          "M",
+          [currentPosition.x + coords[0], currentPosition.y + coords[1]],
+        ];
+
+      return ["M", coords];
+    }, // Already absolute
+    toRelative: (absoluteCoords, currentPosition, isRelative) => {
+      if (isRelative) return absoluteCoords;
+      return [
+        absoluteCoords[0] - currentPosition.x,
+        absoluteCoords[1] - currentPosition.y,
+      ];
+    },
+    getAccumulatedPosition: (currentPosition, coords, isRelative) => {
+      if (isRelative)
+        return {
+          x: coords[0] + currentPosition.x,
+          y: coords[1] + currentPosition.y,
+        };
+
+      return {
+        x: coords[0],
+        y: coords[1],
+      };
+    },
+    getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
+  },
+
+  [LINE_COMMANDS.LineTo]: {
+    extractPoints: (command) => [
+      {
+        ...generateBasePoint(command, 0),
+        cx: String(command.coordinates[0]),
+        cy: String(command.coordinates[1]),
+      },
+    ],
+    updateCoordinates: (
+      coords,
+      x,
+      y,
+      pointIndex,
+      currentPosition,
+      isRelative
+    ) => {
+      if (isRelative) return [x - currentPosition.x, y - currentPosition.y];
+
+      return [x, y];
+    },
+    toAbsolute: (coords, currentPosition, isRelative) => {
+      if (isRelative)
+        return [
+          "L",
+          [currentPosition.x + coords[0], currentPosition.y + coords[1]],
+        ];
+
+      return ["L", coords];
+    }, // Already absolute
+    toRelative: (absoluteCoords, currentPosition, isRelative) => {
+      if (isRelative) return absoluteCoords;
+
+      return [
+        absoluteCoords[0] - currentPosition.x,
+        absoluteCoords[1] - currentPosition.y,
+      ];
+    },
+    getAccumulatedPosition: (currentPosition, coords, isRelative) => {
+      if (isRelative)
+        return {
+          x: coords[0] + currentPosition.x,
+          y: coords[1] + currentPosition.y,
+        };
+
+      return {
+        x: coords[0],
+        y: coords[1],
+      };
+    },
+    getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
+  },
+  [LINE_COMMANDS.Horizontal]: {
+    extractPoints: (command) => [
+      {
+        ...generateBasePoint(command, 0),
+        cx: String(command.coordinates[0]),
+        cy: String(command.coordinates[1]),
+      },
+    ],
+    updateCoordinates: (
+      coords,
+      x,
+      y,
+      pointIndex,
+      currentPosition,
+      isRelative
+    ) => {
+      if (isRelative) return [x - currentPosition.x];
+
+      return [x];
+    },
+    toAbsolute: (coords, currentPosition, isRelative) => {
+      if (isRelative) return ["H", [currentPosition.x + coords[0]]];
+      return ["H", coords];
+    }, // Already absolute
+    toRelative: (absoluteCoords, currentPosition, isRelative) => {
+      if (isRelative) return absoluteCoords;
+      return [absoluteCoords[0] - currentPosition.x];
+    },
+    getAccumulatedPosition: (currentPosition, coords, isRelative) => {
+      if (isRelative)
+        return {
+          x: coords[0] + currentPosition.x,
+          y: currentPosition.y,
+        };
+
+      return {
+        x: coords[0],
+        y: currentPosition.y,
+      };
+    },
+    getEndPosition: (coords, currentPosition) => ({
+      x: coords[0],
+      y: currentPosition.y,
+    }),
+  },
+
+  [LINE_COMMANDS.Vertical]: {
+    extractPoints: (command) => [
+      {
+        ...generateBasePoint(command, 0),
+        cx: String(command.coordinates[0]),
+        cy: String(command.coordinates[1]),
+      },
+    ],
+    updateCoordinates: (
+      coords,
+      x,
+      y,
+      pointIndex,
+      currentPosition,
+      isRelative
+    ) => {
+      if (isRelative) return [y - currentPosition.y];
+
+      return [y];
+    },
+    toAbsolute: (coords, currentPosition, isRelative) => {
+      if (isRelative) return ["V", [currentPosition.y + coords[0]]];
+
+      return ["V", coords];
+    }, // Already absolute
+    toRelative: (absoluteCoords, currentPosition, isRelative) => {
+      if (isRelative) return absoluteCoords;
+
+      return [absoluteCoords[0] - currentPosition.y];
+    },
+    getAccumulatedPosition: (currentPosition, coords, isRelative) => {
+      if (isRelative)
+        return {
+          x: currentPosition.x,
+          y: coords[0] + currentPosition.y,
+        };
+
+      return {
+        x: currentPosition.x,
+        y: coords[0],
+      };
+    },
+    getEndPosition: (coords, currentPosition) => ({
+      x: currentPosition.x,
+      y: coords[0],
+    }),
+  },
+
+  [LINE_COMMANDS.QuadraticCurve]: {
+    extractPoints: (command) => [
+      {
+        ...generateBasePoint(command, 0),
+        cx: String(command.coordinates[0]),
+        cy: String(command.coordinates[1]),
+        control: true,
+      },
+      {
+        ...generateBasePoint(command, 2),
+        cx: String(command.coordinates[2]),
+        cy: String(command.coordinates[3]),
+      },
+    ],
+    updateCoordinates: (
+      coords,
+      x,
+      y,
+      pointIndex,
+      currentPosition,
+      isRelative
+    ) => {
+      const newCoords = [...coords];
+
+      if (isRelative) {
+        newCoords[pointIndex] = x - currentPosition.x;
+        newCoords[pointIndex + 1] = y - currentPosition.y;
+        return newCoords;
+      }
+
+      newCoords[pointIndex] = x;
+      newCoords[pointIndex + 1] = y;
+      return newCoords;
+    },
+    toAbsolute: (coords, currentPosition, isRelative) => {
+      if (isRelative)
+        return [
+          "Q",
+          [
+            coords[0] + currentPosition.x,
+            coords[1] + currentPosition.y,
+            coords[2] + currentPosition.x,
+            coords[3] + currentPosition.y,
+          ],
+        ];
+
+      return ["Q", coords];
+    }, // Already absolute
+    toRelative: (absoluteCoords, currentPosition, isRelative) => {
+      if (isRelative) return absoluteCoords;
+
+      return [
+        absoluteCoords[0] - currentPosition.x,
+        absoluteCoords[1] - currentPosition.y,
+        absoluteCoords[2] - currentPosition.x,
+        absoluteCoords[3] - currentPosition.y,
+      ];
+    },
+    getAccumulatedPosition: (currentPosition, coords, isRelative) => {
+      if (isRelative)
+        return {
+          x: coords[2] + currentPosition.x,
+          y: coords[3] + currentPosition.y,
+        };
+
+      return {
+        x: coords[2],
+        y: coords[3],
+      };
+    },
+    getEndPosition: (coords) => ({ x: coords[2], y: coords[3] }),
+  },
+  [LINE_COMMANDS.SmoothQuadraticCurve]: {
+    extractPoints: (command) => [
+      {
+        ...generateBasePoint(command, 0),
+        cx: String(command.coordinates[0]),
+        cy: String(command.coordinates[1]),
+      },
+    ],
+    updateCoordinates: (
+      coords,
+      x,
+      y,
+      pointIndex,
+      currentPosition,
+      isRelative
+    ) => {
+      if (isRelative) return [x - currentPosition.x, y - currentPosition.y];
+
+      return [x, y];
+    },
+    toAbsolute: (coords, currentPosition, isRelative) => {
+      if (isRelative)
+        return [
+          "T",
+          [currentPosition.x + coords[0], currentPosition.y + coords[1]],
+        ];
+      return ["T", coords];
+    }, // Already absolute
+    toRelative: (absoluteCoords, currentPosition, isRelative) => {
+      if (isRelative) return absoluteCoords;
+      return [
+        absoluteCoords[0] - currentPosition.x,
+        absoluteCoords[1] - currentPosition.y,
+      ];
+    },
+    getAccumulatedPosition: (currentPosition, coords, isRelative) => {
+      if (isRelative)
+        return {
+          x: coords[0] + currentPosition.x,
+          y: coords[1] + currentPosition.y,
+        };
+
+      return {
+        x: coords[0],
+        y: coords[1],
+      };
+    },
+    getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
+  },
+  [LINE_COMMANDS.Curve]: {
+    extractPoints: (command) => [
+      {
+        ...generateBasePoint(command, 0),
+        cx: String(command.coordinates[0]),
+        cy: String(command.coordinates[1]),
+        control: true,
+      },
+      {
+        ...generateBasePoint(command, 2),
+        cx: String(command.coordinates[2]),
+        cy: String(command.coordinates[3]),
+        control: true,
+      },
+      {
+        ...generateBasePoint(command, 4),
+        cx: String(command.coordinates[4]),
+        cy: String(command.coordinates[5]),
+      },
+    ],
+    updateCoordinates: (
+      coords,
+      x,
+      y,
+      pointIndex,
+      currentPosition,
+      isRelative
+    ) => {
+      const newCoords = [...coords];
+      if (isRelative) {
+        // convert new absolute (x,y) into relative deltas
+        newCoords[pointIndex] = x - currentPosition.x;
+        newCoords[pointIndex + 1] = y - currentPosition.y;
+      } else {
+        newCoords[pointIndex] = x;
+        newCoords[pointIndex + 1] = y;
+      }
+      return newCoords;
+    },
+    toAbsolute: (coords, currentPosition, isRelative) => {
+      if (isRelative) {
+        // coords are relative deltas; convert to absolute
+        return [
+          "C",
+          [
+            coords[0] + currentPosition.x,
+            coords[1] + currentPosition.y,
+            coords[2] + currentPosition.x,
+            coords[3] + currentPosition.y,
+            coords[4] + currentPosition.x,
+            coords[5] + currentPosition.y,
+          ],
+        ];
+      }
+      return ["C", coords];
+    },
+    toRelative: (absoluteCoords, currentPosition, isRelative) => {
+      if (isRelative) {
+        // already relative representation expected by caller
+        return absoluteCoords;
+      }
+      // subtract currentPosition to get relative deltas
+      return absoluteCoords.map((coord, index) =>
+        index % 2 === 0 ? coord - currentPosition.x : coord - currentPosition.y
+      );
+    },
+    getAccumulatedPosition: (currentPosition, coords, isRelative) => {
+      if (isRelative) {
+        // coords are relative deltas
+        return {
+          x: coords[4] + currentPosition.x,
+          y: coords[5] + currentPosition.y,
+        };
+      }
+      return {
+        x: coords[4],
+        y: coords[5],
+      };
+    },
+    getEndPosition: (coords) => ({ x: coords[4], y: coords[5] }),
+  },
+  [LINE_COMMANDS.SmoothCurve]: {
+    extractPoints: (command) => [
+      {
+        ...generateBasePoint(command, 0),
+        cx: String(command.coordinates[0]),
+        cy: String(command.coordinates[1]),
+        control: true,
+      },
+      {
+        ...generateBasePoint(command, 2),
+        cx: String(command.coordinates[2]),
+        cy: String(command.coordinates[3]),
+        control: true,
+      },
+    ],
+    updateCoordinates: (
+      coords,
+      x,
+      y,
+      pointIndex,
+      currentPosition,
+      isRelative
+    ) => {
+      const newCoords = [...coords];
+      if (isRelative) {
+        // convert new absolute (x,y) into relative deltas
+        newCoords[pointIndex] = x - currentPosition.x;
+        newCoords[pointIndex + 1] = y - currentPosition.y;
+      } else {
+        newCoords[pointIndex] = x;
+        newCoords[pointIndex + 1] = y;
+      }
+      return newCoords;
+    },
+    toAbsolute: (coords, currentPosition, isRelative) => {
+      if (isRelative) {
+        // coords are relative [x2, y2, x, y]
+        return [
+          "S",
+          [
+            coords[0] + currentPosition.x,
+            coords[1] + currentPosition.y,
+            coords[2] + currentPosition.x,
+            coords[3] + currentPosition.y,
+          ],
+        ];
+      }
+      return ["S", coords];
+    },
+    toRelative: (absoluteCoords, currentPosition, isRelative) => {
+      if (isRelative) {
+        return absoluteCoords;
+      }
+      // subtract currentPosition to get relative deltas
+      return [
+        absoluteCoords[0] - currentPosition.x,
+        absoluteCoords[1] - currentPosition.y,
+        absoluteCoords[2] - currentPosition.x,
+        absoluteCoords[3] - currentPosition.y,
+      ];
+    },
+    getAccumulatedPosition: (currentPosition, coords, isRelative) => {
+      if (isRelative) {
+        return {
+          x: coords[2] + currentPosition.x,
+          y: coords[3] + currentPosition.y,
+        };
+      }
+      return {
+        x: coords[2],
+        y: coords[3],
+      };
+    },
+    getEndPosition: (coords) => ({ x: coords[2], y: coords[3] }),
+  },
+  [LINE_COMMANDS.Arc]: {
+    extractPoints: (command) => [
+      {
+        ...generateBasePoint(command, 5),
+        cx: String(command.coordinates[5]),
+        cy: String(command.coordinates[6]),
+      },
+    ],
+    updateCoordinates: (
+      coords,
+      x,
+      y,
+      pointIndex,
+      currentPosition,
+      isRelative
+    ) => {
+      const newCoords = [...coords];
+      if (isRelative) {
+        newCoords[pointIndex] = x - currentPosition.x;
+        newCoords[pointIndex + 1] = y - currentPosition.y;
+      } else {
+        newCoords[pointIndex] = x;
+        newCoords[pointIndex + 1] = y;
+      }
+      return newCoords;
+    },
+    toAbsolute: (coords, currentPosition, isRelative) => {
+      if (isRelative) {
+        // coords: [rx, ry, xAxisRot, largeArcFlag, sweepFlag, dx, dy]
+        return [
+          "A",
+          [
+            coords[0],
+            coords[1],
+            coords[2],
+            coords[3],
+            coords[4],
+            coords[5] + currentPosition.x,
+            coords[6] + currentPosition.y,
+          ],
+        ];
+      }
+      return ["A", coords];
+    },
+    toRelative: (absoluteCoords, currentPosition, isRelative) => {
+      if (isRelative) {
+        return absoluteCoords;
+      }
+      // keep flags and radii, subtract position for endpoint
+      return [
+        absoluteCoords[0],
+        absoluteCoords[1],
+        absoluteCoords[2],
+        absoluteCoords[3],
+        absoluteCoords[4],
+        absoluteCoords[5] - currentPosition.x,
+        absoluteCoords[6] - currentPosition.y,
+      ];
+    },
+    getAccumulatedPosition: (currentPosition, coords, isRelative) => {
+      if (isRelative) {
+        return {
+          x: coords[5] + currentPosition.x,
+          y: coords[6] + currentPosition.y,
+        };
+      }
+      return {
+        x: coords[5],
+        y: coords[6],
+      };
+    },
+    getEndPosition: (coords) => ({ x: coords[5], y: coords[6] }),
+  },
+};
