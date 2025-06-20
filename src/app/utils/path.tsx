@@ -2,6 +2,9 @@ import { Command, ParsePath } from "@/types/Path";
 import { Point } from "@/types/Point";
 import { LINE_COMMANDS } from "@/constants/path";
 import { commandHandlers } from "./command-handler";
+import { Viewbox } from "@/types/Viewbox";
+import { SvgDimensions } from "@/types/Svg";
+import { Dispatch, SetStateAction } from "react";
 
 /** Regex based on https://github.com/Yqnn/svg-path-editor/blob/master/src/lib/path-parser.ts */
 const kCommandTypeRegex = /^[\t\n\f\r ]*([MLHVZCSQTAmlhvzcsqta])[\t\n\f\r ]*/;
@@ -136,7 +139,11 @@ export const formatNumber = (number: number, decimals: number): string => {
     .replace(/\.$/, ""); // Removes any trailing point
 };
 
-export const centerViewbox = (svgRef, viewboxSetter, svgDimensionsSetter) => {
+export const centerViewbox = (
+  svgRef: React.RefObject<SVGSVGElement>,
+  viewboxSetter: (viewbox: Viewbox) => void,
+  svgDimensionsSetter: Dispatch<SetStateAction<SvgDimensions>>
+) => {
   const path = svgRef.current?.querySelector("path");
   if (!path) return;
 
@@ -187,7 +194,7 @@ export const createPathFromHoveredCommands = (commands: ParsePath<number>) => {
     }
     return false;
   });
-  let finalCommand = {};
+  let finalCommand: Command<number> | null = null;
 
   if (!command || command.letter.toUpperCase() === "M" || commandPosition === 0)
     return "";
@@ -198,9 +205,11 @@ export const createPathFromHoveredCommands = (commands: ParsePath<number>) => {
   );
 
   const moveToCommand = {
-    coordinates: [prevCommand.x, prevCommand.y],
     id: String(Math.random()),
     letter: "M",
+    coordinates: [prevCommand.x, prevCommand.y],
+    hovered: false,
+    selected: false,
   };
 
   if (command.letter.toUpperCase() === "T") {
@@ -222,6 +231,7 @@ export const createPathFromHoveredCommands = (commands: ParsePath<number>) => {
     }
 
     finalCommand = {
+      ...command,
       letter: "Q",
       id: String(Math.random()),
       coordinates: [
@@ -249,9 +259,9 @@ export const createPathFromHoveredCommands = (commands: ParsePath<number>) => {
       // If no previous control point, the control point is the current position
       controlPoint = { x: prevCommand.x, y: prevCommand.y };
     }
-    console.log(command.coordinates);
 
     finalCommand = {
+      ...command,
       letter: "C",
       id: String(Math.random()),
       coordinates: [
@@ -269,53 +279,34 @@ export const createPathFromHoveredCommands = (commands: ParsePath<number>) => {
   return convertPathToString([moveToCommand, finalCommand]) ?? "";
 };
 
-export const getLastControlPoint = (commands: any, currentIndex: number) => {
+export const getLastControlPoint = (
+  commands: any,
+  currentIndex: number
+): { x: number; y: number } | null => {
   // Look backwards for the last command that has a control point
   for (let i = currentIndex - 1; i >= 0; i--) {
     const command = commands[i];
-    switch (command.letter.toUpperCase()) {
-      case "Q":
-        return {
-          x: command.coordinates[0],
-          y: command.coordinates[1],
-        };
-      case "C":
-        return {
-          x: command.coordinates[2], // Second control point of cubic curve
-          y: command.coordinates[3],
-        };
-      case "T":
-        // For T commands, we need to calculate what the implicit control point was
-        const prevCommand = getCurrentPositionBeforeCommand(
-          commands,
-          command.id
-        );
+    const { letter, coordinates } = command;
 
-        const prevControlPoint = getLastControlPoint(commands, i);
+    const handler = commandHandlers[letter.toLocaleUpperCase()];
 
-        if (prevControlPoint) {
-          // The control point for T is the reflection of the previous control point
-          return {
-            x: 2 * prevCommand.x - prevControlPoint.x,
-            y: 2 * prevCommand.y - prevControlPoint.y,
-          };
-        }
-        break;
-      case "S":
-        // S command also has an implicit control point
-        const prevCommandS = getCurrentPositionBeforeCommand(
-          commands,
-          command.id
-        );
-        const sPrevControlPoint = getLastControlPoint(commands, i);
-        if (sPrevControlPoint) {
-          return {
-            x: 2 * prevCommandS.x - sPrevControlPoint.x,
-            y: 2 * prevCommandS.y - sPrevControlPoint.y,
-          };
-        }
-        break;
-    }
+    if (
+      letter.toLocaleUpperCase() === LINE_COMMANDS.SmoothCurve ||
+      letter.toLocaleUpperCase() === LINE_COMMANDS.SmoothQuadraticCurve
+    ) {
+      const prevCommand = getCurrentPositionBeforeCommand(commands, command.id);
+
+      const prevControlPoint = getLastControlPoint(commands, i);
+
+      if (prevControlPoint) {
+        // The control point for T is the reflection of the previous control point
+        return {
+          x: 2 * prevCommand.x - prevControlPoint.x,
+          y: 2 * prevCommand.y - prevControlPoint.y,
+        };
+      }
+    } else if (handler.getLastControlPoint)
+      return handler.getLastControlPoint(coordinates);
   }
 
   return null;
@@ -434,37 +425,6 @@ const isAbsoluteCommand = (commandLetter: string): boolean => {
   return commandLetter === commandLetter.toUpperCase();
 };
 
-// Command pairs mapping
-const commandPairs = {
-  // Absolute -> Relative
-  M: "m",
-  L: "l",
-  H: "h",
-  V: "v",
-  C: "c",
-  S: "s",
-  Q: "q",
-  T: "t",
-  A: "a",
-  Z: "z",
-  // Relative -> Absolute
-  m: "M",
-  l: "L",
-  h: "H",
-  v: "V",
-  c: "C",
-  s: "S",
-  q: "Q",
-  t: "T",
-  a: "A",
-  z: "Z",
-};
-
-// Get the opposite command type
-const getOppositeCommand = (commandLetter: string): string => {
-  return commandPairs[commandLetter] || commandLetter;
-};
-
 // Convert absolute coordinates to relative
 export const convertAbsoluteToRelative = (
   command: { letter: string; coordinates: number[] },
@@ -475,7 +435,6 @@ export const convertAbsoluteToRelative = (
   }
 
   const newCoordinates = [...command.coordinates];
-  const newLetter = getOppositeCommand(command.letter);
 
   switch (command.letter.toLowerCase()) {
     case "m":
@@ -536,7 +495,6 @@ export const convertAbsoluteToRelative = (
 
   return {
     ...command,
-    letter: newLetter,
     coordinates: newCoordinates,
   };
 };
@@ -565,20 +523,6 @@ export function getCurrentPositionBeforeCommand(
   }
 
   return currentPosition;
-}
-
-/**
- * Converts absolute coordinates to relative based on current cursor position
- * @param {number} absoluteX - Absolute X coordinate
- * @param {number} absoluteY - Absolute Y coordinate
- * @param {Object} currentPosition - Current cursor position { x, y }
- * @returns {Object} { x, y } relative coordinates
- */
-export function absoluteToRelative(absoluteX, absoluteY, currentPosition) {
-  return {
-    x: absoluteX - currentPosition.x,
-    y: absoluteY - currentPosition.y,
-  };
 }
 
 export function convertRelativeToAbsolute(commands: ParsePath<number>) {
@@ -610,7 +554,6 @@ export const updatePoints = (commands: ParsePath<number>) => {
   let points: Point[] = [];
 
   const absoluteCommands = convertRelativeToAbsolute(commands);
-  console.log(absoluteCommands);
   absoluteCommands.forEach((absoluteCommand, index) => {
     if (absoluteCommand.letter.toLocaleUpperCase() === LINE_COMMANDS.Close) {
       return;
@@ -638,7 +581,6 @@ export const updatePoints = (commands: ParsePath<number>) => {
       absoluteCommand.coordinates,
       currentPosition
     );
-    console.log("Current position:", currentPosition);
   });
 
   return points;

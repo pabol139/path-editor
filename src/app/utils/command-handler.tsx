@@ -32,6 +32,7 @@ interface CommandHandler {
     coordinates: number[],
     currentPosition: { x: number; y: number }
   ) => { x: number; y: number };
+  getLastControlPoint?: (coordinates: number[]) => { x: number; y: number };
 }
 
 const generateBasePoint = (
@@ -322,6 +323,7 @@ export const commandHandlers: Record<string, CommandHandler> = {
       };
     },
     getEndPosition: (coords) => ({ x: coords[2], y: coords[3] }),
+    getLastControlPoint: (coords) => ({ x: coords[0], y: coords[1] }),
   },
   [LINE_COMMANDS.SmoothQuadraticCurve]: {
     extractPoints: (command) => [
@@ -452,6 +454,7 @@ export const commandHandlers: Record<string, CommandHandler> = {
       };
     },
     getEndPosition: (coords) => ({ x: coords[4], y: coords[5] }),
+    getLastControlPoint: (coords) => ({ x: coords[2], y: coords[3] }),
   },
   [LINE_COMMANDS.SmoothCurve]: {
     extractPoints: (command) => [
