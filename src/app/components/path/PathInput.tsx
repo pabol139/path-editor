@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { usePathObject } from "@/context/PathContext";
 import { Viewbox } from "@/types/Viewbox";
 import { SvgDimensions } from "@/types/Svg";
-import { getPathBBox } from "@/utils/pathUtils";
+import { getPathBBox } from "@/utils/path";
 import { Copy, Check } from "react-feather";
 import clsx from "clsx";
 

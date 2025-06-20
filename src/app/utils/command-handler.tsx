@@ -3,7 +3,7 @@ import { Command } from "@/types/Path";
 import { Point } from "@/types/Point";
 
 interface CommandHandler {
-  extractPoints?: (command: Command<number>) => Point[];
+  extractPoints: (command: Command<number>) => Point[];
   updateCoordinates: (
     coords: number[],
     x: number,
@@ -28,7 +28,7 @@ interface CommandHandler {
     isRelative: boolean
   ) => { x: number; y: number };
   validate?: (coords: number[]) => boolean;
-  getEndPosition?: (
+  getEndPosition: (
     coordinates: number[],
     currentPosition: { x: number; y: number }
   ) => { x: number; y: number };
@@ -247,7 +247,7 @@ export const commandHandlers: Record<string, CommandHandler> = {
     },
     getEndPosition: (coords, currentPosition) => ({
       x: currentPosition.x,
-      y: coords[0],
+      y: coords[1],
     }),
   },
 

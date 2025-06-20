@@ -4,7 +4,7 @@ import Sidebar from "@/components/Sidebar";
 import Svg from "@/components/Svg";
 import { Viewbox } from "@/types/Viewbox";
 import { SvgDimensions } from "@/types/Svg";
-import { formatNumber } from "@/utils/pathUtils";
+import { formatNumber } from "@/utils/path";
 
 export default function MainSvg() {
   const [viewbox, setViewbox] = useState<Viewbox>({

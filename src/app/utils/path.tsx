@@ -1,7 +1,7 @@
-import { ParsePath } from "@/types/Path";
+import { Command, ParsePath } from "@/types/Path";
 import { Point } from "@/types/Point";
 import { LINE_COMMANDS } from "@/constants/path";
-import { commandHandlers } from "./path-handler";
+import { commandHandlers } from "./command-handler";
 
 /** Regex based on https://github.com/Yqnn/svg-path-editor/blob/master/src/lib/path-parser.ts */
 const kCommandTypeRegex = /^[\t\n\f\r ]*([MLHVZCSQTAmlhvzcsqta])[\t\n\f\r ]*/;
@@ -541,16 +541,21 @@ export const convertAbsoluteToRelative = (
   };
 };
 
-export function getCurrentPositionBeforeCommand(commands, targetCommandId) {
+export function getCurrentPositionBeforeCommand(
+  commands: Command<number>[],
+  targetCommandId: string
+) {
   let currentPosition = { x: 0, y: 0 };
 
   for (const command of commands) {
-    if (command.id === targetCommandId) {
+    const { id, letter, coordinates } = command;
+
+    if (letter.toLocaleUpperCase() === LINE_COMMANDS.Close) continue;
+    if (id === targetCommandId) {
       break; // Stop before processing the target command
     }
-    const { letter, coordinates } = command;
 
-    const handler = commandHandlers[letter];
+    const handler = commandHandlers[letter.toLocaleUpperCase()];
     const isRelative = isRelativeCommand(letter);
     currentPosition = handler.getAccumulatedPosition(
       currentPosition,
@@ -581,12 +586,11 @@ export function convertRelativeToAbsolute(commands: ParsePath<number>) {
     const { letter, coordinates, id } = command;
 
     if (letter.toLocaleUpperCase() === LINE_COMMANDS.Close)
-      return { ...command };
+      return { ...command, letter: letter.toLocaleUpperCase() };
 
-    const handler = commandHandlers[letter];
+    const handler = commandHandlers[letter.toLocaleUpperCase()];
     const currentPosition = getCurrentPositionBeforeCommand(commands, id);
     const isRelative = isRelativeCommand(letter);
-
     const [updatedLetter, updatedCoordinates] = handler.toAbsolute(
       coordinates,
       currentPosition,
@@ -606,24 +610,26 @@ export const updatePoints = (commands: ParsePath<number>) => {
   let points: Point[] = [];
 
   const absoluteCommands = convertRelativeToAbsolute(commands);
-
+  console.log(absoluteCommands);
   absoluteCommands.forEach((absoluteCommand, index) => {
     if (absoluteCommand.letter.toLocaleUpperCase() === LINE_COMMANDS.Close) {
       return;
     }
-    const handler = commandHandlers[absoluteCommand.letter];
+    const handler = commandHandlers[absoluteCommand.letter.toLocaleUpperCase()];
 
-    if (absoluteCommand.letter.toUpperCase() === LINE_COMMANDS.Vertical)
+    if (absoluteCommand.letter.toUpperCase() === LINE_COMMANDS.Vertical) {
       absoluteCommand.coordinates = [
         Number(currentPosition.x),
         absoluteCommand.coordinates[0],
       ];
+    }
 
-    if (absoluteCommand.letter.toUpperCase() === LINE_COMMANDS.Horizontal)
+    if (absoluteCommand.letter.toUpperCase() === LINE_COMMANDS.Horizontal) {
       absoluteCommand.coordinates = [
         absoluteCommand.coordinates[0],
         Number(currentPosition.y),
       ];
+    }
 
     const generatedPoints = handler.extractPoints(absoluteCommand);
     points.push(...generatedPoints);
@@ -632,6 +638,7 @@ export const updatePoints = (commands: ParsePath<number>) => {
       absoluteCommand.coordinates,
       currentPosition
     );
+    console.log("Current position:", currentPosition);
   });
 
   return points;

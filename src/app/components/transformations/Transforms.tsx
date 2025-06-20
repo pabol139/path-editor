@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { usePathObject } from "@/context/PathContext";
-import { scale, translate } from "@/utils/pathUtils";
+import { scale, translate } from "@/utils/path";
 import { CollapsedSection } from "@/components/CollapsedSection";
 import { TransformRow } from "@/components/transformations/TransformRow";
 

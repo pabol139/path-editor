@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState } from "react";
 import { PathObject, ParsePath } from "@/types/Path";
-import { convertPathToString, parsePath } from "@/utils/pathUtils";
+import { convertPathToString, parsePath } from "@/utils/path";
 interface PathProviderProps {
   children: React.ReactNode;
 }

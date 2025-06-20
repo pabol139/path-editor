@@ -7,10 +7,10 @@ import {
   getCurrentPositionBeforeCommand,
   isRelativeCommand,
   updatePoints,
-} from "@/utils/pathUtils";
+} from "@/utils/path";
 import { Circle } from "@/components/Circle";
 import { usePanZoom } from "@/hooks/usePanZoom";
-import { commandHandlers } from "@/utils/path-handler";
+import { commandHandlers } from "@/utils/command-handler";
 
 type Coordinates = {
   id: string;
@@ -101,7 +101,7 @@ export default forwardRef(function Svg(
     const newCommands = pathObject.commands.map((command) => {
       if (command.id !== circleInfo.id_command) return command; // Return unmodified command
       const coordinate_index = circleInfo.coordinate_index;
-      const handler = commandHandlers[command.letter];
+      const handler = commandHandlers[command.letter.toLocaleUpperCase()];
 
       // Current point position to convert absolute to relative and viceversa
       const currentPos = getCurrentPositionBeforeCommand(
