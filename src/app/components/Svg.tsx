@@ -3,6 +3,7 @@ import { usePathObject } from "@/context/PathContext";
 import { Viewbox } from "@/types/Viewbox";
 import {
   centerViewbox,
+  createLines,
   createPathFromHoveredCommands,
   getCurrentPositionBeforeCommand,
   isRelativeCommand,
@@ -35,10 +36,16 @@ export default forwardRef(function Svg(
   const { pathObject, updateCommands } = usePathObject();
   const [isVisible, setIsVisible] = useState(false);
   const [hasActivePath, setHasActivePath] = useState(false);
+
   const circles = useMemo(
     () => updatePoints(pathObject.commands),
     [viewbox.height, viewbox.width, pathObject.commands]
   );
+  const lines = useMemo(
+    () => createLines(pathObject.commands, circles),
+    [pathObject.commands, circles]
+  );
+
   let activePath = "";
 
   if (hasActivePath) {
@@ -129,7 +136,6 @@ export default forwardRef(function Svg(
     const { commands } = pathObject;
     const newCommands = commands.map((command) => {
       if (command.id !== id_command) return command; // Return unmodified command
-      console.log(command);
 
       return { ...command, hovered: true }; // Return new object
     });
@@ -165,25 +171,19 @@ export default forwardRef(function Svg(
             stroke="#fff"
             strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}
           ></path>
-          {circles.map((circle, index) => {
-            const command = pathObject.commands.find(
-              (command) => command.id === circle.id_command
-            );
-
+          {lines.map(({ x1, y1, x2, y2 }, index) => {
             return (
-              (command?.letter.toLocaleUpperCase() === "C" ||
-                command?.letter.toLocaleUpperCase() === "Q" ||
-                command?.letter.toLocaleUpperCase() === "S") && (
-                <Line
-                  key={"line_" + circle.id}
-                  letter={command.letter}
-                  circles={circles}
-                  circle={circle}
-                  viewbox={viewbox}
-                  svgDimensions={svgDimensions}
-                  index={index}
-                ></Line>
-              )
+              <line
+                key={index}
+                stroke="gray"
+                strokeWidth={String(
+                  (1.5 * viewbox.width) / svgDimensions.width
+                )}
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
+              ></line>
             );
           })}
           {hasActivePath && activePath && (
@@ -223,50 +223,6 @@ export default forwardRef(function Svg(
 });
 
 function Line({ circles, circle, letter, viewbox, svgDimensions, index }) {
-  const coordinate_index = circle.coordinate_index;
-
-  let x1 = 0;
-  let y1 = 0;
-  let x2 = 0;
-  let y2 = 0;
-
-  if (letter.toUpperCase() === "C") {
-    if (coordinate_index === 0) {
-      x1 = circles[index - 1].cx;
-      y1 = circles[index - 1].cy;
-      x2 = circle.cx;
-      y2 = circle.cy;
-    } else if (coordinate_index === 2) {
-      x1 = circles[index + 1].cx;
-      y1 = circles[index + 1].cy;
-      x2 = circle.cx;
-      y2 = circle.cy;
-    } else {
-      return <></>;
-    }
-  } else if (letter.toUpperCase() === "Q") {
-    // Q
-    if (coordinate_index === 0) {
-      x1 = circles[index - 1].cx;
-      y1 = circles[index - 1].cy;
-      x2 = circle.cx;
-      y2 = circle.cy;
-    } else {
-      x1 = circles[index - 1].cx;
-      y1 = circles[index - 1].cy;
-      x2 = circles[index].cx;
-      y2 = circles[index].cy;
-    }
-  } else if (letter.toUpperCase() === "S") {
-    if (coordinate_index === 0) {
-      x1 = circles[index + 1].cx;
-      y1 = circles[index + 1].cy;
-      x2 = circle.cx;
-      y2 = circle.cy;
-    } else {
-      return <></>;
-    }
-  }
   return (
     <line
       stroke="gray"

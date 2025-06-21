@@ -530,6 +530,7 @@ export const commandHandlers: Record<string, CommandHandler> = {
       };
     },
     getEndPosition: (coords) => ({ x: coords[2], y: coords[3] }),
+    getLastControlPoint: (coords) => ({ x: coords[0], y: coords[1] }),
   },
   [LINE_COMMANDS.Arc]: {
     extractPoints: (command) => [

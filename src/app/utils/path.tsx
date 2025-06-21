@@ -5,6 +5,7 @@ import { commandHandlers } from "./command-handler";
 import { Viewbox } from "@/types/Viewbox";
 import { SvgDimensions } from "@/types/Svg";
 import { Dispatch, SetStateAction } from "react";
+import { Line } from "@/types/Line";
 
 /** Regex based on https://github.com/Yqnn/svg-path-editor/blob/master/src/lib/path-parser.ts */
 const kCommandTypeRegex = /^[\t\n\f\r ]*([MLHVZCSQTAmlhvzcsqta])[\t\n\f\r ]*/;
@@ -279,8 +280,146 @@ export const createPathFromHoveredCommands = (commands: ParsePath<number>) => {
   return convertPathToString([moveToCommand, finalCommand]) ?? "";
 };
 
+export const createLines = (
+  rawCommands: Command<number>[],
+  points: Point[]
+) => {
+  const lines: Line[] = [];
+
+  const commands = convertRelativeToAbsolute(rawCommands);
+
+  points.forEach((point, index) => {
+    const i = commands.findIndex((command) => command.id === point.id_command);
+    const command = i !== -1 ? commands[i] : undefined;
+    if (!command) return [];
+
+    const coordinate_index = point.coordinate_index;
+    const letter = command ? command.letter : "";
+
+    if (letter.toUpperCase() === "C") {
+      if (coordinate_index === 0) {
+        lines.push({
+          x1: points[index - 1].cx,
+          y1: points[index - 1].cy,
+          x2: point.cx,
+          y2: point.cy,
+        });
+      } else if (coordinate_index === 2) {
+        lines.push({
+          x1: points[index + 1].cx,
+          y1: points[index + 1].cy,
+          x2: point.cx,
+          y2: point.cy,
+        });
+      } else if (coordinate_index === 4) {
+        if (commands[i + 1]?.letter.toUpperCase() === "S") {
+          const nextReflectionControlPoint = {
+            x: 2 * Number(points[index].cx) - Number(points[index - 1].cx),
+            y: 2 * Number(points[index].cy) - Number(points[index - 1].cy),
+          };
+
+          lines.push({
+            x1: point.cx,
+            y1: point.cy,
+            x2: String(nextReflectionControlPoint.x),
+            y2: String(nextReflectionControlPoint.y),
+          });
+        }
+      }
+    } else if (letter.toUpperCase() === "Q") {
+      // Q
+      if (coordinate_index === 0) {
+        lines.push({
+          x1: points[index - 1].cx,
+          y1: points[index - 1].cy,
+          x2: point.cx,
+          y2: point.cy,
+        });
+      } else {
+        lines.push({
+          x1: points[index - 1].cx,
+          y1: points[index - 1].cy,
+          x2: points[index].cx,
+          y2: points[index].cy,
+        });
+
+        if (commands[i + 1]?.letter.toUpperCase() === "T") {
+          const nextReflectionControlPoint = {
+            x: 2 * Number(points[index].cx) - Number(points[index - 1].cx),
+            y: 2 * Number(points[index].cy) - Number(points[index - 1].cy),
+          };
+
+          lines.push({
+            x1: point.cx,
+            y1: point.cy,
+            x2: String(nextReflectionControlPoint.x),
+            y2: String(nextReflectionControlPoint.y),
+          });
+        }
+      }
+    } else if (letter.toUpperCase() === "S") {
+      if (coordinate_index === 0) {
+        lines.push({
+          x1: points[index + 1].cx,
+          y1: points[index + 1].cy,
+          x2: point.cx,
+          y2: point.cy,
+        });
+
+        if (commands[i + 1]?.letter.toUpperCase() === "S") {
+          const nextReflectionControlPoint = {
+            x: 2 * Number(points[index + 1].cx) - Number(points[index].cx),
+            y: 2 * Number(points[index + 1].cy) - Number(points[index].cy),
+          };
+
+          lines.push({
+            x1: point.cx,
+            y1: point.cy,
+            x2: String(nextReflectionControlPoint.x),
+            y2: String(nextReflectionControlPoint.y),
+          });
+        }
+      }
+    } else if (letter.toUpperCase() === "T") {
+      const prevControlPoint = getLastControlPoint(commands, i);
+      const prevCommand = getCurrentPositionBeforeCommand(
+        commands,
+        commands[i].id
+      );
+
+      const prevReflectionControlPoint = {
+        x: 2 * prevCommand.x - prevControlPoint.x,
+        y: 2 * prevCommand.y - prevControlPoint.y,
+      };
+
+      lines.push({
+        x1: String(prevReflectionControlPoint.x),
+        y1: String(prevReflectionControlPoint.y),
+        x2: point.cx,
+        y2: point.cy,
+      });
+
+      if (commands[i + 1]?.letter.toUpperCase() === "T") {
+        const nextReflectionControlPoint = {
+          x: 2 * Number(point.cx) - prevReflectionControlPoint.x,
+          y: 2 * Number(point.cy) - prevReflectionControlPoint.y,
+        };
+
+        lines.push({
+          x1: point.cx,
+          y1: point.cy,
+          x2: String(nextReflectionControlPoint.x),
+          y2: String(nextReflectionControlPoint.y),
+        });
+      }
+    }
+  });
+
+  return lines;
+};
+
 export const getLastControlPoint = (
-  commands: any,
+  commands: Command<number>[],
   currentIndex: number
 ): { x: number; y: number } | null => {
   // Look backwards for the last command that has a control point
@@ -289,27 +428,44 @@ export const getLastControlPoint = (
     const { letter, coordinates } = command;
 
     const handler = commandHandlers[letter.toLocaleUpperCase()];
-
-    if (
-      letter.toLocaleUpperCase() === LINE_COMMANDS.SmoothCurve ||
-      letter.toLocaleUpperCase() === LINE_COMMANDS.SmoothQuadraticCurve
-    ) {
-      const prevCommand = getCurrentPositionBeforeCommand(commands, command.id);
-
-      const prevControlPoint = getLastControlPoint(commands, i);
+    const prevCommand = getCurrentPositionBeforeCommand(commands, command.id);
+    if (letter.toLocaleUpperCase() === LINE_COMMANDS.SmoothQuadraticCurve) {
+      const prevControlPoint =
+        letter.toLocaleUpperCase() === LINE_COMMANDS.SmoothCurve
+          ? getLastControlPointCurve(commands, i)
+          : getLastControlPoint(commands, i);
 
       if (prevControlPoint) {
-        // The control point for T is the reflection of the previous control point
         return {
           x: 2 * prevCommand.x - prevControlPoint.x,
           y: 2 * prevCommand.y - prevControlPoint.y,
         };
       }
+    } else if (letter.toLocaleUpperCase() === LINE_COMMANDS.SmoothCurve) {
+      return getLastControlPointCurve(commands, i);
     } else if (handler.getLastControlPoint)
       return handler.getLastControlPoint(coordinates);
+    else {
+      return handler.getEndPosition(coordinates, prevCommand);
+    }
   }
 
   return null;
+};
+
+const getLastControlPointCurve = (
+  commands: Command<number>[],
+  currentIndex: number
+) => {
+  const command = commands[currentIndex];
+  const { letter, coordinates } = command;
+  const handler = commandHandlers[letter.toLocaleUpperCase()];
+
+  // On S command, the prevControl is the control point of the prev S, else it will be the one of C
+  if (letter.toLocaleUpperCase() === LINE_COMMANDS.SmoothCurve) {
+    return handler.getLastControlPoint(coordinates);
+  } else if (handler.getLastControlPoint)
+    return handler.getLastControlPoint(coordinates);
 };
 
 export const convertPathToString = (commands: ParsePath<number>) => {

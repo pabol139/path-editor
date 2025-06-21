@@ -43,7 +43,7 @@ export function usePanZoom(
   };
 
   const handleZoom = (event: React.WheelEvent<SVGSVGElement>) => {
-    event.preventDefault();
+    // event.preventDefault();
 
     let scale = 1.125;
     let scaledWidth = 0;
