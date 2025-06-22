@@ -200,7 +200,7 @@ export const createPathFromHoveredCommands = (commands: ParsePath<number>) => {
   if (!command || command.letter.toUpperCase() === "M" || commandPosition === 0)
     return "";
 
-  const prevCommand = getCurrentPositionBeforeCommand(
+  const prevPosition = getCurrentPositionBeforeCommand(
     absoluteCommands,
     command.id
   );
@@ -208,214 +208,120 @@ export const createPathFromHoveredCommands = (commands: ParsePath<number>) => {
   const moveToCommand = {
     id: String(Math.random()),
     letter: "M",
-    coordinates: [prevCommand.x, prevCommand.y],
+    coordinates: [prevPosition.x, prevPosition.y],
     hovered: false,
     selected: false,
   };
 
-  if (command.letter.toUpperCase() === "T") {
-    const prevControlPoint = getLastControlPoint(
-      absoluteCommands,
-      commandPosition
-    );
-    let controlPoint;
+  finalCommand = transformCommand(
+    command,
+    commands,
+    commandPosition,
+    prevPosition
+  );
 
-    if (prevControlPoint) {
-      // Calculate the reflected control point
-      controlPoint = {
-        x: 2 * prevCommand.x - prevControlPoint.x,
-        y: 2 * prevCommand.y - prevControlPoint.y,
-      };
-    } else {
-      // If no previous control point, the control point is the current position
-      controlPoint = { x: prevCommand.x, y: prevCommand.y };
-    }
-
-    finalCommand = {
-      ...command,
-      letter: "Q",
-      id: String(Math.random()),
-      coordinates: [
-        controlPoint.x,
-        controlPoint.y,
-        command.coordinates[0],
-        command.coordinates[1],
-      ],
-    };
-  } else if (command.letter.toUpperCase() === "S") {
-    const prevControlPoint = getLastControlPoint(
-      absoluteCommands,
-      commandPosition
-    );
-
-    let controlPoint;
-
-    if (prevControlPoint) {
-      // Calculate the reflected control point
-      controlPoint = {
-        x: 2 * prevCommand.x - prevControlPoint.x,
-        y: 2 * prevCommand.y - prevControlPoint.y,
-      };
-    } else {
-      // If no previous control point, the control point is the current position
-      controlPoint = { x: prevCommand.x, y: prevCommand.y };
-    }
-
-    finalCommand = {
-      ...command,
-      letter: "C",
-      id: String(Math.random()),
-      coordinates: [
-        controlPoint.x,
-        controlPoint.y,
-        command.coordinates[0],
-        command.coordinates[1],
-        command.coordinates[2],
-        command.coordinates[3],
-      ],
-    };
-  } else {
-    finalCommand = command;
-  }
   return convertPathToString([moveToCommand, finalCommand]) ?? "";
 };
 
-export const createLines = (
-  rawCommands: Command<number>[],
-  points: Point[]
-) => {
-  const lines: Line[] = [];
+const transformCommand: (
+  command: Command<number>,
+  commands: ParsePath<number>,
+  commandPosition: number,
+  prevPosition: { x: number; y: number }
+) => Command<number> = (command, commands, commandPosition, prevPosition) => {
+  const letter = command.letter.toUpperCase();
 
-  const commands = convertRelativeToAbsolute(rawCommands);
+  if (letter === "T") {
+    return transformSmoothQuadratic(
+      command,
+      commands,
+      commandPosition,
+      prevPosition
+    );
+  }
 
-  points.forEach((point, index) => {
-    const i = commands.findIndex((command) => command.id === point.id_command);
-    const command = i !== -1 ? commands[i] : undefined;
-    if (!command) return [];
+  if (letter === "S") {
+    return transformSmoothCubic(
+      command,
+      commands,
+      commandPosition,
+      prevPosition
+    );
+  }
 
-    const coordinate_index = point.coordinate_index;
-    const letter = command ? command.letter : "";
+  return command;
+};
 
-    if (letter.toUpperCase() === "C") {
-      if (coordinate_index === 0) {
-        lines.push({
-          x1: points[index - 1].cx,
-          y1: points[index - 1].cy,
-          x2: point.cx,
-          y2: point.cy,
-        });
-      } else if (coordinate_index === 2) {
-        lines.push({
-          x1: points[index + 1].cx,
-          y1: points[index + 1].cy,
-          x2: point.cx,
-          y2: point.cy,
-        });
-      } else if (coordinate_index === 4) {
-        if (commands[i + 1]?.letter.toUpperCase() === "S") {
-          const nextReflectionControlPoint = {
-            x: 2 * Number(points[index].cx) - Number(points[index - 1].cx),
-            y: 2 * Number(points[index].cy) - Number(points[index - 1].cy),
-          };
+const transformSmoothQuadratic = (
+  command: Command<number>,
+  commands: ParsePath<number>,
+  position: number,
+  prevPosition: { x: number; y: number }
+): Command<number> => {
+  const controlPoint = calculateReflectedControlPoint(
+    commands,
+    position,
+    prevPosition
+  );
 
-          lines.push({
-            x1: point.cx,
-            y1: point.cy,
-            x2: String(nextReflectionControlPoint.x),
-            y2: String(nextReflectionControlPoint.y),
-          });
-        }
-      }
-    } else if (letter.toUpperCase() === "Q") {
-      // Q
-      if (coordinate_index === 0) {
-        lines.push({
-          x1: points[index - 1].cx,
-          y1: points[index - 1].cy,
-          x2: point.cx,
-          y2: point.cy,
-        });
-      } else {
-        lines.push({
-          x1: points[index - 1].cx,
-          y1: points[index - 1].cy,
-          x2: points[index].cx,
-          y2: points[index].cy,
-        });
+  return {
+    ...command,
+    letter: "Q",
+    id: String(Math.random()),
+    coordinates: [
+      controlPoint.x,
+      controlPoint.y,
+      command.coordinates[0],
+      command.coordinates[1],
+    ],
+  };
+};
 
-        if (commands[i + 1]?.letter.toUpperCase() === "T") {
-          const nextReflectionControlPoint = {
-            x: 2 * Number(points[index].cx) - Number(points[index - 1].cx),
-            y: 2 * Number(points[index].cy) - Number(points[index - 1].cy),
-          };
+const transformSmoothCubic = (
+  command: Command<number>,
+  commands: ParsePath<number>,
+  position: number,
+  prevPosition: { x: number; y: number }
+): Command<number> => {
+  const controlPoint = calculateReflectedControlPoint(
+    commands,
+    position,
+    prevPosition
+  );
 
-          lines.push({
-            x1: point.cx,
-            y1: point.cy,
-            x2: String(nextReflectionControlPoint.x),
-            y2: String(nextReflectionControlPoint.y),
-          });
-        }
-      }
-    } else if (letter.toUpperCase() === "S") {
-      if (coordinate_index === 0) {
-        lines.push({
-          x1: points[index + 1].cx,
-          y1: points[index + 1].cy,
-          x2: point.cx,
-          y2: point.cy,
-        });
+  return {
+    ...command,
+    letter: "C",
+    id: String(Math.random()),
+    coordinates: [
+      controlPoint.x,
+      controlPoint.y,
+      command.coordinates[0],
+      command.coordinates[1],
+      command.coordinates[2],
+      command.coordinates[3],
+    ],
+  };
+};
 
-        if (commands[i + 1]?.letter.toUpperCase() === "S") {
-          const nextReflectionControlPoint = {
-            x: 2 * Number(points[index + 1].cx) - Number(points[index].cx),
-            y: 2 * Number(points[index + 1].cy) - Number(points[index].cy),
-          };
+const calculateReflectedControlPoint = (
+  commands: ParsePath<number>,
+  position: number,
+  prevPosition: { x: number; y: number }
+): { x: number; y: number } => {
+  const prevControlPoint = getLastControlPoint(
+    convertRelativeToAbsolute(commands),
+    position
+  );
 
-          lines.push({
-            x1: point.cx,
-            y1: point.cy,
-            x2: String(nextReflectionControlPoint.x),
-            y2: String(nextReflectionControlPoint.y),
-          });
-        }
-      }
-    } else if (letter.toUpperCase() === "T") {
-      const prevControlPoint = getLastControlPoint(commands, i);
-      const prevCommand = getCurrentPositionBeforeCommand(
-        commands,
-        commands[i].id
-      );
+  if (prevControlPoint) {
+    return {
+      x: 2 * prevPosition.x - prevControlPoint.x,
+      y: 2 * prevPosition.y - prevControlPoint.y,
+    };
+  }
 
-      const prevReflectionControlPoint = {
-        x: 2 * prevCommand.x - prevControlPoint.x,
-        y: 2 * prevCommand.y - prevControlPoint.y,
-      };
-
-      lines.push({
-        x1: String(prevReflectionControlPoint.x),
-        y1: String(prevReflectionControlPoint.y),
-        x2: point.cx,
-        y2: point.cy,
-      });
-
-      if (commands[i + 1]?.letter.toUpperCase() === "T") {
-        const nextReflectionControlPoint = {
-          x: 2 * Number(point.cx) - prevReflectionControlPoint.x,
-          y: 2 * Number(point.cy) - prevReflectionControlPoint.y,
-        };
-
-        lines.push({
-          x1: point.cx,
-          y1: point.cy,
-          x2: String(nextReflectionControlPoint.x),
-          y2: String(nextReflectionControlPoint.y),
-        });
-      }
-    }
-  });
-
-  return lines;
+  return prevPosition;
 };
 
 export const getLastControlPoint = (
@@ -462,10 +368,7 @@ const getLastControlPointCurve = (
   const handler = commandHandlers[letter.toLocaleUpperCase()];
 
   // On S command, the prevControl is the control point of the prev S, else it will be the one of C
-  if (letter.toLocaleUpperCase() === LINE_COMMANDS.SmoothCurve) {
-    return handler.getLastControlPoint(coordinates);
-  } else if (handler.getLastControlPoint)
-    return handler.getLastControlPoint(coordinates);
+  return handler?.getLastControlPoint?.(command.coordinates) || null;
 };
 
 export const convertPathToString = (commands: ParsePath<number>) => {

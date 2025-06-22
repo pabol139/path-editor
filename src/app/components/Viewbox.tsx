@@ -47,7 +47,13 @@ export default function ViewboxSection({
     });
   }, [viewbox]);
 
-  const handleSetDisplayValue = (value: string, item) => {
+  const handleSetDisplayValue = (
+    value: string,
+    item: {
+      char: string;
+      value: keyof Viewbox;
+    }
+  ) => {
     if (item.char === "x" || item.char === "y") {
       var formattedValue = value.replace(/,/g, ".").replace(/[^0-9\.-]/g, "");
     } else {
@@ -75,7 +81,7 @@ export default function ViewboxSection({
     });
   };
 
-  const handleBlur = (item) => {
+  const handleBlur = (item: { char: string; value: keyof Viewbox }) => {
     const newValue = parseFloat(viewboxDisplay[item.value]);
     if (!isNaN(newValue)) {
       updateViewbox(

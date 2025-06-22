@@ -3,21 +3,13 @@ import { usePathObject } from "@/context/PathContext";
 import { Viewbox } from "@/types/Viewbox";
 import {
   centerViewbox,
-  createLines,
   createPathFromHoveredCommands,
-  getCurrentPositionBeforeCommand,
-  isRelativeCommand,
   updatePoints,
 } from "@/utils/path";
-import { Circle } from "@/components/Circle";
 import { usePanZoom } from "@/hooks/usePanZoom";
-import { commandHandlers } from "@/utils/command-handler";
-
-type Coordinates = {
-  id: string;
-  x: number;
-  y: number;
-};
+import { createControlLines } from "@/utils/control-lines";
+import ControlLines from "./control-lines";
+import Points from "./points";
 
 export default forwardRef(function Svg(
   {
@@ -37,13 +29,13 @@ export default forwardRef(function Svg(
   const [isVisible, setIsVisible] = useState(false);
   const [hasActivePath, setHasActivePath] = useState(false);
 
-  const circles = useMemo(
+  const points = useMemo(
     () => updatePoints(pathObject.commands),
     [viewbox.height, viewbox.width, pathObject.commands]
   );
   const lines = useMemo(
-    () => createLines(pathObject.commands, circles),
-    [pathObject.commands, circles]
+    () => createControlLines(pathObject.commands, points),
+    [pathObject.commands, points]
   );
 
   let activePath = "";
@@ -101,57 +93,6 @@ export default forwardRef(function Svg(
     }
   }, [viewbox]);
 
-  const handleMove = (values: Coordinates) => {
-    const circleInfo = circles.find((circle) => circle.id === values.id);
-    if (!circleInfo) return;
-
-    const newCommands = pathObject.commands.map((command) => {
-      if (command.id !== circleInfo.id_command) return command; // Return unmodified command
-      const coordinate_index = circleInfo.coordinate_index;
-      const handler = commandHandlers[command.letter.toLocaleUpperCase()];
-
-      // Current point position to convert absolute to relative and viceversa
-      const currentPos = getCurrentPositionBeforeCommand(
-        pathObject.commands,
-        command.id
-      );
-
-      const isRelative = isRelativeCommand(command.letter);
-      // Create a new coordinates array to ensure immutability
-      const newCoordinates = handler.updateCoordinates(
-        command.coordinates,
-        values.x,
-        values.y,
-        coordinate_index,
-        currentPos,
-        isRelative
-      );
-
-      return { ...command, coordinates: newCoordinates }; // Return new object
-    });
-    updateCommands(newCommands);
-  };
-
-  const handleEnter = (id_command: string) => {
-    const { commands } = pathObject;
-    const newCommands = commands.map((command) => {
-      if (command.id !== id_command) return command; // Return unmodified command
-
-      return { ...command, hovered: true }; // Return new object
-    });
-
-    setHasActivePath(true);
-    updateCommands(newCommands);
-  };
-
-  const handleLeave = () => {
-    const newCommands = pathObject.commands.map((command) => {
-      return { ...command, hovered: false }; // Return new object
-    });
-    updateCommands(newCommands);
-    setHasActivePath(false);
-  };
-
   return (
     <svg
       onWheel={handleZoom}
@@ -171,21 +112,11 @@ export default forwardRef(function Svg(
             stroke="#fff"
             strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}
           ></path>
-          {lines.map(({ x1, y1, x2, y2 }, index) => {
-            return (
-              <line
-                key={index}
-                stroke="gray"
-                strokeWidth={String(
-                  (1.5 * viewbox.width) / svgDimensions.width
-                )}
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-              ></line>
-            );
-          })}
+          <ControlLines
+            lines={lines}
+            viewboxWidth={viewbox.width}
+            svgDimensionsWidth={svgDimensions.width}
+          ></ControlLines>
           {hasActivePath && activePath && (
             <path
               d={activePath}
@@ -194,19 +125,14 @@ export default forwardRef(function Svg(
               strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}
             ></path>
           )}
-          {circles.map((circle) => {
-            return (
-              <Circle
-                key={circle.id}
-                circleObject={circle}
-                radius={String((3.5 * viewbox.width) / svgDimensions.width)}
-                strokeWidth={String((13 * viewbox.width) / svgDimensions.width)}
-                handleMove={handleMove}
-                handleEnter={handleEnter}
-                handleLeave={handleLeave}
-              ></Circle>
-            );
-          })}
+          <Points
+            points={points}
+            commands={pathObject.commands}
+            updateCommands={updateCommands}
+            setHasActivePath={setHasActivePath}
+            viewboxWidth={viewbox.width}
+            svgDimensionsWidth={svgDimensions.width}
+          ></Points>
         </>
       ) : (
         <svg className="opacity-0">
@@ -221,16 +147,3 @@ export default forwardRef(function Svg(
     </svg>
   );
 });
-
-function Line({ circles, circle, letter, viewbox, svgDimensions, index }) {
-  return (
-    <line
-      stroke="gray"
-      strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}
-      x1={x1}
-      y1={y1}
-      x2={x2}
-      y2={y2}
-    ></line>
-  );
-}

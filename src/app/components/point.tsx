@@ -7,8 +7,8 @@ interface CircleElement extends CircleType {
   handleLeave: () => any;
 }
 
-export function Circle({
-  circleObject,
+export function Point({
+  point,
   radius,
   handleMove,
   handleEnter,
@@ -16,7 +16,7 @@ export function Circle({
   strokeWidth,
 }: CircleElement) {
   const [dragging, setDragging] = useState(false);
-  const { id, id_command, control, hovered, selected, cx, cy } = circleObject;
+  const { id, id_command, control, hovered, selected, cx, cy } = point;
   const fill = hovered ? "deepskyblue" : control ? "#808080" : "#fff";
 
   const handlePointerDown = (event: React.PointerEvent<SVGCircleElement>) => {
