@@ -1,15 +1,13 @@
 import { forwardRef, useEffect, useMemo, useState } from "react";
 import { usePathObject } from "@/context/PathContext";
 import { Viewbox } from "@/types/Viewbox";
-import {
-  centerViewbox,
-  createPathFromHoveredCommands,
-  updatePoints,
-} from "@/utils/path";
+import { centerViewbox, updatePoints } from "@/utils/path";
 import { usePanZoom } from "@/hooks/usePanZoom";
 import { createControlLines } from "@/utils/control-lines";
 import ControlLines from "./control-lines";
 import Points from "./points";
+import OverlappedPaths from "./overlapped-paths";
+import { createOverlappedPathsFromCommands } from "@/utils/overlapped-paths";
 
 export default forwardRef(function Svg(
   {
@@ -27,7 +25,6 @@ export default forwardRef(function Svg(
 ) {
   const { pathObject, updateCommands } = usePathObject();
   const [isVisible, setIsVisible] = useState(false);
-  const [hasActivePath, setHasActivePath] = useState(false);
 
   const points = useMemo(
     () => updatePoints(pathObject.commands),
@@ -38,18 +35,27 @@ export default forwardRef(function Svg(
     [pathObject.commands, points]
   );
 
-  let activePath = "";
+  const overlappedPaths = useMemo(
+    () => createOverlappedPathsFromCommands(pathObject.commands),
+    [pathObject.commands]
+  );
 
-  if (hasActivePath) {
-    activePath = createPathFromHoveredCommands(pathObject.commands);
+  function cleanSelectedCommands() {
+    const { commands } = pathObject;
+    const unselectedCommands = commands.map((command) => ({
+      ...command,
+      selected: false,
+    }));
+    updateCommands(unselectedCommands);
   }
+
   const {
     handlePointerDown,
     handlePointerLeave,
     handlePointerMove,
     handlePointerUp,
     handleZoom,
-  } = usePanZoom(viewbox, updateViewbox);
+  } = usePanZoom(viewbox, updateViewbox, cleanSelectedCommands);
 
   const svgRef = ref as React.RefObject<SVGSVGElement>;
 
@@ -117,19 +123,15 @@ export default forwardRef(function Svg(
             viewboxWidth={viewbox.width}
             svgDimensionsWidth={svgDimensions.width}
           ></ControlLines>
-          {hasActivePath && activePath && (
-            <path
-              d={activePath}
-              stroke="deepskyblue"
-              fill="transparent"
-              strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}
-            ></path>
-          )}
+          <OverlappedPaths
+            overlappedPaths={overlappedPaths}
+            viewboxWidth={viewbox.width}
+            svgDimensionsWidth={svgDimensions.width}
+          ></OverlappedPaths>
           <Points
             points={points}
             commands={pathObject.commands}
             updateCommands={updateCommands}
-            setHasActivePath={setHasActivePath}
             viewboxWidth={viewbox.width}
             svgDimensionsWidth={svgDimensions.width}
           ></Points>

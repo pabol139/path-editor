@@ -3,10 +3,13 @@ import { Viewbox } from "@/types/Viewbox";
 
 export function usePanZoom(
   viewbox: Viewbox,
-  updateViewbox: (viewbox: Viewbox) => void
+  updateViewbox: (viewbox: Viewbox) => void,
+  onClick
 ) {
   const [dragging, setDragging] = useState(false);
   const [lastPosition, setLastPosition] = useState({ x: 0, y: 0 });
+  const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
+  const [hasMoved, setHasMoved] = useState(false);
 
   const handlePointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
     setDragging(true);
@@ -21,14 +24,18 @@ export function usePanZoom(
       x: svgPoint.x,
       y: svgPoint.y,
     });
-    (event.target as HTMLElement).setPointerCapture(event.pointerId);
+    setStartPosition({
+      x: svgPoint.x,
+      y: svgPoint.y,
+    });
+    // (event.target as HTMLElement).setPointerCapture(event.pointerId);
   };
 
   const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
     if (!dragging) {
       return;
     }
-
+    setHasMoved(true);
     const svg = event.currentTarget as SVGSVGElement;
 
     const point = svg.createSVGPoint();
@@ -90,9 +97,14 @@ export function usePanZoom(
   };
 
   const handlePointerUp = (event: React.PointerEvent<SVGSVGElement>) => {
+    if (!hasMoved) {
+      onClick();
+    }
     setDragging(false);
+    setHasMoved(false);
     setLastPosition({ x: 0, y: 0 });
-    (event.target as HTMLElement).releasePointerCapture(event.pointerId);
+    setStartPosition({ x: 0, y: 0 });
+    // (event.target as HTMLElement).releasePointerCapture(event.pointerId);
   };
   return {
     handleZoom,

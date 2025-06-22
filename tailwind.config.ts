@@ -18,6 +18,8 @@ export default {
         gray200: "var(--gray200)",
         gray300: "var(--gray300)",
         purple: "var(--purple)",
+        purple300: "var(--purple300)",
+        purple600: "var(--purple600)",
       },
     },
   },

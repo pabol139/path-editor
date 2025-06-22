@@ -2,9 +2,10 @@ import { useState } from "react";
 import { CircleType } from "@/types/Circle";
 
 interface CircleElement extends CircleType {
-  handleMove: ({ id, x, y }: { id: string; x: number; y: number }) => any;
-  handleEnter: (id: string) => any;
-  handleLeave: () => any;
+  handleMove: ({ id, x, y }: { id: string; x: number; y: number }) => void;
+  handleEnter: () => void;
+  handleLeave: () => void;
+  handleDown: () => void;
 }
 
 export function Point({
@@ -13,14 +14,22 @@ export function Point({
   handleMove,
   handleEnter,
   handleLeave,
+  handleDown,
   strokeWidth,
 }: CircleElement) {
   const [dragging, setDragging] = useState(false);
   const { id, id_command, control, hovered, selected, cx, cy } = point;
-  const fill = hovered ? "deepskyblue" : control ? "#808080" : "#fff";
+  const fill = selected
+    ? "deeppink"
+    : hovered
+    ? "deepskyblue"
+    : control
+    ? "#808080"
+    : "#fff";
 
   const handlePointerDown = (event: React.PointerEvent<SVGCircleElement>) => {
     setDragging(true);
+    handleDown();
     (event.target as HTMLElement).setPointerCapture(event.pointerId);
     event.stopPropagation();
   };
@@ -46,10 +55,6 @@ export function Point({
     event.stopPropagation();
   };
 
-  const handlePointerEnter = (event: React.PointerEvent<SVGCircleElement>) => {
-    handleEnter(id_command);
-  };
-
   return (
     <circle
       style={{
@@ -68,7 +73,7 @@ export function Point({
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
-      onPointerEnter={handlePointerEnter}
+      onPointerEnter={handleEnter}
       r={radius}
       cx={cx}
       cy={cy}

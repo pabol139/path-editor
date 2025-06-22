@@ -5,7 +5,6 @@ import { commandHandlers } from "./command-handler";
 import { Viewbox } from "@/types/Viewbox";
 import { SvgDimensions } from "@/types/Svg";
 import { Dispatch, SetStateAction } from "react";
-import { Line } from "@/types/Line";
 
 /** Regex based on https://github.com/Yqnn/svg-path-editor/blob/master/src/lib/path-parser.ts */
 const kCommandTypeRegex = /^[\t\n\f\r ]*([MLHVZCSQTAmlhvzcsqta])[\t\n\f\r ]*/;
@@ -182,146 +181,6 @@ export const centerViewbox = (
     width: svgRef.current.getBoundingClientRect().width || 0,
     height: svgRef.current.getBoundingClientRect().height || 0,
   });
-};
-
-export const createPathFromHoveredCommands = (commands: ParsePath<number>) => {
-  let commandPosition = 0;
-
-  const absoluteCommands = convertRelativeToAbsolute(commands);
-  const command = absoluteCommands.find((command, index) => {
-    if (command.hovered === true) {
-      commandPosition = index;
-      return true;
-    }
-    return false;
-  });
-  let finalCommand: Command<number> | null = null;
-
-  if (!command || command.letter.toUpperCase() === "M" || commandPosition === 0)
-    return "";
-
-  const prevPosition = getCurrentPositionBeforeCommand(
-    absoluteCommands,
-    command.id
-  );
-
-  const moveToCommand = {
-    id: String(Math.random()),
-    letter: "M",
-    coordinates: [prevPosition.x, prevPosition.y],
-    hovered: false,
-    selected: false,
-  };
-
-  finalCommand = transformCommand(
-    command,
-    commands,
-    commandPosition,
-    prevPosition
-  );
-
-  return convertPathToString([moveToCommand, finalCommand]) ?? "";
-};
-
-const transformCommand: (
-  command: Command<number>,
-  commands: ParsePath<number>,
-  commandPosition: number,
-  prevPosition: { x: number; y: number }
-) => Command<number> = (command, commands, commandPosition, prevPosition) => {
-  const letter = command.letter.toUpperCase();
-
-  if (letter === "T") {
-    return transformSmoothQuadratic(
-      command,
-      commands,
-      commandPosition,
-      prevPosition
-    );
-  }
-
-  if (letter === "S") {
-    return transformSmoothCubic(
-      command,
-      commands,
-      commandPosition,
-      prevPosition
-    );
-  }
-
-  return command;
-};
-
-const transformSmoothQuadratic = (
-  command: Command<number>,
-  commands: ParsePath<number>,
-  position: number,
-  prevPosition: { x: number; y: number }
-): Command<number> => {
-  const controlPoint = calculateReflectedControlPoint(
-    commands,
-    position,
-    prevPosition
-  );
-
-  return {
-    ...command,
-    letter: "Q",
-    id: String(Math.random()),
-    coordinates: [
-      controlPoint.x,
-      controlPoint.y,
-      command.coordinates[0],
-      command.coordinates[1],
-    ],
-  };
-};
-
-const transformSmoothCubic = (
-  command: Command<number>,
-  commands: ParsePath<number>,
-  position: number,
-  prevPosition: { x: number; y: number }
-): Command<number> => {
-  const controlPoint = calculateReflectedControlPoint(
-    commands,
-    position,
-    prevPosition
-  );
-
-  return {
-    ...command,
-    letter: "C",
-    id: String(Math.random()),
-    coordinates: [
-      controlPoint.x,
-      controlPoint.y,
-      command.coordinates[0],
-      command.coordinates[1],
-      command.coordinates[2],
-      command.coordinates[3],
-    ],
-  };
-};
-
-const calculateReflectedControlPoint = (
-  commands: ParsePath<number>,
-  position: number,
-  prevPosition: { x: number; y: number }
-): { x: number; y: number } => {
-  const prevControlPoint = getLastControlPoint(
-    convertRelativeToAbsolute(commands),
-    position
-  );
-
-  if (prevControlPoint) {
-    return {
-      x: 2 * prevPosition.x - prevControlPoint.x,
-      y: 2 * prevPosition.y - prevControlPoint.y,
-    };
-  }
-
-  return prevPosition;
 };
 
 export const getLastControlPoint = (
@@ -643,4 +502,42 @@ export const updatePoints = (commands: ParsePath<number>) => {
   });
 
   return points;
+};
+
+export const onPointerEnterCommand = (
+  commands: ParsePath<number>,
+  updateCommands: (newValues: any) => void,
+  id_command: string
+) => {
+  const newCommands = commands.map((command) => {
+    if (command.id !== id_command) return { ...command, hovered: false }; // Return unmodified command
+
+    return { ...command, hovered: true }; // Return new object
+  });
+
+  updateCommands(newCommands);
+};
+
+export const onPointerLeaveCommand = (
+  commands: ParsePath<number>,
+  updateCommands: (newValues: any) => void
+) => {
+  const newCommands = commands.map((command) => {
+    return { ...command, hovered: false }; // Return new object
+  });
+  updateCommands(newCommands);
+};
+
+export const onPointerDownCommand = (
+  commands: ParsePath<number>,
+  updateCommands: (newValues: any) => void,
+  id_command: string
+) => {
+  const newCommands = commands.map((command) => {
+    if (command.id !== id_command) return { ...command, selected: false }; // Return unmodified command
+
+    return { ...command, selected: true }; // Return new object
+  });
+
+  updateCommands(newCommands);
 };

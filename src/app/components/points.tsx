@@ -2,6 +2,9 @@ import { commandHandlers } from "@/utils/command-handler";
 import {
   getCurrentPositionBeforeCommand,
   isRelativeCommand,
+  onPointerDownCommand,
+  onPointerEnterCommand,
+  onPointerLeaveCommand,
 } from "@/utils/path";
 import { Point } from "./point";
 import { Point as PointType } from "@/types/Point";
@@ -18,14 +21,12 @@ export default function Points({
   points,
   commands,
   updateCommands,
-  setHasActivePath,
   viewboxWidth,
   svgDimensionsWidth,
 }: {
   points: PointType[];
   commands: ParsePath<number>;
   updateCommands: (newValues: any) => void;
-  setHasActivePath: Dispatch<SetStateAction<boolean>>;
   viewboxWidth: number;
   svgDimensionsWidth: number;
 }) {
@@ -57,25 +58,6 @@ export default function Points({
     updateCommands(newCommands);
   };
 
-  const handleEnter = (id_command: string) => {
-    const newCommands = commands.map((command) => {
-      if (command.id !== id_command) return command; // Return unmodified command
-
-      return { ...command, hovered: true }; // Return new object
-    });
-
-    setHasActivePath(true);
-    updateCommands(newCommands);
-  };
-
-  const handleLeave = () => {
-    const newCommands = commands.map((command) => {
-      return { ...command, hovered: false }; // Return new object
-    });
-    updateCommands(newCommands);
-    setHasActivePath(false);
-  };
-
   return (
     <>
       {points.map((point) => {
@@ -86,8 +68,13 @@ export default function Points({
             radius={String((3.5 * viewboxWidth) / svgDimensionsWidth)}
             strokeWidth={String((13 * viewboxWidth) / svgDimensionsWidth)}
             handleMove={handleMove}
-            handleEnter={handleEnter}
-            handleLeave={handleLeave}
+            handleEnter={() =>
+              onPointerEnterCommand(commands, updateCommands, point.id_command)
+            }
+            handleLeave={() => onPointerLeaveCommand(commands, updateCommands)}
+            handleDown={() =>
+              onPointerDownCommand(commands, updateCommands, point.id_command)
+            }
           ></Point>
         );
       })}
