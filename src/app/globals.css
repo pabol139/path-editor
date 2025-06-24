@@ -90,6 +90,12 @@
     isolation: isolate;
   }
 
+  input::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+    display: none;
+  }
+
   /*** COLOR INPUT ***/
   /* Source: https://www.smashingmagazine.com/2021/12/create-custom-range-input-consistent-browsers/ */
   input[type="color" i] {

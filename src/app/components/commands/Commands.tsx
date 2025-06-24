@@ -6,15 +6,37 @@ import {
   onPointerEnterCommand,
   onPointerLeaveCommand,
 } from "@/utils/path";
+import React from "react";
 
-export default function CommandsSection() {
+function CommandsSection() {
   const { pathObject, updateCommands } = usePathObject();
   const commands = pathObject.commands;
+
+  const handleInput = (
+    id_command: string,
+    index: number,
+    parsedValue: number
+  ) => {
+    if (!isNaN(parsedValue)) {
+      const newCommands = pathObject.commands.map((command) => {
+        if (command.id === id_command) {
+          const newCoordinates = command.coordinates;
+          newCoordinates[index] = Number(parsedValue);
+          return {
+            ...command,
+            coodinates: newCoordinates,
+          };
+        }
+        return command;
+      });
+      updateCommands(newCommands);
+    }
+  };
 
   return (
     <CollapsedSection title="Commands">
       <ul className="pb-5  gap-2 flex flex-col">
-        {commands.map(({ id, letter, coordinates, selected, hovered }, key) => (
+        {commands.map(({ id, letter, coordinates, selected, hovered }) => (
           <Command
             key={id}
             id={id}
@@ -29,9 +51,12 @@ export default function CommandsSection() {
             handleDown={() =>
               onPointerDownCommand(commands, updateCommands, id)
             }
+            handleInput={handleInput}
           />
         ))}
       </ul>
     </CollapsedSection>
   );
 }
+
+export default React.memo(CommandsSection);
