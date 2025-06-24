@@ -4,6 +4,7 @@ import TransformSection from "@/components/transformations/Transforms";
 import PathSection from "@/components/path/Path";
 import { SvgDimensions } from "@/types/Svg";
 import CommandsSection from "@/components/commands/Commands";
+import React from "react";
 
 type SiderbarProps = {
   svgDimensions: SvgDimensions;

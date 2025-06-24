@@ -86,10 +86,13 @@ export const commandHandlers: Record<string, CommandHandler> = {
       return ["M", coords];
     }, // Already absolute
     toRelative: (absoluteCoords, currentPosition, isRelative) => {
-      if (isRelative) return absoluteCoords;
+      if (isRelative) return ["m", absoluteCoords];
       return [
-        absoluteCoords[0] - currentPosition.x,
-        absoluteCoords[1] - currentPosition.y,
+        "m",
+        [
+          absoluteCoords[0] - currentPosition.x,
+          absoluteCoords[1] - currentPosition.y,
+        ],
       ];
     },
     getAccumulatedPosition: (currentPosition, coords, isRelative) => {
@@ -137,11 +140,14 @@ export const commandHandlers: Record<string, CommandHandler> = {
       return ["L", coords];
     }, // Already absolute
     toRelative: (absoluteCoords, currentPosition, isRelative) => {
-      if (isRelative) return absoluteCoords;
+      if (isRelative) return ["l", absoluteCoords];
 
       return [
-        absoluteCoords[0] - currentPosition.x,
-        absoluteCoords[1] - currentPosition.y,
+        "l",
+        [
+          absoluteCoords[0] - currentPosition.x,
+          absoluteCoords[1] - currentPosition.y,
+        ],
       ];
     },
     getAccumulatedPosition: (currentPosition, coords, isRelative) => {
@@ -183,8 +189,8 @@ export const commandHandlers: Record<string, CommandHandler> = {
       return ["H", coords];
     }, // Already absolute
     toRelative: (absoluteCoords, currentPosition, isRelative) => {
-      if (isRelative) return absoluteCoords;
-      return [absoluteCoords[0] - currentPosition.x];
+      if (isRelative) return ["h", absoluteCoords];
+      return ["h", [absoluteCoords[0] - currentPosition.x]];
     },
     getAccumulatedPosition: (currentPosition, coords, isRelative) => {
       if (isRelative)
@@ -230,9 +236,9 @@ export const commandHandlers: Record<string, CommandHandler> = {
       return ["V", coords];
     }, // Already absolute
     toRelative: (absoluteCoords, currentPosition, isRelative) => {
-      if (isRelative) return absoluteCoords;
+      if (isRelative) return ["v", absoluteCoords];
 
-      return [absoluteCoords[0] - currentPosition.y];
+      return ["v", [absoluteCoords[0] - currentPosition.y]];
     },
     getAccumulatedPosition: (currentPosition, coords, isRelative) => {
       if (isRelative)
@@ -301,13 +307,16 @@ export const commandHandlers: Record<string, CommandHandler> = {
       return ["Q", coords];
     }, // Already absolute
     toRelative: (absoluteCoords, currentPosition, isRelative) => {
-      if (isRelative) return absoluteCoords;
+      if (isRelative) return ["q", absoluteCoords];
 
       return [
-        absoluteCoords[0] - currentPosition.x,
-        absoluteCoords[1] - currentPosition.y,
-        absoluteCoords[2] - currentPosition.x,
-        absoluteCoords[3] - currentPosition.y,
+        "q",
+        [
+          absoluteCoords[0] - currentPosition.x,
+          absoluteCoords[1] - currentPosition.y,
+          absoluteCoords[2] - currentPosition.x,
+          absoluteCoords[3] - currentPosition.y,
+        ],
       ];
     },
     getAccumulatedPosition: (currentPosition, coords, isRelative) => {
@@ -354,10 +363,13 @@ export const commandHandlers: Record<string, CommandHandler> = {
       return ["T", coords];
     }, // Already absolute
     toRelative: (absoluteCoords, currentPosition, isRelative) => {
-      if (isRelative) return absoluteCoords;
+      if (isRelative) return ["t", absoluteCoords];
       return [
-        absoluteCoords[0] - currentPosition.x,
-        absoluteCoords[1] - currentPosition.y,
+        "t",
+        [
+          absoluteCoords[0] - currentPosition.x,
+          absoluteCoords[1] - currentPosition.y,
+        ],
       ];
     },
     getAccumulatedPosition: (currentPosition, coords, isRelative) => {
@@ -433,12 +445,17 @@ export const commandHandlers: Record<string, CommandHandler> = {
     toRelative: (absoluteCoords, currentPosition, isRelative) => {
       if (isRelative) {
         // already relative representation expected by caller
-        return absoluteCoords;
+        return ["c", absoluteCoords];
       }
       // subtract currentPosition to get relative deltas
-      return absoluteCoords.map((coord, index) =>
-        index % 2 === 0 ? coord - currentPosition.x : coord - currentPosition.y
-      );
+      return [
+        "c",
+        absoluteCoords.map((coord, index) =>
+          index % 2 === 0
+            ? coord - currentPosition.x
+            : coord - currentPosition.y
+        ),
+      ];
     },
     getAccumulatedPosition: (currentPosition, coords, isRelative) => {
       if (isRelative) {
@@ -507,14 +524,17 @@ export const commandHandlers: Record<string, CommandHandler> = {
     },
     toRelative: (absoluteCoords, currentPosition, isRelative) => {
       if (isRelative) {
-        return absoluteCoords;
+        return ["s", absoluteCoords];
       }
       // subtract currentPosition to get relative deltas
       return [
-        absoluteCoords[0] - currentPosition.x,
-        absoluteCoords[1] - currentPosition.y,
-        absoluteCoords[2] - currentPosition.x,
-        absoluteCoords[3] - currentPosition.y,
+        "s",
+        [
+          absoluteCoords[0] - currentPosition.x,
+          absoluteCoords[1] - currentPosition.y,
+          absoluteCoords[2] - currentPosition.x,
+          absoluteCoords[3] - currentPosition.y,
+        ],
       ];
     },
     getAccumulatedPosition: (currentPosition, coords, isRelative) => {
@@ -578,17 +598,20 @@ export const commandHandlers: Record<string, CommandHandler> = {
     },
     toRelative: (absoluteCoords, currentPosition, isRelative) => {
       if (isRelative) {
-        return absoluteCoords;
+        return ["a", absoluteCoords];
       }
       // keep flags and radii, subtract position for endpoint
       return [
-        absoluteCoords[0],
-        absoluteCoords[1],
-        absoluteCoords[2],
-        absoluteCoords[3],
-        absoluteCoords[4],
-        absoluteCoords[5] - currentPosition.x,
-        absoluteCoords[6] - currentPosition.y,
+        "a",
+        [
+          absoluteCoords[0],
+          absoluteCoords[1],
+          absoluteCoords[2],
+          absoluteCoords[3],
+          absoluteCoords[4],
+          absoluteCoords[5] - currentPosition.x,
+          absoluteCoords[6] - currentPosition.y,
+        ],
       ];
     },
     getAccumulatedPosition: (currentPosition, coords, isRelative) => {

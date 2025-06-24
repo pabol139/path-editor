@@ -343,80 +343,6 @@ const isAbsoluteCommand = (commandLetter: string): boolean => {
   return commandLetter === commandLetter.toUpperCase();
 };
 
-// Convert absolute coordinates to relative
-export const convertAbsoluteToRelative = (
-  command: { letter: string; coordinates: number[] },
-  currentPosition: { x: number; y: number }
-) => {
-  if (isRelativeCommand(command.letter)) {
-    return { ...command }; // Already relative
-  }
-
-  const newCoordinates = [...command.coordinates];
-
-  switch (command.letter.toLowerCase()) {
-    case "m":
-    case "l":
-      // Subtract current position from absolute coordinates
-      for (let i = 0; i < newCoordinates.length; i += 2) {
-        newCoordinates[i] -= currentPosition.x;
-        newCoordinates[i + 1] -= currentPosition.y;
-      }
-      break;
-
-    case "h":
-      // Horizontal line - subtract current x
-      newCoordinates[0] -= currentPosition.x;
-      break;
-
-    case "v":
-      // Vertical line - subtract current y
-      newCoordinates[0] -= currentPosition.y;
-      break;
-
-    case "c":
-      // Cubic bezier - subtract current position from all coordinate pairs
-      for (let i = 0; i < newCoordinates.length; i += 2) {
-        newCoordinates[i] -= currentPosition.x;
-        newCoordinates[i + 1] -= currentPosition.y;
-      }
-      break;
-
-    case "s":
-      // Smooth cubic bezier
-      newCoordinates[0] -= currentPosition.x; // control point x
-      newCoordinates[1] -= currentPosition.y; // control point y
-      newCoordinates[2] -= currentPosition.x; // end point x
-      newCoordinates[3] -= currentPosition.y; // end point y
-      break;
-
-    case "q":
-      // Quadratic bezier
-      newCoordinates[0] -= currentPosition.x; // control point x
-      newCoordinates[1] -= currentPosition.y; // control point y
-      newCoordinates[2] -= currentPosition.x; // end point x
-      newCoordinates[3] -= currentPosition.y; // end point y
-      break;
-
-    case "t":
-      // Smooth quadratic bezier
-      newCoordinates[0] -= currentPosition.x;
-      newCoordinates[1] -= currentPosition.y;
-      break;
-
-    case "a":
-      // Arc - subtract current position from end point
-      newCoordinates[5] -= currentPosition.x;
-      newCoordinates[6] -= currentPosition.y;
-      break;
-  }
-
-  return {
-    ...command,
-    coordinates: newCoordinates,
-  };
-};
-
 export function getCurrentPositionBeforeCommand(
   commands: Command<number>[],
   targetCommandId: string
@@ -454,6 +380,29 @@ export function convertRelativeToAbsolute(commands: ParsePath<number>) {
     const currentPosition = getCurrentPositionBeforeCommand(commands, id);
     const isRelative = isRelativeCommand(letter);
     const [updatedLetter, updatedCoordinates] = handler.toAbsolute(
+      coordinates,
+      currentPosition,
+      isRelative
+    );
+
+    return {
+      ...command,
+      letter: updatedLetter,
+      coordinates: updatedCoordinates,
+    };
+  });
+}
+export function convertAbsoluteToRelative(commands: ParsePath<number>) {
+  return commands.map((command) => {
+    const { letter, coordinates, id } = command;
+
+    if (letter.toLocaleUpperCase() === LINE_COMMANDS.Close)
+      return { ...command, letter: letter.toLocaleLowerCase() };
+
+    const handler = commandHandlers[letter.toLocaleUpperCase()];
+    const currentPosition = getCurrentPositionBeforeCommand(commands, id);
+    const isRelative = isRelativeCommand(letter);
+    const [updatedLetter, updatedCoordinates] = handler.toRelative(
       coordinates,
       currentPosition,
       isRelative

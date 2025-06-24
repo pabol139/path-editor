@@ -1,8 +1,15 @@
 import { useState } from "react";
 import { usePathObject } from "@/context/PathContext";
-import { scale, translate } from "@/utils/path";
+import {
+  convertAbsoluteToRelative,
+  convertRelativeToAbsolute,
+  scale,
+  translate,
+} from "@/utils/path";
 import { CollapsedSection } from "@/components/CollapsedSection";
 import { TransformRow } from "@/components/transformations/TransformRow";
+import React from "react";
+import { MoveRight } from "lucide-react";
 
 type Coordinates = {
   translate: AxisValues;
@@ -19,7 +26,7 @@ type AxisValues = {
 
 type Action = "translate" | "rotate" | "scale";
 
-export default function TransformSection() {
+function TransformSection() {
   const { pathObject, updateCommands } = usePathObject();
 
   const [coordinates, setCoordinates] = useState<Coordinates>({
@@ -71,8 +78,15 @@ export default function TransformSection() {
     );
   };
 
+  const handleRelativeToAbsolute = () => {
+    updateCommands(convertRelativeToAbsolute(pathObject.commands));
+  };
+  const handleAbsoluteToRelative = () => {
+    updateCommands(convertAbsoluteToRelative(pathObject.commands));
+  };
+
   return (
-    <CollapsedSection title="Transforms">
+    <CollapsedSection title="Operations">
       <div className="px-5 pb-5 space-y-4">
         <TransformRow
           title="Translate"
@@ -88,7 +102,23 @@ export default function TransformSection() {
           updatePosition={updatePosition}
           handleTransform={handleScale}
         ></TransformRow>
+        <div className="flex gap-2 !mt-6">
+          <button
+            className="bg-purple border border-white rounded-md px-3 py-2 flex-1"
+            onClick={handleRelativeToAbsolute}
+          >
+            m <MoveRight className="inline mx-2 "></MoveRight> M
+          </button>
+          <button
+            className="bg-[#B15959] border border-white rounded-md px-3 py-2 flex-1"
+            onClick={handleAbsoluteToRelative}
+          >
+            M <MoveRight className="inline mx-2 "></MoveRight> m
+          </button>
+        </div>
       </div>
     </CollapsedSection>
   );
 }
+
+export default React.memo(TransformSection);
