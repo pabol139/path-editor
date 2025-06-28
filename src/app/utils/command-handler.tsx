@@ -33,6 +33,10 @@ interface CommandHandler {
     currentPosition: { x: number; y: number }
   ) => { x: number; y: number };
   getLastControlPoint?: (coordinates: number[]) => { x: number; y: number };
+  translate: (
+    coordinates: number[],
+    values: { x: number; y: number }
+  ) => number[];
 }
 
 const generateBasePoint = (
@@ -108,6 +112,7 @@ export const commandHandlers: Record<string, CommandHandler> = {
       };
     },
     getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
+    translate: (coords, values) => [coords[0] + values.x, coords[1] + values.y],
   },
 
   [LINE_COMMANDS.LineTo]: {
@@ -163,6 +168,7 @@ export const commandHandlers: Record<string, CommandHandler> = {
       };
     },
     getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
+    translate: (coords, values) => [coords[0] + values.x, coords[1] + values.y],
   },
   [LINE_COMMANDS.Horizontal]: {
     extractPoints: (command) => [
@@ -208,6 +214,7 @@ export const commandHandlers: Record<string, CommandHandler> = {
       x: coords[0],
       y: currentPosition.y,
     }),
+    translate: (coords, values) => [coords[0] + values.x, coords[1]],
   },
 
   [LINE_COMMANDS.Vertical]: {
@@ -256,6 +263,7 @@ export const commandHandlers: Record<string, CommandHandler> = {
       x: currentPosition.x,
       y: coords[1],
     }),
+    translate: (coords, values) => [coords[0], coords[1]],
   },
 
   [LINE_COMMANDS.QuadraticCurve]: {
@@ -333,6 +341,12 @@ export const commandHandlers: Record<string, CommandHandler> = {
     },
     getEndPosition: (coords) => ({ x: coords[2], y: coords[3] }),
     getLastControlPoint: (coords) => ({ x: coords[0], y: coords[1] }),
+    translate: (coords, values) => [
+      coords[0] - values.x,
+      coords[1] - values.y,
+      coords[2] - values.x,
+      coords[3] - values.y,
+    ],
   },
   [LINE_COMMANDS.SmoothQuadraticCurve]: {
     extractPoints: (command) => [
@@ -385,6 +399,7 @@ export const commandHandlers: Record<string, CommandHandler> = {
       };
     },
     getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
+    translate: (coords, values) => [coords[0] + values.x, coords[1] + values.y],
   },
   [LINE_COMMANDS.Curve]: {
     extractPoints: (command) => [
@@ -472,6 +487,14 @@ export const commandHandlers: Record<string, CommandHandler> = {
     },
     getEndPosition: (coords) => ({ x: coords[4], y: coords[5] }),
     getLastControlPoint: (coords) => ({ x: coords[2], y: coords[3] }),
+    translate: (coords, values) => [
+      coords[0] + values.x,
+      coords[1] + values.y,
+      coords[2] + values.x,
+      coords[3] + values.y,
+      coords[4] + values.x,
+      coords[5] + values.y,
+    ],
   },
   [LINE_COMMANDS.SmoothCurve]: {
     extractPoints: (command) => [
@@ -551,6 +574,12 @@ export const commandHandlers: Record<string, CommandHandler> = {
     },
     getEndPosition: (coords) => ({ x: coords[2], y: coords[3] }),
     getLastControlPoint: (coords) => ({ x: coords[0], y: coords[1] }),
+    translate: (coords, values) => [
+      coords[0] + values.x,
+      coords[1] + values.y,
+      coords[2] + values.x,
+      coords[3] + values.y,
+    ],
   },
   [LINE_COMMANDS.Arc]: {
     extractPoints: (command) => [
@@ -627,5 +656,6 @@ export const commandHandlers: Record<string, CommandHandler> = {
       };
     },
     getEndPosition: (coords) => ({ x: coords[5], y: coords[6] }),
+    translate: (coords, values) => [coords[5] + values.x, coords[6] + values.y],
   },
 };

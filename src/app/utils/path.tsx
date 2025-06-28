@@ -230,7 +230,7 @@ const getLastControlPointCurve = (
   return handler?.getLastControlPoint?.(command.coordinates) || null;
 };
 
-export const convertPathToString = (commands: ParsePath<number>) => {
+export const convertCommandsToPath = (commands: ParsePath<number>) => {
   return commands
     .map((command) => {
       if (command.letter.toUpperCase() === LINE_COMMANDS.Close) {
@@ -246,6 +246,20 @@ export const convertPathToString = (commands: ParsePath<number>) => {
     })
     .join(" ")
     .toString();
+};
+
+export const formatCommands: (
+  commands: ParsePath<number>,
+  precision: number
+) => ParsePath<number> = (commands, precision = 2) => {
+  return commands.map((command) => {
+    return {
+      ...command,
+      coordinates: command.coordinates.map((coordinate) =>
+        Number(coordinate.toFixed(precision))
+      ),
+    };
+  });
 };
 
 export const translate = (

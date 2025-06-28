@@ -1,6 +1,6 @@
 import { Command, ParsePath } from "@/types/Path";
 import {
-  convertPathToString,
+  convertCommandsToPath,
   convertRelativeToAbsolute,
   getCurrentPositionBeforeCommand,
   getLastControlPoint,
@@ -44,7 +44,7 @@ export const createOverlappedPathsFromCommands = (
       overlappedPaths.push({
         color,
         overlappedPath:
-          convertPathToString([moveToCommand, finalCommand]) ?? "",
+          convertCommandsToPath([moveToCommand, finalCommand]) ?? "",
       });
     }
   });
