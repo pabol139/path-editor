@@ -271,39 +271,31 @@ export const translate = (
     return [];
   }
 
-  const formatedCommands = commands;
-
   const xValue = parseFloat(x);
   const yValue = parseFloat(y);
 
   if (isNaN(xValue) || isNaN(yValue)) {
-    return formatedCommands;
+    return commands;
   }
 
-  formatedCommands.forEach((command) => {
-    const letter = command.letter;
+  const formatedCommands = commands.map((command) => {
+    const { letter, coordinates } = command;
 
-    if (letter === LINE_COMMANDS.Vertical) {
-      let parsedCoordinate = command.coordinates[0];
-      command.coordinates[0] = parsedCoordinate + yValue;
+    if (letter === LINE_COMMANDS.Close) {
+      return command;
     }
 
-    if (letter === LINE_COMMANDS.Arc) {
-      // 5 === X
-      // 6 === Y
-      let parsedCoordinateX = command.coordinates[5];
-      let parsedCoordinateY = command.coordinates[6];
-      command.coordinates[5] = parsedCoordinateX + xValue;
-      command.coordinates[6] = parsedCoordinateY + yValue;
-    }
+    const handler = commandHandlers[letter.toLocaleUpperCase()];
 
-    command.coordinates.forEach((coordinate, i) => {
-      let newCoordinate = coordinate;
-
-      if (i % 2 === 0) {
-        command.coordinates[i] = newCoordinate + xValue;
-      } else command.coordinates[i] = newCoordinate + yValue;
+    const updatedCoordinates = handler.translate(coordinates, {
+      x: xValue,
+      y: yValue,
     });
+
+    return {
+      ...command,
+      coordinates: updatedCoordinates,
+    };
   });
 
   return formatedCommands;
@@ -318,32 +310,30 @@ export const scale = (
     return [];
   }
 
-  const formatedCommands = commands;
-
   const xValue = parseFloat(rawXFactor);
   const yValue = parseFloat(rawYFactor);
 
   if (isNaN(xValue) || isNaN(yValue)) {
-    return formatedCommands;
+    return commands;
   }
-  formatedCommands.forEach((command) => {
-    const letter = command.letter;
+  const formatedCommands = commands.map((command) => {
+    const { letter, coordinates } = command;
 
-    if (letter === LINE_COMMANDS.Vertical) {
-      let parsedCoordinate = command.coordinates[0];
-      command.coordinates[0] = parsedCoordinate * yValue;
+    if (letter === LINE_COMMANDS.Close) {
+      return command;
     }
 
-    if (letter === LINE_COMMANDS.Arc) {
-    }
+    const handler = commandHandlers[letter.toLocaleUpperCase()];
 
-    command.coordinates.forEach((coordinate, i) => {
-      let newCoordinate = coordinate;
-
-      if (i % 2 === 0) {
-        command.coordinates[i] = newCoordinate * xValue;
-      } else command.coordinates[i] = newCoordinate * yValue;
+    const updatedCoordinates = handler.scale(coordinates, {
+      x: xValue,
+      y: yValue,
     });
+
+    return {
+      ...command,
+      coordinates: updatedCoordinates,
+    };
   });
 
   return formatedCommands;

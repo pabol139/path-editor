@@ -21,7 +21,7 @@ interface CommandHandler {
     coords: number[],
     currentPosition: { x: number; y: number },
     isRelative: boolean
-  ) => number[];
+  ) => [string, number[]];
   getAccumulatedPosition: (
     currentPosition: { x: number; y: number },
     coords: number[],
@@ -37,6 +37,8 @@ interface CommandHandler {
     coordinates: number[],
     values: { x: number; y: number }
   ) => number[];
+  scale: (coordinates: number[], values: { x: number; y: number }) => number[];
+  rotate: (coordinates: number[], values: { x: number; y: number }) => number[];
 }
 
 const generateBasePoint = (
@@ -113,6 +115,7 @@ export const commandHandlers: Record<string, CommandHandler> = {
     },
     getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
     translate: (coords, values) => [coords[0] + values.x, coords[1] + values.y],
+    scale: (coords, values) => [coords[0] * values.x, coords[1] * values.y],
   },
 
   [LINE_COMMANDS.LineTo]: {
@@ -169,6 +172,7 @@ export const commandHandlers: Record<string, CommandHandler> = {
     },
     getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
     translate: (coords, values) => [coords[0] + values.x, coords[1] + values.y],
+    scale: (coords, values) => [coords[0] * values.x, coords[1] * values.y],
   },
   [LINE_COMMANDS.Horizontal]: {
     extractPoints: (command) => [
@@ -215,6 +219,7 @@ export const commandHandlers: Record<string, CommandHandler> = {
       y: currentPosition.y,
     }),
     translate: (coords, values) => [coords[0] + values.x, coords[1]],
+    scale: (coords, values) => [coords[0] * values.x, coords[1]],
   },
 
   [LINE_COMMANDS.Vertical]: {
@@ -263,7 +268,8 @@ export const commandHandlers: Record<string, CommandHandler> = {
       x: currentPosition.x,
       y: coords[1],
     }),
-    translate: (coords, values) => [coords[0], coords[1]],
+    translate: (coords, values) => [coords[0], coords[1] + values.y],
+    scale: (coords, values) => [coords[0], coords[1] * values.y],
   },
 
   [LINE_COMMANDS.QuadraticCurve]: {
@@ -342,10 +348,16 @@ export const commandHandlers: Record<string, CommandHandler> = {
     getEndPosition: (coords) => ({ x: coords[2], y: coords[3] }),
     getLastControlPoint: (coords) => ({ x: coords[0], y: coords[1] }),
     translate: (coords, values) => [
-      coords[0] - values.x,
-      coords[1] - values.y,
-      coords[2] - values.x,
-      coords[3] - values.y,
+      coords[0] + values.x,
+      coords[1] + values.y,
+      coords[2] + values.x,
+      coords[3] + values.y,
+    ],
+    scale: (coords, values) => [
+      coords[0] * values.x,
+      coords[1] * values.y,
+      coords[2] * values.x,
+      coords[3] * values.y,
     ],
   },
   [LINE_COMMANDS.SmoothQuadraticCurve]: {
@@ -400,6 +412,7 @@ export const commandHandlers: Record<string, CommandHandler> = {
     },
     getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
     translate: (coords, values) => [coords[0] + values.x, coords[1] + values.y],
+    scale: (coords, values) => [coords[0] * values.x, coords[1] * values.y],
   },
   [LINE_COMMANDS.Curve]: {
     extractPoints: (command) => [
@@ -495,6 +508,14 @@ export const commandHandlers: Record<string, CommandHandler> = {
       coords[4] + values.x,
       coords[5] + values.y,
     ],
+    scale: (coords, values) => [
+      coords[0] * values.x,
+      coords[1] * values.y,
+      coords[2] * values.x,
+      coords[3] * values.y,
+      coords[4] * values.x,
+      coords[5] * values.y,
+    ],
   },
   [LINE_COMMANDS.SmoothCurve]: {
     extractPoints: (command) => [
@@ -580,6 +601,12 @@ export const commandHandlers: Record<string, CommandHandler> = {
       coords[2] + values.x,
       coords[3] + values.y,
     ],
+    scale: (coords, values) => [
+      coords[0] * values.x,
+      coords[1] * values.y,
+      coords[2] * values.x,
+      coords[3] * values.y,
+    ],
   },
   [LINE_COMMANDS.Arc]: {
     extractPoints: (command) => [
@@ -656,6 +683,23 @@ export const commandHandlers: Record<string, CommandHandler> = {
       };
     },
     getEndPosition: (coords) => ({ x: coords[5], y: coords[6] }),
-    translate: (coords, values) => [coords[5] + values.x, coords[6] + values.y],
+    translate: (coords, values) => [
+      coords[0],
+      coords[1],
+      coords[2],
+      coords[3],
+      coords[4],
+      coords[5] + values.x,
+      coords[6] + values.y,
+    ],
+    scale: (coords, values) => [
+      coords[0] * values.x,
+      coords[1] * values.y,
+      coords[2],
+      coords[3],
+      coords[4],
+      coords[5] * values.x,
+      coords[6] * values.y,
+    ],
   },
 };

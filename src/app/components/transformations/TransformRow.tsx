@@ -41,10 +41,7 @@ export function TransformRow({
               setter={(value) => updatePosition(action, char as Axis, value)}
               onBlur={() => {
                 const parsedValue =
-                  parseFloat(coordinates[action][char as Axis]) ||
-                  action === "scale"
-                    ? 1
-                    : 0;
+                  parseFloat(coordinates[action][char as Axis]) || 0;
                 updatePosition(action, char as Axis, String(parsedValue));
               }}
             />
