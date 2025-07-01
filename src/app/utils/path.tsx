@@ -339,6 +339,44 @@ export const scale = (
   return formatedCommands;
 };
 
+export const rotate = (
+  commands: ParsePath<number>,
+  rawXFactor: string,
+  rawYFactor: string
+) => {
+  if (commands.length === 0) {
+    return [];
+  }
+
+  const xValue = parseFloat(rawXFactor);
+  const yValue = parseFloat(rawYFactor);
+
+  if (isNaN(xValue) || isNaN(yValue)) {
+    return commands;
+  }
+  const formatedCommands = commands.map((command) => {
+    const { letter, coordinates } = command;
+
+    if (letter === LINE_COMMANDS.Close) {
+      return command;
+    }
+
+    const handler = commandHandlers[letter.toLocaleUpperCase()];
+
+    const updatedCoordinates = handler.scale(coordinates, {
+      x: xValue,
+      y: yValue,
+    });
+
+    return {
+      ...command,
+      coordinates: updatedCoordinates,
+    };
+  });
+
+  return formatedCommands;
+};
+
 export const isRelativeCommand = (commandLetter: string): boolean => {
   return commandLetter === commandLetter.toLowerCase();
 };
