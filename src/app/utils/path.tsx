@@ -373,6 +373,8 @@ export function getCurrentPositionBeforeCommand(
   return currentPosition;
 }
 
+export const convertToRadians = (angle: number) => angle * (Math.PI / 180);
+
 export function convertRelativeToAbsolute(commands: ParsePath<number>) {
   return commands.map((command) => {
     const { letter, coordinates, id } = command;

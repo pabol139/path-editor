@@ -10,11 +10,11 @@ export default function SectionHeader({
   setter: () => void;
 }) {
   return (
-    <div className="relative px-5 py-5 w-full">
+    <div className="relative px-4 py-5 w-full">
       <h3 className="lowercase first-letter:uppercase">{title}</h3>
       <button
         onClick={setter}
-        className={`absolute flex items-center justify-end pr-5 right-0 top-0 w-full h-full`}
+        className={`absolute flex items-center justify-end pr-4 right-0 top-0 w-full h-full`}
       >
         <ChevronDown
           className={`${

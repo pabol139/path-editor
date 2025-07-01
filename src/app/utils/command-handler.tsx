@@ -1,6 +1,7 @@
 import { LINE_COMMANDS } from "@/constants/path";
 import { Command } from "@/types/Path";
 import { Point } from "@/types/Point";
+import { convertToRadians } from "./path";
 
 interface CommandHandler {
   extractPoints: (command: Command<number>) => Point[];
@@ -38,7 +39,11 @@ interface CommandHandler {
     values: { x: number; y: number }
   ) => number[];
   scale: (coordinates: number[], values: { x: number; y: number }) => number[];
-  rotate: (coordinates: number[], values: { x: number; y: number }) => number[];
+  rotate: (
+    coordinates: number[],
+    origin: { x: number; y: number },
+    angle: number
+  ) => number[];
 }
 
 const generateBasePoint = (
@@ -116,6 +121,22 @@ export const commandHandlers: Record<string, CommandHandler> = {
     getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
     translate: (coords, values) => [coords[0] + values.x, coords[1] + values.y],
     scale: (coords, values) => [coords[0] * values.x, coords[1] * values.y],
+    rotate: (coords, origin, angle) => {
+      const translatedX = coords[0] - origin.x;
+      const translatedY = coords[1] - origin.y;
+
+      const radians = convertToRadians(angle);
+
+      const rotatedX =
+        translatedX * Math.cos(radians) - translatedY * Math.sin(radians);
+      const rotatedY =
+        translatedX * Math.sin(radians) - translatedY * Math.cos(radians);
+
+      const finalX = rotatedX + origin.x;
+      const finalY = rotatedY + origin.y;
+
+      return [finalX, finalY];
+    },
   },
 
   [LINE_COMMANDS.LineTo]: {

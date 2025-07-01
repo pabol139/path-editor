@@ -113,10 +113,11 @@ export default function ViewboxSection({
 
   return (
     <CollapsedSection title="Viewbox">
-      <div className="grid px-5 pb-5 w-fit mt-1 grid-cols-2 gap-2">
+      <div className="grid px-4 pb-5 w-fit mt-1 grid-cols-2 gap-2">
         {viewboxArray.map((item, index) => {
           return (
             <Input
+              id={item.char + index}
               leftText={item.char}
               value={viewboxDisplay[item.value]}
               setter={(value) => handleSetDisplayValue(value, item)}

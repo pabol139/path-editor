@@ -35,6 +35,7 @@ export function TransformRow({
         {axis.map((char, index) => {
           return (
             <Input
+              id={char + action}
               leftText={char}
               key={index}
               value={coordinates[action][char as Axis]}
