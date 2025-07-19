@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CircleType } from "@/types/Circle";
 
 interface CircleElement extends CircleType {
+  point: any;
   handleMove: ({ id, x, y }: { id: string; x: number; y: number }) => void;
   handleEnter: () => void;
   handleLeave: () => void;
@@ -18,7 +19,8 @@ export function Point({
   strokeWidth,
 }: CircleElement) {
   const [dragging, setDragging] = useState(false);
-  const { id, id_command, control, hovered, selected, cx, cy } = point;
+
+  const { id, control, hovered, selected, cx, cy } = point;
   const fill = selected
     ? "deeppink"
     : hovered

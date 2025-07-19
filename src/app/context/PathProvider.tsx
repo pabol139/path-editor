@@ -1,7 +1,7 @@
 "use client";
 import { ParsePath } from "@/types/Path";
 import { parsePath, convertCommandsToPath, formatCommands } from "@/utils/path";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { PathProviderProps, DEFAULT_PATH, PathContext } from "./PathContext";
 
 export function PathProvider({ children }: PathProviderProps) {
@@ -9,6 +9,8 @@ export function PathProvider({ children }: PathProviderProps) {
     path: DEFAULT_PATH,
     commands: parsePath(DEFAULT_PATH),
   });
+  const svgRef = useRef<SVGSVGElement>(null);
+
   const [error, setError] = useState(null);
 
   function updatePath(path: string) {
@@ -29,14 +31,27 @@ export function PathProvider({ children }: PathProviderProps) {
     }
   }
 
-  function updateCommands(commands: ParsePath<number>) {
+  function updateCommands(
+    commands:
+      | ParsePath<number>
+      | ((currentCommands: ParsePath<number>) => ParsePath<number>)
+  ) {
     try {
-      const formatedCommands = formatCommands(commands, 2);
-      const newPath = convertCommandsToPath(formatedCommands);
-      setPathObject((prevObject) => ({
-        path: newPath,
-        commands: formatedCommands,
-      }));
+      setPathObject((prevObject) => {
+        // Handle functional updates
+        const newCommands =
+          typeof commands === "function"
+            ? commands(prevObject.commands)
+            : commands;
+
+        const formatedCommands = formatCommands(newCommands, 2);
+        const newPath = convertCommandsToPath(formatedCommands);
+
+        return {
+          path: newPath,
+          commands: formatedCommands,
+        };
+      });
       setError(null);
     } catch (e: any) {
       setError(e.message);
@@ -45,7 +60,7 @@ export function PathProvider({ children }: PathProviderProps) {
 
   return (
     <PathContext.Provider
-      value={{ pathObject, updatePath, updateCommands, error }}
+      value={{ pathObject, updatePath, updateCommands, error, svgRef }}
     >
       {children}
     </PathContext.Provider>

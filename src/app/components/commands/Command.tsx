@@ -1,6 +1,11 @@
 import { isRelativeCommand } from "@/utils/path";
-import { Check, EllipsisVertical } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Check } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import CommandOptions from "./command-options";
+import CommandLetter from "./command-letter";
+import { AnimatePresence, motion } from "motion/react";
+import SmoothButton from "./smooth-button";
 
 export default function Command({
   id,
@@ -8,30 +13,42 @@ export default function Command({
   coordinates,
   selected,
   hovered,
+  isFirst,
   handleEnter,
   handleLeave,
   handleDown,
   handleInput,
+  handleDelete,
+  handleConvertToRelative,
+  handleConvertToAbsolute,
+  handleCreateCommand,
 }: {
   id: string;
   letter: string;
   coordinates: number[];
   selected: boolean;
   hovered: boolean;
+  isFirst: boolean;
   handleEnter: () => void;
   handleLeave: () => void;
   handleDown: () => void;
   handleInput: (id: string, index: number, parsedValue: number) => void;
+  handleDelete: (id: string) => void;
+  handleConvertToRelative: (id: string) => void;
+  handleConvertToAbsolute: (id: string) => void;
+  handleCreateCommand: (id: string, letter: string) => void;
 }) {
   const [coordinatesDisplayValues, setCoordinatesDisplayValues] = useState(() =>
     coordinates.map((coordinate) => coordinate.toString())
   );
 
+  const coordKey = coordinates.join(",");
+
   useEffect(() => {
     setCoordinatesDisplayValues(
       coordinates.map((coordinate) => coordinate.toString())
     );
-  }, [coordinates]);
+  }, [coordKey]);
 
   const updatedCoordinatesDisplayValues = (index: number, value: string) => {
     const newCoordinatesDisplayValues = [...coordinatesDisplayValues];
@@ -61,15 +78,34 @@ export default function Command({
     }
   };
 
+  const handleDisabledCommand = useCallback((optionLetter: string) => {
+    switch (optionLetter.toLocaleUpperCase()) {
+      case "T": {
+        return (
+          letter.toLocaleUpperCase() !== "T" &&
+          letter.toLocaleUpperCase() !== "Q"
+        );
+      }
+      case "S": {
+        return (
+          letter.toLocaleUpperCase() !== "S" &&
+          letter.toLocaleUpperCase() !== "C"
+        );
+      }
+      default:
+        return false;
+    }
+  }, []);
+
+  const isRelative = isRelativeCommand(letter);
+
   const backgroundColor = selected
     ? "bg-purple600"
     : hovered
     ? "bg-purple300"
     : "";
 
-  const backgroundColorLetter = isRelativeCommand(letter)
-    ? "bg-[#B15959]"
-    : "bg-purple";
+  const backgroundColorLetter = isRelative ? "bg-[#B15959]" : "bg-purple";
   const borderColor = selected ? "border-[#ffffff57]" : "border-gray300";
 
   const isCheckbox = (index: number) =>
@@ -84,11 +120,12 @@ export default function Command({
       onFocus={handleDown}
     >
       <div className={`border flex w-fit rounded-md ${borderColor}`}>
-        <div
-          className={`text-sm px-2 py-1 w-8 ${backgroundColorLetter} text-center rounded-tl-[5px] rounded-bl-[5px]`}
-        >
-          {letter}
-        </div>
+        {/* <SmoothButton></SmoothButton> */}
+        <CommandLetter
+          id={id}
+          letter={letter}
+          backgroundColorLetter={backgroundColorLetter}
+        />
         {coordinatesDisplayValues.map((coordinate, key) => {
           return isCheckbox(key) ? (
             <CommandAtomCheckbox
@@ -113,12 +150,16 @@ export default function Command({
           );
         })}
       </div>
-      <button className="focus-visible:outline-[deeppink] focus-visible:outline focus-visible:rounded-sm">
-        <EllipsisVertical
-          size={16}
-          className="shrink-0 min-w-4"
-        ></EllipsisVertical>
-      </button>
+      <CommandOptions
+        id={id}
+        isFirst={isFirst}
+        isRelative={isRelative}
+        handleConvertToAbsolute={handleConvertToAbsolute}
+        handleConvertToRelative={handleConvertToRelative}
+        handleDelete={handleDelete}
+        handleCreateCommand={handleCreateCommand}
+        handleDisabledCommand={handleDisabledCommand}
+      ></CommandOptions>
     </li>
   );
 }
@@ -171,7 +212,7 @@ function CommandAtomCheckbox({
   updatedCoordinatesDisplayValuesOnBlur: (index: number, value: string) => void;
 }) {
   return (
-    <div className="flex items-center bg-secondary text-[10px] text-white border-r border-gray300 w-5 justify-center last:rounded-br-[5px] last:rounded-tr-[5px] last:border-none group">
+    <div className="flex relative items-center bg-secondary text-[10px] text-white border-r border-gray300 w-5 justify-center last:rounded-br-[5px] last:rounded-tr-[5px] last:border-none group">
       <input
         type="checkbox"
         checked={coordinate === "1"}

@@ -8,47 +8,23 @@ import ControlLines from "./control-lines";
 import Points from "./points";
 import OverlappedPaths from "./overlapped-paths";
 import { createOverlappedPathsFromCommands } from "@/utils/overlapped-paths";
+import useSvg from "@/hooks/useSvg";
+import { SvgDimensions } from "@/types/Svg";
 
-export default forwardRef(function Svg(
-  {
-    viewbox,
-    svgDimensions,
-    setSvgDimensions,
-    updateViewbox,
-  }: {
-    viewbox: Viewbox;
-    svgDimensions: any;
-    setSvgDimensions: any;
-    updateViewbox: (viewbox: Viewbox) => void;
-  },
-  ref: React.ForwardedRef<SVGSVGElement | null>
-) {
-  const { pathObject, updateCommands } = usePathObject();
-  const [isVisible, setIsVisible] = useState(false);
-
-  const points = useMemo(
-    () => updatePoints(pathObject.commands),
-    [viewbox.height, viewbox.width, pathObject.commands]
-  );
-  const lines = useMemo(
-    () => createControlLines(pathObject.commands, points),
-    [pathObject.commands, points]
-  );
-
-  const overlappedPaths = useMemo(
-    () => createOverlappedPathsFromCommands(pathObject.commands),
-    [pathObject.commands]
-  );
-
-  function cleanSelectedCommands() {
-    const { commands } = pathObject;
-    const unselectedCommands = commands.map((command) => ({
-      ...command,
-      selected: false,
-    }));
-    updateCommands(unselectedCommands);
-  }
-
+export default function Svg({
+  viewbox,
+  svgDimensions,
+  setSvgDimensions,
+  updateViewbox,
+}: {
+  viewbox: Viewbox;
+  svgDimensions: SvgDimensions;
+  setSvgDimensions: React.Dispatch<React.SetStateAction<SvgDimensions>>;
+  updateViewbox: (viewbox: Viewbox) => void;
+}) {
+  const { pathObject, updateCommands, svgRef } = usePathObject();
+  const { isVisible, points, overlappedPaths, lines, cleanSelectedCommands } =
+    useSvg(viewbox, updateViewbox, setSvgDimensions);
   const {
     handlePointerDown,
     handlePointerLeave,
@@ -57,48 +33,6 @@ export default forwardRef(function Svg(
     handleZoom,
   } = usePanZoom(viewbox, updateViewbox, cleanSelectedCommands);
 
-  const svgRef = ref as React.RefObject<SVGSVGElement>;
-
-  useEffect(() => {
-    if (svgRef?.current) {
-      centerViewbox(svgRef, updateViewbox, setSvgDimensions);
-      setIsVisible(true);
-    }
-  }, []);
-  useEffect(() => {
-    if (svgRef?.current) {
-      function updateResize() {
-        const path = svgRef.current?.querySelector("path");
-        if (!path) return;
-
-        const svgWidth = svgRef.current.getBoundingClientRect().width || 0;
-        const svgHeight = svgRef.current.getBoundingClientRect().height || 0;
-        const bbox = path.getBBox();
-        const svgAspectRatio = svgHeight / svgWidth;
-
-        let pathHeight = bbox.height;
-
-        pathHeight = svgAspectRatio * viewbox.width;
-
-        updateViewbox({
-          ...viewbox,
-          height: pathHeight,
-        });
-
-        setSvgDimensions({
-          width: svgRef.current.getBoundingClientRect().width || 0,
-          height: svgRef.current.getBoundingClientRect().height || 0,
-        });
-      }
-
-      window.addEventListener("resize", updateResize);
-
-      return () => {
-        window.removeEventListener("resize", updateResize);
-      };
-    }
-  }, [viewbox]);
-
   return (
     <svg
       onWheel={handleZoom}
@@ -106,8 +40,8 @@ export default forwardRef(function Svg(
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
       onPointerUp={handlePointerUp}
-      ref={ref}
-      className="w-[calc(100%-var(--aside-width))] h-full"
+      ref={svgRef}
+      className="w-[calc(100%-var(--aside-width))] h-full transition-[width] ease-sidebar duration-500"
       viewBox={`${viewbox.x} ${viewbox.y} ${viewbox.width} ${viewbox.height}`}
     >
       {isVisible ? (
@@ -148,4 +82,4 @@ export default forwardRef(function Svg(
       )}
     </svg>
   );
-});
+}

@@ -44,6 +44,7 @@ interface CommandHandler {
     origin: { x: number; y: number },
     angle: number
   ) => number[];
+  create: (currentPosition: { x: number; y: number }) => Command<number>;
 }
 
 const generateBasePoint = (
@@ -137,6 +138,13 @@ export const commandHandlers: Record<string, CommandHandler> = {
 
       return [finalX, finalY];
     },
+    create: (currentPosition) => ({
+      id: String(String(Math.random())),
+      letter: LINE_COMMANDS.MoveTo,
+      coordinates: [currentPosition.x, currentPosition.y],
+      hovered: false,
+      selected: true,
+    }),
   },
 
   [LINE_COMMANDS.LineTo]: {
@@ -194,6 +202,13 @@ export const commandHandlers: Record<string, CommandHandler> = {
     getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
     translate: (coords, values) => [coords[0] + values.x, coords[1] + values.y],
     scale: (coords, values) => [coords[0] * values.x, coords[1] * values.y],
+    create: (currentPosition) => ({
+      id: String(Math.random()),
+      letter: LINE_COMMANDS.LineTo,
+      coordinates: [currentPosition.x, currentPosition.y],
+      hovered: false,
+      selected: true,
+    }),
   },
   [LINE_COMMANDS.Horizontal]: {
     extractPoints: (command) => [
@@ -241,6 +256,13 @@ export const commandHandlers: Record<string, CommandHandler> = {
     }),
     translate: (coords, values) => [coords[0] + values.x, coords[1]],
     scale: (coords, values) => [coords[0] * values.x, coords[1]],
+    create: (currentPosition) => ({
+      id: String(Math.random()),
+      letter: LINE_COMMANDS.Horizontal,
+      coordinates: [currentPosition.x],
+      hovered: false,
+      selected: true,
+    }),
   },
 
   [LINE_COMMANDS.Vertical]: {
@@ -291,6 +313,13 @@ export const commandHandlers: Record<string, CommandHandler> = {
     }),
     translate: (coords, values) => [coords[0], coords[1] + values.y],
     scale: (coords, values) => [coords[0], coords[1] * values.y],
+    create: (currentPosition) => ({
+      id: String(Math.random()),
+      letter: LINE_COMMANDS.Vertical,
+      coordinates: [currentPosition.y],
+      hovered: false,
+      selected: true,
+    }),
   },
 
   [LINE_COMMANDS.QuadraticCurve]: {
@@ -380,6 +409,18 @@ export const commandHandlers: Record<string, CommandHandler> = {
       coords[2] * values.x,
       coords[3] * values.y,
     ],
+    create: (currentPosition) => ({
+      id: String(Math.random()),
+      letter: LINE_COMMANDS.QuadraticCurve,
+      coordinates: [
+        currentPosition.x,
+        currentPosition.y,
+        currentPosition.x,
+        currentPosition.y,
+      ],
+      hovered: false,
+      selected: true,
+    }),
   },
   [LINE_COMMANDS.SmoothQuadraticCurve]: {
     extractPoints: (command) => [
@@ -434,6 +475,13 @@ export const commandHandlers: Record<string, CommandHandler> = {
     getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
     translate: (coords, values) => [coords[0] + values.x, coords[1] + values.y],
     scale: (coords, values) => [coords[0] * values.x, coords[1] * values.y],
+    create: (currentPosition) => ({
+      id: String(Math.random()),
+      letter: LINE_COMMANDS.SmoothQuadraticCurve,
+      coordinates: [currentPosition.x, currentPosition.y],
+      hovered: false,
+      selected: true,
+    }),
   },
   [LINE_COMMANDS.Curve]: {
     extractPoints: (command) => [
@@ -537,6 +585,20 @@ export const commandHandlers: Record<string, CommandHandler> = {
       coords[4] * values.x,
       coords[5] * values.y,
     ],
+    create: (currentPosition) => ({
+      id: String(Math.random()),
+      letter: LINE_COMMANDS.Curve,
+      coordinates: [
+        currentPosition.x,
+        currentPosition.y,
+        currentPosition.x + currentPosition.x * 0.1,
+        currentPosition.y + currentPosition.y * 0.1,
+        currentPosition.x + currentPosition.x * 0.2,
+        currentPosition.y + currentPosition.y * 0.2,
+      ],
+      hovered: false,
+      selected: true,
+    }),
   },
   [LINE_COMMANDS.SmoothCurve]: {
     extractPoints: (command) => [
@@ -628,6 +690,18 @@ export const commandHandlers: Record<string, CommandHandler> = {
       coords[2] * values.x,
       coords[3] * values.y,
     ],
+    create: (currentPosition) => ({
+      id: String(Math.random()),
+      letter: LINE_COMMANDS.SmoothCurve,
+      coordinates: [
+        currentPosition.x,
+        currentPosition.y,
+        currentPosition.x + currentPosition.x * 0.1,
+        currentPosition.y + currentPosition.y * 0.1,
+      ],
+      hovered: false,
+      selected: true,
+    }),
   },
   [LINE_COMMANDS.Arc]: {
     extractPoints: (command) => [
@@ -722,5 +796,12 @@ export const commandHandlers: Record<string, CommandHandler> = {
       coords[5] * values.x,
       coords[6] * values.y,
     ],
+    create: (currentPosition) => ({
+      id: String(Math.random()),
+      letter: LINE_COMMANDS.Arc,
+      coordinates: [1, 1, 0, 0, 0, currentPosition.x, currentPosition.y],
+      hovered: false,
+      selected: true,
+    }),
   },
 };

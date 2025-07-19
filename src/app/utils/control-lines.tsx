@@ -1,6 +1,6 @@
 import { Line } from "@/types/Line";
 import {
-  convertRelativeToAbsolute,
+  convertCommandsRelativeToAbsolute,
   getCurrentPositionBeforeCommand,
   getLastControlPoint,
 } from "./path";
@@ -33,7 +33,7 @@ export const createControlLines = (
 ) => {
   const lines: Line[] = [];
 
-  const commands = convertRelativeToAbsolute(rawCommands);
+  const commands = convertCommandsRelativeToAbsolute(rawCommands);
 
   points.forEach((point, index) => {
     const commandIndex = commands.findIndex(

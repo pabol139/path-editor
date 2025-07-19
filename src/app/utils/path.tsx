@@ -139,6 +139,25 @@ export const formatNumber = (number: number, decimals: number): string => {
     .replace(/\.$/, ""); // Removes any trailing point
 };
 
+export const getSvgCenter = (svgRef: React.RefObject<SVGSVGElement | null>) => {
+  const path = svgRef?.current?.querySelector("path");
+  if (!path) return { x: 0, y: 0 };
+  const bbox = path.getBBox();
+
+  let pathWidth = bbox.width;
+  let pathHeight = bbox.height;
+  let pathX = bbox.x;
+  let pathY = bbox.y;
+
+  const centerXAxis = pathX + pathWidth / 2;
+  const centerYAxis = pathY + pathHeight / 2;
+
+  return {
+    x: centerXAxis,
+    y: centerYAxis,
+  };
+};
+
 export const centerViewbox = (
   svgRef: React.RefObject<SVGSVGElement>,
   viewboxSetter: (viewbox: Viewbox) => void,
@@ -413,58 +432,84 @@ export function getCurrentPositionBeforeCommand(
 
 export const convertToRadians = (angle: number) => angle * (Math.PI / 180);
 
-export function convertRelativeToAbsolute(commands: ParsePath<number>) {
+export function convertCommandsRelativeToAbsolute(commands: ParsePath<number>) {
   return commands.map((command) => {
-    const { letter, coordinates, id } = command;
-
-    if (letter.toLocaleUpperCase() === LINE_COMMANDS.Close)
-      return { ...command, letter: letter.toLocaleUpperCase() };
-
-    const handler = commandHandlers[letter.toLocaleUpperCase()];
-    const currentPosition = getCurrentPositionBeforeCommand(commands, id);
-    const isRelative = isRelativeCommand(letter);
-    const [updatedLetter, updatedCoordinates] = handler.toAbsolute(
-      coordinates,
-      currentPosition,
-      isRelative
-    );
-
-    return {
-      ...command,
-      letter: updatedLetter,
-      coordinates: updatedCoordinates,
-    };
+    const absoluteCommand = convertRelativeToAbsolute(command, commands);
+    return absoluteCommand;
   });
 }
-export function convertAbsoluteToRelative(commands: ParsePath<number>) {
+export function convertCommandsAbsoluteToRelative(commands: ParsePath<number>) {
   return commands.map((command) => {
-    const { letter, coordinates, id } = command;
-
-    if (letter.toLocaleUpperCase() === LINE_COMMANDS.Close)
-      return { ...command, letter: letter.toLocaleLowerCase() };
-
-    const handler = commandHandlers[letter.toLocaleUpperCase()];
-    const currentPosition = getCurrentPositionBeforeCommand(commands, id);
-    const isRelative = isRelativeCommand(letter);
-    const [updatedLetter, updatedCoordinates] = handler.toRelative(
-      coordinates,
-      currentPosition,
-      isRelative
-    );
-
-    return {
-      ...command,
-      letter: updatedLetter,
-      coordinates: updatedCoordinates,
-    };
+    const relativeCommand = convertAbsoluteToRelative(command, commands);
+    return relativeCommand;
   });
+}
+
+export function convertAbsoluteToRelative(
+  command: Command<number>,
+  commands: ParsePath<number>
+) {
+  const { letter, coordinates, id } = command;
+  const currentPosition = getCurrentPositionBeforeCommand(commands, id);
+
+  if (letter.toLocaleUpperCase() === LINE_COMMANDS.Close)
+    return { ...command, letter: letter.toLocaleLowerCase() };
+
+  const handler = commandHandlers[letter.toLocaleUpperCase()];
+  const isRelative = isRelativeCommand(letter);
+  const [updatedLetter, updatedCoordinates] = handler.toRelative(
+    coordinates,
+    currentPosition,
+    isRelative
+  );
+
+  return {
+    ...command,
+    letter: updatedLetter,
+    coordinates: updatedCoordinates,
+  };
+}
+
+export function createCommand(
+  letter: string,
+  position: { x: number; y: number }
+) {
+  const handler = commandHandlers[letter.toLocaleUpperCase()];
+
+  const newCommand = handler.create(position);
+  return { ...newCommand };
+}
+
+export function convertRelativeToAbsolute(
+  command: Command<number>,
+  commands: ParsePath<number>
+) {
+  const { letter, coordinates, id } = command;
+  const currentPosition = getCurrentPositionBeforeCommand(commands, id);
+
+  if (letter.toLocaleUpperCase() === LINE_COMMANDS.Close)
+    return { ...command, letter: letter.toLocaleUpperCase() };
+
+  const handler = commandHandlers[letter.toLocaleUpperCase()];
+  const isRelative = isRelativeCommand(letter);
+  const [updatedLetter, updatedCoordinates] = handler.toAbsolute(
+    coordinates,
+    currentPosition,
+    isRelative
+  );
+
+  return {
+    ...command,
+    letter: updatedLetter,
+    coordinates: updatedCoordinates,
+  };
 }
 
 export const updatePoints = (commands: ParsePath<number>) => {
   let currentPosition = { x: 0, y: 0 };
   let points: Point[] = [];
 
-  const absoluteCommands = convertRelativeToAbsolute(commands);
+  const absoluteCommands = convertCommandsRelativeToAbsolute(commands);
   absoluteCommands.forEach((absoluteCommand, index) => {
     if (absoluteCommand.letter.toLocaleUpperCase() === LINE_COMMANDS.Close) {
       return;

@@ -19,7 +19,6 @@ export default function MainSvg() {
     height: 1,
   });
 
-  const svgRef = useRef<SVGSVGElement>(null);
   // Type for updateViewbox function
   const updateViewbox = (
     newObject: Viewbox,
@@ -52,7 +51,6 @@ export default function MainSvg() {
   return (
     <>
       <Svg
-        ref={svgRef}
         svgDimensions={svgDimensions}
         setSvgDimensions={setSvgDimensions}
         viewbox={viewbox}

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { usePathObject } from "@/context/PathContext";
 import {
-  convertAbsoluteToRelative,
-  convertRelativeToAbsolute,
+  convertCommandsAbsoluteToRelative,
+  convertCommandsRelativeToAbsolute,
   scale,
   translate,
 } from "@/utils/path";
@@ -10,6 +10,7 @@ import { CollapsedSection } from "@/components/CollapsedSection";
 import { TransformRow } from "@/components/transformations/TransformRow";
 import React from "react";
 import { MoveRight } from "lucide-react";
+import AnimatedButton from "../animated-button";
 
 type Coordinates = {
   translate: AxisValues;
@@ -79,10 +80,10 @@ function TransformSection() {
   };
 
   const handleRelativeToAbsolute = () => {
-    updateCommands(convertRelativeToAbsolute(pathObject.commands));
+    updateCommands(convertCommandsRelativeToAbsolute(pathObject.commands));
   };
   const handleAbsoluteToRelative = () => {
-    updateCommands(convertAbsoluteToRelative(pathObject.commands));
+    updateCommands(convertCommandsAbsoluteToRelative(pathObject.commands));
   };
 
   return (
@@ -103,18 +104,18 @@ function TransformSection() {
           handleTransform={handleScale}
         ></TransformRow>
         <div className="flex gap-2 !mt-6">
-          <button
-            className="bg-purple border border-white rounded-md px-3 py-2 flex-1"
-            onClick={handleRelativeToAbsolute}
-          >
+          <AnimatedButton onClick={handleRelativeToAbsolute} className="flex-1">
             m <MoveRight className="inline mx-2 "></MoveRight> M
-          </button>
-          <button
-            className="bg-[#B15959] border border-white rounded-md px-3 py-2 flex-1"
+          </AnimatedButton>
+
+          <AnimatedButton
             onClick={handleAbsoluteToRelative}
+            className="flex-1"
+            color={"bg-[#B15959]"}
+            backgroundColor={"bg-[#b159594d]"}
           >
             M <MoveRight className="inline mx-2 "></MoveRight> m
-          </button>
+          </AnimatedButton>
         </div>
       </div>
     </CollapsedSection>

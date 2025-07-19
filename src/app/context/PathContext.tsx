@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import { PathObject } from "@/types/Path";
+import { ParsePath, PathObject } from "@/types/Path";
 export interface PathProviderProps {
   children: React.ReactNode;
 }
@@ -11,7 +11,12 @@ export const DEFAULT_PATH =
 type PathContextType = {
   pathObject: PathObject;
   updatePath: (newPath: string) => void;
-  updateCommands: (newValues: any) => void;
+  updateCommands: (
+    commands:
+      | ParsePath<number>
+      | ((currentCommands: ParsePath<number>) => ParsePath<number>)
+  ) => void;
+  svgRef: React.RefObject<SVGSVGElement | null>;
   error: string | null;
 };
 

@@ -1,7 +1,7 @@
 import { Command, ParsePath } from "@/types/Path";
 import {
   convertCommandsToPath,
-  convertRelativeToAbsolute,
+  convertCommandsRelativeToAbsolute,
   getCurrentPositionBeforeCommand,
   getLastControlPoint,
 } from "./path";
@@ -11,7 +11,7 @@ export type OverlappedPath = { color: string; overlappedPath: string };
 export const createOverlappedPathsFromCommands = (
   commands: ParsePath<number>
 ) => {
-  const absoluteCommands = convertRelativeToAbsolute(commands);
+  const absoluteCommands = convertCommandsRelativeToAbsolute(commands);
   const overlappedPaths: OverlappedPath[] = [];
   absoluteCommands.forEach((command, index) => {
     if (
@@ -139,7 +139,7 @@ const calculateReflectedControlPoint = (
   prevPosition: { x: number; y: number }
 ): { x: number; y: number } => {
   const prevControlPoint = getLastControlPoint(
-    convertRelativeToAbsolute(commands),
+    convertCommandsRelativeToAbsolute(commands),
     position
   );
 

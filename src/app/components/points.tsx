@@ -10,6 +10,7 @@ import { Point } from "./point";
 import { Point as PointType } from "@/types/Point";
 import { ParsePath } from "@/types/Path";
 import { Dispatch, SetStateAction } from "react";
+import { usePathObject } from "@/context/PathContext";
 
 type Coordinates = {
   id: string;

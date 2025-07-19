@@ -10,7 +10,7 @@ export default function PathSection({
   updateViewbox: (viewbox: Viewbox) => void;
 }) {
   return (
-    <section className="bg-secondary px-5 py-3">
+    <section className="bg-secondary px-5 py-3 sticky top-0 z-10 shadow-md">
       <h3 className="text-sm">Path</h3>
       <PathInput svgDimensions={svgDimensions} updateViewbox={updateViewbox} />
     </section>
