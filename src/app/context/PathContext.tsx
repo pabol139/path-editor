@@ -27,7 +27,7 @@ type PathContextType = {
   svgRef: React.RefObject<SVGSVGElement | null>;
   error: string | null;
   undoUtils: {
-    store: (externalPathObject?: PathObject) => void;
+    store: (newPathObject: PathObject) => void;
     undoStack: PathObject[];
     redoStack: PathObject[];
     handleRedo: () => void;

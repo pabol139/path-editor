@@ -33,59 +33,71 @@ export default function useCommands() {
     }
   };
 
-  const handleDelete = useCallback((id: string) => {
-    updateCommands((currentCommands) => {
-      return currentCommands.filter((command) => command.id !== id);
-    });
-  }, []);
-
-  const handleConvertToRelative = useCallback((id: string) => {
-    updateCommands((currentCommands) => {
-      return currentCommands.map((command) => {
-        if (command.id !== id) return command;
-        const relativeCommand = convertAbsoluteToRelative(
-          command,
-          currentCommands
-        );
-        return relativeCommand;
+  const handleDelete = useCallback(
+    (id: string) => {
+      updateCommands((currentCommands) => {
+        return currentCommands.filter((command) => command.id !== id);
       });
-    });
-  }, []);
+    },
+    [updateCommands]
+  );
 
-  const handleConvertToAbsolute = useCallback((id: string) => {
-    updateCommands((currentCommands) => {
-      return currentCommands.map((command) => {
-        if (command.id !== id) return command;
-        const relativeCommand = convertRelativeToAbsolute(
-          command,
-          currentCommands
-        );
-        return relativeCommand;
+  const handleConvertToRelative = useCallback(
+    (id: string) => {
+      updateCommands((currentCommands) => {
+        return currentCommands.map((command) => {
+          if (command.id !== id) return command;
+          const relativeCommand = convertAbsoluteToRelative(
+            command,
+            currentCommands
+          );
+          return relativeCommand;
+        });
       });
-    });
-  }, []);
+    },
+    [updateCommands]
+  );
 
-  const handleCreateCommand = useCallback((id: string, letter: string) => {
-    updateCommands((currentCommands) => {
-      const selectedIndex = currentCommands.findIndex(
-        (command) => command.id === id
-      );
-      if (selectedIndex === -1) return currentCommands; // Command not found
+  const handleConvertToAbsolute = useCallback(
+    (id: string) => {
+      updateCommands((currentCommands) => {
+        return currentCommands.map((command) => {
+          if (command.id !== id) return command;
+          const relativeCommand = convertRelativeToAbsolute(
+            command,
+            currentCommands
+          );
+          return relativeCommand;
+        });
+      });
+    },
+    [updateCommands]
+  );
 
-      const centerOfSvg = getSvgCenter(svgRef);
-      const newCommand = createCommand(letter, centerOfSvg);
-      const formatedCommands = currentCommands.map((command) => ({
-        ...command,
-        selected: false,
-      }));
+  const handleCreateCommand = useCallback(
+    (id: string, letter: string) => {
+      updateCommands((currentCommands) => {
+        const selectedIndex = currentCommands.findIndex(
+          (command) => command.id === id
+        );
+        if (selectedIndex === -1) return currentCommands; // Command not found
 
-      return [
-        ...formatedCommands.slice(0, selectedIndex + 1),
-        newCommand,
-        ...formatedCommands.slice(selectedIndex + 1),
-      ];
-    });
-  }, []);
+        const centerOfSvg = getSvgCenter(svgRef);
+        const newCommand = createCommand(letter, centerOfSvg);
+        const formatedCommands = currentCommands.map((command) => ({
+          ...command,
+          selected: false,
+        }));
+
+        return [
+          ...formatedCommands.slice(0, selectedIndex + 1),
+          newCommand,
+          ...formatedCommands.slice(selectedIndex + 1),
+        ];
+      });
+    },
+    [updateCommands]
+  );
 
   return {
     handleInput,

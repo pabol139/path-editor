@@ -1,5 +1,4 @@
 import { usePathObject } from "@/context/PathContext";
-import useUndoRedo from "@/hooks/useUndoRedo";
 import { Redo, Undo } from "lucide-react";
 
 export default function SvgActions() {
