@@ -1,17 +1,22 @@
 "use client";
 import { ParsePath } from "@/types/Path";
 import { parsePath, convertCommandsToPath, formatCommands } from "@/utils/path";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PathProviderProps, DEFAULT_PATH, PathContext } from "./PathContext";
+import useUndoRedo from "@/hooks/useUndoRedo";
 
 export function PathProvider({ children }: PathProviderProps) {
   const [pathObject, setPathObject] = useState({
     path: DEFAULT_PATH,
     commands: parsePath(DEFAULT_PATH),
   });
-  const svgRef = useRef<SVGSVGElement>(null);
+  const { store, undoStack, redoStack, handleRedo, handleUndo } = useUndoRedo(
+    pathObject,
+    updateCommands
+  );
 
   const [error, setError] = useState(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
   function updatePath(path: string) {
     try {
@@ -34,11 +39,16 @@ export function PathProvider({ children }: PathProviderProps) {
   function updateCommands(
     commands:
       | ParsePath<number>
-      | ((currentCommands: ParsePath<number>) => ParsePath<number>)
+      | ((currentCommands: ParsePath<number>) => ParsePath<number>),
+    shouldSave: boolean = true
   ) {
+    if (shouldSave) {
+      store(pathObject);
+    }
     try {
       setPathObject((prevObject) => {
         // Handle functional updates
+
         const newCommands =
           typeof commands === "function"
             ? commands(prevObject.commands)
@@ -60,7 +70,20 @@ export function PathProvider({ children }: PathProviderProps) {
 
   return (
     <PathContext.Provider
-      value={{ pathObject, updatePath, updateCommands, error, svgRef }}
+      value={{
+        pathObject,
+        updatePath,
+        updateCommands,
+        error,
+        svgRef,
+        undoUtils: {
+          store,
+          undoStack,
+          redoStack,
+          handleRedo,
+          handleUndo,
+        },
+      }}
     >
       {children}
     </PathContext.Provider>

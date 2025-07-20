@@ -4,8 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import CommandOptions from "./command-options";
 import CommandLetter from "./command-letter";
-import { AnimatePresence, motion } from "motion/react";
-import SmoothButton from "./smooth-button";
 
 export default function Command({
   id,
@@ -55,7 +53,9 @@ export default function Command({
     const parsedValue = parseFloat(value);
     newCoordinatesDisplayValues[index] = value;
 
-    if (!isNaN(parsedValue)) handleInput(id, index, parsedValue);
+    if (!isNaN(parsedValue) && parsedValue !== coordinates[index]) {
+      handleInput(id, index, parsedValue);
+    }
     setCoordinatesDisplayValues(newCoordinatesDisplayValues);
   };
 
@@ -66,16 +66,19 @@ export default function Command({
     const newCoordinatesDisplayValues = [...coordinatesDisplayValues];
 
     const parsedValue = parseFloat(value);
+    var newValue;
 
     if (!isNaN(parsedValue)) {
-      newCoordinatesDisplayValues[index] = String(parsedValue);
-      setCoordinatesDisplayValues(newCoordinatesDisplayValues);
-      handleInput(id, index, parsedValue);
+      newValue = parsedValue;
+      newCoordinatesDisplayValues[index] = String(newValue);
     } else {
-      newCoordinatesDisplayValues[index] = String(coordinates[index]);
-      handleInput(id, index, coordinates[index]);
-      setCoordinatesDisplayValues(newCoordinatesDisplayValues);
+      newValue = coordinates[index];
+      newCoordinatesDisplayValues[index] = String(newValue);
     }
+    setCoordinatesDisplayValues(newCoordinatesDisplayValues);
+
+    if (String(newValue) !== coordinatesDisplayValues[index])
+      handleInput(id, index, newValue);
   };
 
   const handleDisabledCommand = useCallback((optionLetter: string) => {
@@ -113,14 +116,13 @@ export default function Command({
 
   return (
     <li
-      className={`pl-4 pr-3 flex justify-between gap-2  ${backgroundColor}`}
+      className={`pl-4 pr-4 flex justify-between gap-2  ${backgroundColor}`}
       onPointerEnter={handleEnter}
       onPointerDown={handleDown}
       onPointerLeave={handleLeave}
       onFocus={handleDown}
     >
       <div className={`border flex w-fit rounded-md ${borderColor}`}>
-        {/* <SmoothButton></SmoothButton> */}
         <CommandLetter
           id={id}
           letter={letter}

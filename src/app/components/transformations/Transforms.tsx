@@ -1,15 +1,15 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { usePathObject } from "@/context/PathContext";
 import {
   convertCommandsAbsoluteToRelative,
   convertCommandsRelativeToAbsolute,
+  isRelativeCommand,
   scale,
   translate,
 } from "@/utils/path";
 import { CollapsedSection } from "@/components/CollapsedSection";
 import { TransformRow } from "@/components/transformations/TransformRow";
 import React from "react";
-import { MoveRight } from "lucide-react";
 import AnimatedButton from "../animated-button";
 
 type Coordinates = {
@@ -29,7 +29,6 @@ type Action = "translate" | "rotate" | "scale";
 
 function TransformSection() {
   const { pathObject, updateCommands } = usePathObject();
-
   const [coordinates, setCoordinates] = useState<Coordinates>({
     translate: {
       x: "0",
@@ -56,34 +55,47 @@ function TransformSection() {
   };
 
   const handleTranslate = () => {
-    updateCommands(
-      translate(
-        [...pathObject.commands],
-        coordinates["translate"].x,
-        coordinates["translate"].y
-      )
-    );
+    if (
+      coordinates["translate"].x !== "0" ||
+      coordinates["translate"].y !== "0"
+    ) {
+      updateCommands(
+        translate(
+          [...pathObject.commands],
+          coordinates["translate"].x,
+          coordinates["translate"].y
+        )
+      );
+    }
   };
-  const handleRotate = () => {
-    // updateCommands(
-    //   rotate(path, coordinates["rotate"].x, coordinates["rotate"].y)
-    // );
-  };
+
   const handleScale = () => {
-    updateCommands(
-      scale(
-        [...pathObject.commands],
-        coordinates["scale"].x,
-        coordinates["scale"].y
-      )
-    );
+    if (coordinates["scale"].x !== "1" || coordinates["scale"].y !== "1") {
+      updateCommands(
+        scale(
+          [...pathObject.commands],
+          coordinates["scale"].x,
+          coordinates["scale"].y
+        )
+      );
+    }
   };
 
   const handleRelativeToAbsolute = () => {
-    updateCommands(convertCommandsRelativeToAbsolute(pathObject.commands));
+    const hasRelativeCommands = pathObject.commands.some((command) =>
+      isRelativeCommand(command.letter)
+    );
+
+    hasRelativeCommands &&
+      updateCommands(convertCommandsRelativeToAbsolute(pathObject.commands));
   };
   const handleAbsoluteToRelative = () => {
-    updateCommands(convertCommandsAbsoluteToRelative(pathObject.commands));
+    const hasAbsoluteCommands = pathObject.commands.some(
+      (command) => !isRelativeCommand(command.letter)
+    );
+
+    hasAbsoluteCommands &&
+      updateCommands(convertCommandsAbsoluteToRelative(pathObject.commands));
   };
 
   return (
@@ -105,7 +117,7 @@ function TransformSection() {
         ></TransformRow>
         <div className="flex gap-2 !mt-6">
           <AnimatedButton onClick={handleRelativeToAbsolute} className="flex-1">
-            m <MoveRight className="inline mx-2 "></MoveRight> M
+            To absolute
           </AnimatedButton>
 
           <AnimatedButton
@@ -114,7 +126,7 @@ function TransformSection() {
             color={"bg-[#B15959]"}
             backgroundColor={"bg-[#b159594d]"}
           >
-            M <MoveRight className="inline mx-2 "></MoveRight> m
+            To relative
           </AnimatedButton>
         </div>
       </div>

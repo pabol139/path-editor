@@ -1,5 +1,7 @@
 import { act } from "react";
 import Input from "../inputs/Input";
+import AnimatedButton from "../animated-button";
+import { Check } from "lucide-react";
 
 type Axis = "x" | "y";
 type Action = "translate" | "rotate" | "scale";
@@ -48,12 +50,10 @@ export function TransformRow({
             />
           );
         })}
-        <button
-          onClick={handleTransform}
-          className="px-2 py-1 border bg-purple rounded-md border-white"
-        >
-          <span className="text-sm">Apply</span>
-        </button>
+
+        <AnimatedButton onClick={handleTransform} className="w-fit">
+          <Check size={16}></Check>
+        </AnimatedButton>
       </div>
     </div>
   );

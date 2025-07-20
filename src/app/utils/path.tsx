@@ -5,6 +5,7 @@ import { commandHandlers } from "./command-handler";
 import { Viewbox } from "@/types/Viewbox";
 import { SvgDimensions } from "@/types/Svg";
 import { Dispatch, SetStateAction } from "react";
+import { UpdateCommandsType } from "@/context/PathContext";
 
 /** Regex based on https://github.com/Yqnn/svg-path-editor/blob/master/src/lib/path-parser.ts */
 const kCommandTypeRegex = /^[\t\n\f\r ]*([MLHVZCSQTAmlhvzcsqta])[\t\n\f\r ]*/;
@@ -544,7 +545,7 @@ export const updatePoints = (commands: ParsePath<number>) => {
 
 export const onPointerEnterCommand = (
   commands: ParsePath<number>,
-  updateCommands: (newValues: any) => void,
+  updateCommands: UpdateCommandsType,
   id_command: string
 ) => {
   const newCommands = commands.map((command) => {
@@ -553,22 +554,22 @@ export const onPointerEnterCommand = (
     return { ...command, hovered: true }; // Return new object
   });
 
-  updateCommands(newCommands);
+  updateCommands(newCommands, false);
 };
 
 export const onPointerLeaveCommand = (
   commands: ParsePath<number>,
-  updateCommands: (newValues: any) => void
+  updateCommands: UpdateCommandsType
 ) => {
   const newCommands = commands.map((command) => {
     return { ...command, hovered: false }; // Return new object
   });
-  updateCommands(newCommands);
+  updateCommands(newCommands, false);
 };
 
 export const onPointerDownCommand = (
   commands: ParsePath<number>,
-  updateCommands: (newValues: any) => void,
+  updateCommands: UpdateCommandsType,
   id_command: string
 ) => {
   const newCommands = commands.map((command) => {
@@ -576,6 +577,5 @@ export const onPointerDownCommand = (
 
     return { ...command, selected: true }; // Return new object
   });
-
-  updateCommands(newCommands);
+  updateCommands(newCommands, false);
 };

@@ -22,7 +22,7 @@ export default function CommandLetter({
 
   return (
     <div
-      className={`text-sm px-2 py-1 w-8 relative overflow-hidden ${backgroundColorLetter} transition-colors text-center rounded-tl-[5px] rounded-bl-[5px]`}
+      className={`text-sm px-2 py-1 w-7 relative overflow-hidden ${backgroundColorLetter} transition-colors text-center rounded-tl-[5px] rounded-bl-[5px]`}
     >
       <AnimatePresence mode="popLayout">
         <motion.span

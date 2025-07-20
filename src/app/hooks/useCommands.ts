@@ -19,7 +19,7 @@ export default function useCommands() {
     if (!isNaN(parsedValue)) {
       const newCommands = commands.map((command) => {
         if (command.id === id_command) {
-          const newCoordinates = command.coordinates;
+          const newCoordinates = [...command.coordinates];
           newCoordinates[index] = Number(parsedValue);
           return {
             ...command,
@@ -28,6 +28,7 @@ export default function useCommands() {
         }
         return command;
       });
+
       updateCommands(newCommands);
     }
   };

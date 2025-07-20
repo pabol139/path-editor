@@ -34,7 +34,7 @@ export default function useSvg(
       ...command,
       selected: false,
     }));
-    updateCommands(unselectedCommands);
+    updateCommands(unselectedCommands, false);
   }
 
   useEffect(() => {

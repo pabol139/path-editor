@@ -5,8 +5,10 @@ import Svg from "@/components/Svg";
 import { Viewbox } from "@/types/Viewbox";
 import { SvgDimensions } from "@/types/Svg";
 import { formatNumber } from "@/utils/path";
+import SvgActions from "./svg-actions";
+import { cn } from "@/lib/utils";
 
-export default function MainSvg() {
+export default function SvgWrapper() {
   const [viewbox, setViewbox] = useState<Viewbox>({
     x: 0,
     y: 0,
@@ -18,6 +20,8 @@ export default function MainSvg() {
     width: 1,
     height: 1,
   });
+
+  const [isSidebarOpen, setisSidebarOpen] = useState(true);
 
   // Type for updateViewbox function
   const updateViewbox = (
@@ -50,16 +54,26 @@ export default function MainSvg() {
 
   return (
     <>
-      <Svg
-        svgDimensions={svgDimensions}
-        setSvgDimensions={setSvgDimensions}
-        viewbox={viewbox}
-        updateViewbox={updateViewbox}
-      ></Svg>
+      <div
+        className={cn(
+          "relative h-full w-[calc(100%-var(--aside-width))] transition-[width] ease-sidebar duration-500",
+          !isSidebarOpen && "w-full"
+        )}
+      >
+        <Svg
+          svgDimensions={svgDimensions}
+          setSvgDimensions={setSvgDimensions}
+          viewbox={viewbox}
+          updateViewbox={updateViewbox}
+        ></Svg>
+        <SvgActions></SvgActions>
+      </div>
       <Sidebar
         svgDimensions={svgDimensions}
         viewbox={viewbox}
         updateViewbox={updateViewbox}
+        open={isSidebarOpen}
+        setOpen={setisSidebarOpen}
       />
     </>
   );

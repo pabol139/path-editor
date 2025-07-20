@@ -22,7 +22,7 @@ export default function Svg({
   setSvgDimensions: React.Dispatch<React.SetStateAction<SvgDimensions>>;
   updateViewbox: (viewbox: Viewbox) => void;
 }) {
-  const { pathObject, updateCommands, svgRef } = usePathObject();
+  const { pathObject, svgRef } = usePathObject();
   const { isVisible, points, overlappedPaths, lines, cleanSelectedCommands } =
     useSvg(viewbox, updateViewbox, setSvgDimensions);
   const {
@@ -41,7 +41,7 @@ export default function Svg({
       onPointerLeave={handlePointerLeave}
       onPointerUp={handlePointerUp}
       ref={svgRef}
-      className="w-[calc(100%-var(--aside-width))] h-full transition-[width] ease-sidebar duration-500"
+      className="h-full w-full"
       viewBox={`${viewbox.x} ${viewbox.y} ${viewbox.width} ${viewbox.height}`}
     >
       {isVisible ? (
@@ -64,8 +64,6 @@ export default function Svg({
           ></OverlappedPaths>
           <Points
             points={points}
-            commands={pathObject.commands}
-            updateCommands={updateCommands}
             viewboxWidth={viewbox.width}
             svgDimensionsWidth={svgDimensions.width}
           ></Points>

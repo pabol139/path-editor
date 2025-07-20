@@ -56,6 +56,13 @@
   /* 2. Remove default margin */
   * {
     margin: 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--tertiary) var(--primary);
+  }
+
+  html,
+  body {
+    overflow: hidden;
   }
 
   body {

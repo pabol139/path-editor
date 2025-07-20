@@ -12,25 +12,30 @@ type SiderbarProps = {
   svgDimensions: SvgDimensions;
   viewbox: Viewbox;
   updateViewbox: (viewbox: Viewbox) => void;
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export default function Sidebar({
   svgDimensions,
   viewbox,
   updateViewbox,
+  open,
+  setOpen,
 }: SiderbarProps) {
-  const [open, setOpen] = useState(true);
   const { svgRef } = usePathObject();
 
-  const handleOpen = (value: boolean) => {
-    if (value) {
-      console.log("entro");
-      svgRef.current.style.width = "calc(100% - var(--aside-width))";
-    } else {
-      svgRef.current.style.width = "100%";
-    }
+  const handleOpen = (isOpen: boolean) => {
+    // if (svgRef.current && svgRef.current.parentElement) {
+    //   if (isOpen) {
+    //     svgRef.current.parentElement.style.width =
+    //       "calc(100% - var(--aside-width))";
+    //   } else {
+    //     svgRef.current.parentElement.style.width = "100%";
+    //   }
+    // }
 
-    setOpen(value);
+    setOpen(isOpen);
   };
   return (
     <aside
