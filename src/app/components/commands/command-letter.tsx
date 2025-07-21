@@ -5,6 +5,7 @@ export default function CommandLetter({
   id,
   letter,
   backgroundColorLetter,
+  ...props
 }: {
   id: string;
   letter: string;
@@ -21,7 +22,8 @@ export default function CommandLetter({
   const letterKey = letter + id + counterRef.current;
 
   return (
-    <div
+    <button
+      {...props}
       className={`text-sm px-2 py-1 w-7 relative overflow-hidden ${backgroundColorLetter} transition-colors text-center rounded-tl-[5px] rounded-bl-[5px]`}
     >
       <AnimatePresence mode="popLayout">
@@ -40,6 +42,6 @@ export default function CommandLetter({
           {letter}
         </motion.span>
       </AnimatePresence>
-    </div>
+    </button>
   );
 }

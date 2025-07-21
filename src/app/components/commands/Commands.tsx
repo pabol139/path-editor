@@ -2,6 +2,9 @@ import Command from "@/components/commands/Command";
 import { usePathObject } from "@/context/PathContext";
 import { CollapsedSection } from "@/components/CollapsedSection";
 import {
+  convertAbsoluteToRelative,
+  convertRelativeToAbsolute,
+  isRelativeCommand,
   onPointerDownCommand,
   onPointerEnterCommand,
   onPointerLeaveCommand,
@@ -19,6 +22,23 @@ function CommandsSection() {
     handleCreateCommand,
   } = useCommands();
   const { commands } = pathObject;
+
+  const handleClickCommandLetter = (id_command: string) => {
+    const updatedCommands = commands.map((command) => {
+      if (id_command !== command.id) return command;
+
+      const isRelative = isRelativeCommand(command.letter);
+      let updatedCommand;
+      if (isRelative) {
+        updatedCommand = convertRelativeToAbsolute(command, commands);
+      } else {
+        updatedCommand = convertAbsoluteToRelative(command, commands);
+      }
+
+      return updatedCommand;
+    });
+    updateCommands(updatedCommands);
+  };
 
   return (
     <CollapsedSection title="Commands">
@@ -47,6 +67,7 @@ function CommandsSection() {
               handleConvertToRelative={handleConvertToRelative}
               handleConvertToAbsolute={handleConvertToAbsolute}
               handleCreateCommand={handleCreateCommand}
+              handleClickCommandLetter={handleClickCommandLetter}
             />
           )
         )}

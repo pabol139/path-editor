@@ -20,6 +20,7 @@ export default function Command({
   handleConvertToRelative,
   handleConvertToAbsolute,
   handleCreateCommand,
+  handleClickCommandLetter,
 }: {
   id: string;
   letter: string;
@@ -127,6 +128,7 @@ export default function Command({
           id={id}
           letter={letter}
           backgroundColorLetter={backgroundColorLetter}
+          onClick={() => handleClickCommandLetter(id)}
         />
         {coordinatesDisplayValues.map((coordinate, key) => {
           return isCheckbox(key) ? (

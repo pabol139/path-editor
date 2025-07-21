@@ -1,5 +1,6 @@
 import { usePathObject } from "@/context/PathContext";
 import { Redo, Undo } from "lucide-react";
+import { motion } from "motion/react";
 
 export default function SvgActions() {
   const {
@@ -9,21 +10,30 @@ export default function SvgActions() {
   const undoStackIsEmpty = undoStack.length <= 0;
   const redoStackIsEmpty = redoStack.length <= 0;
   return (
-    <div className="absolute right-8 bottom-8 flex gap-2">
+    <motion.div
+      transition={{
+        type: "spring",
+        duration: 0.5,
+        bounce: 0.15,
+      }}
+      initial={{ y: 75 }}
+      animate={{ y: -50 }}
+      className="absolute right-0 left-0 bottom-0 m-auto w-fit flex gap-[2px] bg-primary px-1 py-1 rounded-md border border-secondary shadow-md"
+    >
       <button
         onClick={handleUndo}
         disabled={undoStackIsEmpty}
-        className="bg-secondary px-1 py-1 rounded-sm h-10 text-tertiary border border-tertiary disabled:opacity-70"
+        className=" px-1 py-1 rounded-sm h-10 w-10 flex items-center justify-center text-tertiary hover:bg-secondary transition-[background-color,opacity] disabled:opacity-50"
       >
         <Undo></Undo>
       </button>
       <button
         onClick={handleRedo}
         disabled={redoStackIsEmpty}
-        className="bg-secondary px-1 py-1 rounded-sm h-10 text-tertiary border border-tertiary disabled:opacity-70"
+        className=" px-1 py-1 rounded-sm h-10 w-10 flex items-center justify-center text-tertiary hover:bg-secondary transition-[background-color,opacity] disabled:opacity-50"
       >
         <Redo></Redo>
       </button>
-    </div>
+    </motion.div>
   );
 }
