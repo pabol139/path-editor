@@ -137,6 +137,7 @@ export function PathProvider({ children }: PathProviderProps) {
   const updatePath = useCallback((path: string) => {
     dispatch({ type: "SET_PATH", payload: path });
   }, []);
+
   const updateCommands = useCallback(
     (
       updater:
@@ -158,6 +159,30 @@ export function PathProvider({ children }: PathProviderProps) {
   );
 
   const svgRef = useRef<SVGSVGElement>(null);
+
+  useEffect(() => {
+    function handleKeydown(evt: KeyboardEvent) {
+      evt.stopImmediatePropagation();
+      if (
+        evt.key.toLocaleLowerCase() === "z" &&
+        (evt.ctrlKey || evt.metaKey) &&
+        evt.shiftKey
+      ) {
+        redo();
+      } else if (
+        evt.key.toLocaleLowerCase() === "z" &&
+        (evt.ctrlKey || evt.metaKey)
+      ) {
+        undo();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeydown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeydown);
+    };
+  }, [undo, redo]);
 
   return (
     <PathContext.Provider

@@ -66,7 +66,11 @@ export default function SvgWrapper() {
           viewbox={viewbox}
           updateViewbox={updateViewbox}
         ></Svg>
-        <SvgActions></SvgActions>
+        <SvgActions
+          viewbox={viewbox}
+          updateViewbox={updateViewbox}
+          setSvgDimensions={setSvgDimensions}
+        ></SvgActions>
       </div>
       <Sidebar
         svgDimensions={svgDimensions}

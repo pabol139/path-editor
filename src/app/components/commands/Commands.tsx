@@ -14,13 +14,7 @@ import useCommands from "@/hooks/useCommands";
 
 function CommandsSection() {
   const { pathObject, updateCommands } = usePathObject();
-  const {
-    handleInput,
-    handleDelete,
-    handleConvertToAbsolute,
-    handleConvertToRelative,
-    handleCreateCommand,
-  } = useCommands();
+  const { handleInput } = useCommands();
   const { commands } = pathObject;
 
   const handleClickCommandLetter = (id_command: string) => {
@@ -63,10 +57,6 @@ function CommandsSection() {
                 onPointerDownCommand(commands, updateCommands, id)
               }
               handleInput={handleInput}
-              handleDelete={handleDelete}
-              handleConvertToRelative={handleConvertToRelative}
-              handleConvertToAbsolute={handleConvertToAbsolute}
-              handleCreateCommand={handleCreateCommand}
               handleClickCommandLetter={handleClickCommandLetter}
             />
           )

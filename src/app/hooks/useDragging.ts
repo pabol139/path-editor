@@ -30,7 +30,9 @@ export default function useDragging(
       return;
     }
 
-    setHasMoved(true);
+    if (!hasMoved) {
+      setHasMoved(true);
+    }
 
     // Get the SVG element
     const svg = (event.target as HTMLElement).closest("svg");

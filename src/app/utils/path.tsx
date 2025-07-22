@@ -160,11 +160,12 @@ export const getSvgCenter = (svgRef: React.RefObject<SVGSVGElement | null>) => {
 };
 
 export const centerViewbox = (
-  svgRef: React.RefObject<SVGSVGElement>,
+  svgRef: React.RefObject<SVGSVGElement | null>,
   viewboxSetter: (viewbox: Viewbox) => void,
   svgDimensionsSetter: Dispatch<SetStateAction<SvgDimensions>>
 ) => {
-  const path = svgRef.current?.querySelector("path");
+  if (!svgRef.current) return;
+  const path = svgRef.current.querySelector("path");
   if (!path) return;
 
   const svgWidth = svgRef.current.getBoundingClientRect().width || 0;

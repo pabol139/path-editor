@@ -22,6 +22,7 @@ export function Point({
   handleLeave,
   handleDown,
   handleUp,
+  handleClick,
   strokeWidth,
 }: CircleElement) {
   const { id, control, hovered, selected, cx, cy } = point;
@@ -57,6 +58,7 @@ export function Point({
       cy={cy}
       strokeWidth={strokeWidth}
       fill="currentColor"
+      onContextMenu={handleClick}
     ></circle>
   );
 }

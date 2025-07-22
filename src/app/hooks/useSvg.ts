@@ -29,21 +29,9 @@ export default function useSvg(
     [commands]
   );
 
-  function cleanSelectedCommands() {
-    const unselectedCommands = commands.map((command) => ({
-      ...command,
-      selected: false,
-    }));
-    updateCommands(unselectedCommands, false);
-  }
-
   useEffect(() => {
     if (svgRef?.current) {
-      centerViewbox(
-        svgRef as React.RefObject<SVGSVGElement>,
-        updateViewbox,
-        setSvgDimensions
-      );
+      centerViewbox(svgRef, updateViewbox, setSvgDimensions);
       setIsVisible(true);
     }
   }, []);
@@ -80,6 +68,16 @@ export default function useSvg(
       };
     }
   }, [viewbox]);
+
+  function cleanSelectedCommands() {
+    console.log("limpio");
+    const unselectedCommands = commands.map((command) => ({
+      ...command,
+      hovered: false,
+      selected: false,
+    }));
+    updateCommands(unselectedCommands, false);
+  }
 
   return {
     isVisible,

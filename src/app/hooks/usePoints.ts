@@ -17,7 +17,7 @@ type Coordinates = {
 export default function usePoints(
   points: PointType[],
   pathObject: PathObject,
-  store: (externalPathObject?: PathObject) => void,
+  store: (newPathObject: PathObject) => void,
   updateCommands: UpdateCommandsType
 ) {
   const [stateBeforeDragging, setStateBeforeDragging] = useState(pathObject);

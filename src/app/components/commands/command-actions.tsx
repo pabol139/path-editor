@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useMemo } from "react";
 import { ArrowRightLeft, EllipsisVertical, Plus } from "lucide-react";
 
 import {
@@ -58,57 +58,45 @@ const COMMANDS_INFO = [
     name: "Close path",
   },
 ];
-function CommandOptions({
-  id,
-  isFirst,
+
+function CommandActions({
   isRelative,
-  handleDelete,
-  handleConvertToRelative,
+  isFirst,
+  handleCreateCommandWithFlag,
+  handleCloseAutoFocus,
   handleConvertToAbsolute,
-  handleCreateCommand,
+  handleConvertToRelative,
+  handleDelete,
   handleDisabledCommand,
+  open,
+  children,
+  ...props
 }: {
-  id: string;
-  isFirst: boolean;
   isRelative: boolean;
-  handleDelete: (id: string) => void;
-  handleConvertToRelative: (id: string) => void;
-  handleConvertToAbsolute: (id: string) => void;
-  handleCreateCommand: (id: string, letter: string) => void;
-  handleDisabledCommand: (letter: string) => boolean;
+  isFirst: boolean;
+  handleCreateCommandWithFlag: (letter: string) => void;
+  handleCloseAutoFocus: (e: Event) => void;
+  handleConvertToAbsolute: () => void;
+  handleConvertToRelative: () => void;
+  handleDelete: () => void;
+  handleDisabledCommand: (actionLetter: string) => boolean;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+  open?: boolean;
+  onOpenChange?: any;
 }) {
-  const shouldPreventAutoFocus = useRef(false);
-
-  const handleCreateCommandWithFlag = (letter: string) => {
-    shouldPreventAutoFocus.current = true;
-    handleCreateCommand(id, letter);
-  };
-
-  const handleCloseAutoFocus = (e: Event) => {
-    if (shouldPreventAutoFocus.current) {
-      e.preventDefault();
-      shouldPreventAutoFocus.current = false;
-    }
-    // If shouldPreventAutoFocus is false, the default focus behavior will happen
-  };
-
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button className="focus-visible:outline-[deeppink] focus-visible:outline focus-visible:rounded-sm !text-white hover:bg-gray-600 rounded-sm transition-colors">
-          <EllipsisVertical
-            size={16}
-            className="shrink-0 min-w-4"
-          ></EllipsisVertical>
-        </button>
-      </DropdownMenuTrigger>
+    <DropdownMenu {...props}>
+      <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
       <DropdownMenuContent
         className="w-56 border-[#5a5a60]"
         align="end"
         onCloseAutoFocus={handleCloseAutoFocus}
+        onPointerDown={(e) => e.stopPropagation()}
+        onPointerUp={(e) => e.stopPropagation()}
       >
-        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <DropdownMenuSeparator></DropdownMenuSeparator>
+        {/* <DropdownMenuLabel>Actions</DropdownMenuLabel> */}
+        {/* <DropdownMenuSeparator></DropdownMenuSeparator> */}
         <DropdownMenuGroup>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
@@ -134,18 +122,18 @@ function CommandOptions({
           </DropdownMenuSub>
 
           {isRelative ? (
-            <DropdownMenuItem onClick={() => handleConvertToAbsolute(id)}>
+            <DropdownMenuItem onClick={handleConvertToAbsolute}>
               <ArrowRightLeft></ArrowRightLeft>
               Set absolute
             </DropdownMenuItem>
           ) : (
-            <DropdownMenuItem onClick={() => handleConvertToRelative(id)}>
+            <DropdownMenuItem onClick={handleConvertToRelative}>
               <ArrowRightLeft></ArrowRightLeft>
               Set relative
             </DropdownMenuItem>
           )}
 
-          <DropdownMenuItem disabled={isFirst} onClick={() => handleDelete(id)}>
+          <DropdownMenuItem disabled={isFirst} onClick={handleDelete}>
             <Trash></Trash>
             Delete
           </DropdownMenuItem>
@@ -155,4 +143,4 @@ function CommandOptions({
   );
 }
 
-export default React.memo(CommandOptions);
+export default React.memo(CommandActions);

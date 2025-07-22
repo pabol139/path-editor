@@ -1,8 +1,8 @@
 import { isRelativeCommand } from "@/utils/path";
-import { Check } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Check, EllipsisVertical } from "lucide-react";
+import { useEffect, useState } from "react";
 
-import CommandOptions from "./command-options";
+import CommandActionsWrapper from "./command-actions-wrapper";
 import CommandLetter from "./command-letter";
 
 export default function Command({
@@ -16,10 +16,6 @@ export default function Command({
   handleLeave,
   handleDown,
   handleInput,
-  handleDelete,
-  handleConvertToRelative,
-  handleConvertToAbsolute,
-  handleCreateCommand,
   handleClickCommandLetter,
 }: {
   id: string;
@@ -32,10 +28,7 @@ export default function Command({
   handleLeave: () => void;
   handleDown: () => void;
   handleInput: (id: string, index: number, parsedValue: number) => void;
-  handleDelete: (id: string) => void;
-  handleConvertToRelative: (id: string) => void;
-  handleConvertToAbsolute: (id: string) => void;
-  handleCreateCommand: (id: string, letter: string) => void;
+  handleClickCommandLetter: (id_command: string) => void;
 }) {
   const [coordinatesDisplayValues, setCoordinatesDisplayValues] = useState(() =>
     coordinates.map((coordinate) => coordinate.toString())
@@ -81,25 +74,6 @@ export default function Command({
     if (String(newValue) !== coordinatesDisplayValues[index])
       handleInput(id, index, newValue);
   };
-
-  const handleDisabledCommand = useCallback((optionLetter: string) => {
-    switch (optionLetter.toLocaleUpperCase()) {
-      case "T": {
-        return (
-          letter.toLocaleUpperCase() !== "T" &&
-          letter.toLocaleUpperCase() !== "Q"
-        );
-      }
-      case "S": {
-        return (
-          letter.toLocaleUpperCase() !== "S" &&
-          letter.toLocaleUpperCase() !== "C"
-        );
-      }
-      default:
-        return false;
-    }
-  }, []);
 
   const isRelative = isRelativeCommand(letter);
 
@@ -154,16 +128,19 @@ export default function Command({
           );
         })}
       </div>
-      <CommandOptions
+      <CommandActionsWrapper
         id={id}
         isFirst={isFirst}
         isRelative={isRelative}
-        handleConvertToAbsolute={handleConvertToAbsolute}
-        handleConvertToRelative={handleConvertToRelative}
-        handleDelete={handleDelete}
-        handleCreateCommand={handleCreateCommand}
-        handleDisabledCommand={handleDisabledCommand}
-      ></CommandOptions>
+        commandLetter={letter}
+      >
+        <button className="focus-visible:outline-[deeppink] focus-visible:outline focus-visible:rounded-sm !text-white hover:bg-gray-600 rounded-sm transition-colors">
+          <EllipsisVertical
+            size={16}
+            className="shrink-0 min-w-4"
+          ></EllipsisVertical>
+        </button>
+      </CommandActionsWrapper>
     </li>
   );
 }

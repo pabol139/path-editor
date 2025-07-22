@@ -1,13 +1,9 @@
-import { forwardRef, useEffect, useMemo, useState } from "react";
 import { usePathObject } from "@/context/PathContext";
 import { Viewbox } from "@/types/Viewbox";
-import { centerViewbox, updatePoints } from "@/utils/path";
 import { usePanZoom } from "@/hooks/usePanZoom";
-import { createControlLines } from "@/utils/control-lines";
 import ControlLines from "./control-lines";
 import Points from "./points";
 import OverlappedPaths from "./overlapped-paths";
-import { createOverlappedPathsFromCommands } from "@/utils/overlapped-paths";
 import useSvg from "@/hooks/useSvg";
 import { SvgDimensions } from "@/types/Svg";
 
@@ -30,12 +26,12 @@ export default function Svg({
     handlePointerLeave,
     handlePointerMove,
     handlePointerUp,
-    handleZoom,
+    handleWheelZoom,
   } = usePanZoom(viewbox, updateViewbox, cleanSelectedCommands);
 
   return (
     <svg
-      onWheel={handleZoom}
+      onWheel={handleWheelZoom}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
