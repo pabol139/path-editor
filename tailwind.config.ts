@@ -21,6 +21,7 @@ export default {
         purple: "var(--purple)",
         purple300: "var(--purple300)",
         purple600: "var(--purple600)",
+        "primary-foreground": "hsl(var(--primary-foreground))",
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Viewbox } from "@/types/Viewbox";
 import { usePathObject } from "@/context/PathContext";
 

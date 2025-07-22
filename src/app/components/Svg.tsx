@@ -6,6 +6,7 @@ import Points from "./points";
 import OverlappedPaths from "./overlapped-paths";
 import useSvg from "@/hooks/useSvg";
 import { SvgDimensions } from "@/types/Svg";
+import DecorativeLines from "./decorative-lines";
 
 export default function Svg({
   viewbox,
@@ -42,6 +43,10 @@ export default function Svg({
     >
       {isVisible ? (
         <>
+          <DecorativeLines
+            viewbox={viewbox}
+            strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}
+          ></DecorativeLines>
           <path
             d={pathObject.path}
             fill="#ffffff40"

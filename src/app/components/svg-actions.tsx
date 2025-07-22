@@ -7,6 +7,12 @@ import { Focus, Redo, SquareDashed, Undo } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
 import { Square, ZoomIn, ZoomOut } from "react-feather";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip";
 
 export default function SvgActions({
   viewbox,
@@ -56,31 +62,37 @@ export default function SvgActions({
       icon: <Undo></Undo>,
       onClick: handleUndo,
       disabled: undoStackIsEmpty,
+      message: "Undo",
     },
     {
       icon: <Redo></Redo>,
       onClick: handleRedo,
       disabled: redoStackIsEmpty,
+      message: "Redo",
     },
     {
       icon: <ZoomIn></ZoomIn>,
       onClick: () => newHandleZoom(0),
       disabled: false,
+      message: "Zoom In",
     },
     {
       icon: <ZoomOut></ZoomOut>,
       onClick: () => newHandleZoom(1),
       disabled: false,
+      message: "Zoom Out",
     },
     {
       icon: <Focus></Focus>,
       onClick: () => centerViewbox(svgRef, updateViewbox, setSvgDimensions),
       disabled: false,
+      message: "Fit",
     },
     {
       icon: isPathFilled ? <SquareDashed></SquareDashed> : <Square></Square>,
       onClick: handleFill,
       disabled: false,
+      message: isPathFilled ? "Unfill" : "Fill",
     },
   ];
 
@@ -95,16 +107,36 @@ export default function SvgActions({
       animate={{ y: -50 }}
       className="absolute right-0 left-0 bottom-0 m-auto w-fit flex gap-[2px] bg-primary px-1 py-1 rounded-md border border-secondary shadow-md"
     >
-      {ACTIONS.map(({ icon, onClick, disabled }, key) => (
-        <button
-          key={key}
-          onClick={onClick}
-          disabled={disabled}
-          className=" px-1 py-1 rounded-sm h-10 w-10 flex items-center justify-center text-tertiary hover:bg-secondary transition-[background-color,opacity] disabled:opacity-50"
-        >
-          {icon}
-        </button>
-      ))}
+      <TooltipProvider delayDuration={200}>
+        {ACTIONS.map(({ icon, onClick, disabled, message }, key) => (
+          <ActionTooltip key={key} message={message}>
+            <button
+              onClick={onClick}
+              disabled={disabled}
+              className=" px-1 py-1 rounded-sm h-10 w-10 flex items-center justify-center text-tertiary hover:bg-secondary transition-[background-color,opacity] disabled:opacity-50"
+            >
+              {icon}
+            </button>
+          </ActionTooltip>
+        ))}
+      </TooltipProvider>
     </motion.div>
+  );
+}
+
+function ActionTooltip({
+  message,
+  children,
+}: {
+  message: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent sideOffset={10}>
+        <p>{message}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 }
