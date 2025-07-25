@@ -23,6 +23,7 @@ export default function Svg({
   const { isVisible, points, overlappedPaths, lines, cleanSelectedCommands } =
     useSvg(viewbox, updateViewbox, setSvgDimensions);
   const {
+    dragging,
     handlePointerDown,
     handlePointerLeave,
     handlePointerMove,
@@ -46,6 +47,7 @@ export default function Svg({
           <DecorativeLines
             viewbox={viewbox}
             strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}
+            svgRef={svgRef}
           ></DecorativeLines>
           <path
             d={pathObject.path}

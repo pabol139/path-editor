@@ -119,6 +119,7 @@ export function usePanZoom(
     // (event.target as HTMLElement).releasePointerCapture(event.pointerId);
   };
   return {
+    dragging,
     handleProgrammaticZoom,
     handleWheelZoom,
     handlePointerDown,
