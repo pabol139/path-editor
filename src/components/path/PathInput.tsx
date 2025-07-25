@@ -96,17 +96,7 @@ export default function PathInput({
           copied && "copied"
         )}
       >
-        {copied ? (
-          <>
-            <Check size={16}></Check>
-            <span>Copied!</span>
-          </>
-        ) : (
-          <>
-            <Copy size={16}></Copy>
-            <span>Copy</span>
-          </>
-        )}
+        {copied ? <Check size={16}></Check> : <Copy size={16}></Copy>}
       </button>
     </>
   );

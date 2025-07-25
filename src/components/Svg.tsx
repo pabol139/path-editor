@@ -39,7 +39,7 @@ export default function Svg({
       onPointerLeave={handlePointerLeave}
       onPointerUp={handlePointerUp}
       ref={svgRef}
-      className="h-full w-full "
+      className="h-full w-full"
       viewBox={`${viewbox.x} ${viewbox.y} ${viewbox.width} ${viewbox.height}`}
     >
       {isVisible ? (
