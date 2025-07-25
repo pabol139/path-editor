@@ -1,0 +1,252 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --primary: hsl(240deg 9% 15%);
+    --secondary: hsl(240deg 9% 23%);
+    --tertiary: hsl(240deg 10% 90%);
+    --gray100: hsl(0deg 0% 63%);
+    --gray200: hsl(0deg 0% 57%);
+    --gray300: hsl(240deg 9% 32%);
+    --purple: hsl(240deg 36% 52%);
+    --purple300: hsl(240deg 36% 52% / 30%);
+    --purple600: hsl(240deg 36% 52% / 60%);
+    --aside-width: 326px;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 240deg 9% 23%;
+    --popover-foreground: 240deg 10% 90%;
+    --primary-foreground: 240 10% 90%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 240 3% 36%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 240deg 36% 52% / 60%;
+    --accent-foreground: 240deg 10% 90%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+    --ease-out-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
+    --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
+    --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+    --ease-out-circ: cubic-bezier(0.075, 0.82, 0.165, 1);
+    --sidebar: cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  /* 1. Use a more-intuitive box-sizing model */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  /* 2. Remove default margin */
+  * {
+    margin: 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--tertiary) var(--primary);
+  }
+
+  html,
+  body {
+    overflow: hidden;
+  }
+
+  body {
+    /* 3. Add accessible line-height */
+    line-height: 1.5;
+    /* 4. Improve text rendering */
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* 5. Improve media defaults */
+  img,
+  picture,
+  video,
+  canvas,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  /* 6. Inherit fonts for form controls */
+  input,
+  button,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  /* 7. Avoid text overflows */
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    overflow-wrap: break-word;
+  }
+
+  /* 8. Improve line wrapping */
+  p {
+    text-wrap: pretty;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    text-wrap: balance;
+  }
+
+  h3 {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+
+  /*
+  9. Create a root stacking context
+*/
+  #root,
+  #__next {
+    isolation: isolate;
+  }
+
+  input::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+    display: none;
+  }
+
+  /*** COLOR INPUT ***/
+  /* Source: https://www.smashingmagazine.com/2021/12/create-custom-range-input-consistent-browsers/ */
+  input[type="color" i] {
+    --input-color-outer-radius: 4px;
+    --input-color-padding: 1px;
+    --input-color-inner-radius: calc(
+      var(--input-color-outer-radius) - var(--input-color-padding)
+    );
+    border-radius: var(--input-color-outer-radius);
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+
+    /* Can set padding between outer circle and color swatch for Firefox here;
+   * it doesn't support a color-swarch-wrapper pseudoclass
+   */
+    padding: 0px;
+  }
+
+  input[type="color" i]::-webkit-color-swatch-wrapper {
+    padding: var(--input-color-padding);
+  }
+
+  /* Affects the inner circle, i.e. the current color selection */
+  input[type="color" i]::-webkit-color-swatch {
+    border-radius: var(--input-color-inner-radius);
+    border-color: transparent;
+  }
+
+  input[type="color" i]::-moz-color-swatch {
+    border-radius: var(--input-color-inner-radius);
+    border-color: transparent;
+  }
+
+  /*** RANGE INPUT ***/
+
+  input[type="range"] {
+    --input-range-height: calc(6 / 16 * 1rem);
+    --input-size: calc(12 / 16 * 1rem);
+    --input-range-progress: 0%;
+
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+    width: 10rem;
+  }
+
+  /***** Track Styles *****/
+  /***** Chrome, Safari, Opera, and Edge Chromium *****/
+  input[type="range"]::-webkit-slider-runnable-track {
+    background: linear-gradient(
+      to right,
+      var(--purple) var(--input-range-progress, 0%),
+      var(--gray300) var(--input-range-progress, 0%)
+    );
+    height: var(--input-range-height);
+    border-radius: 6px;
+  }
+
+  /******** Firefox ********/
+  input[type="range"]::-moz-range-track {
+    background: var(--gray300);
+    height: var(--input-range-height);
+    border-radius: 6px;
+  }
+
+  /***** Thumb Styles *****/
+  /***** Chrome, Safari, Opera, and Edge Chromium *****/
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Override default look */
+    appearance: none;
+    margin-top: calc(
+      (var(--input-range-height) / 2) - (var(--input-size) / 2)
+    ); /* Centers thumb on the track */
+    background-color: var(--purple);
+    height: var(--input-size);
+    width: var(--input-size);
+    border-radius: 9999px;
+  }
+
+  /***** Thumb Styles *****/
+  /***** Firefox *****/
+  input[type="range"]::-moz-range-thumb {
+    border: none; /*Removes extra border that FF applies*/
+    border-radius: 0; /*Removes default border-radius that FF applies*/
+    background-color: var(--purple);
+    height: var(--input-size);
+    width: var(--input-size);
+    border-radius: 9999px;
+  }
+  /* .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  } */
+}
