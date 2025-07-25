@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathObject } from "@/context/PathContext";
 import type { Viewbox } from "@/types/Viewbox";
 import type { SvgDimensions } from "@/types/Svg";
@@ -15,44 +15,51 @@ export default function PathInput({
 }) {
   const { pathObject, updatePath, error } = usePathObject();
   const [copied, setCopied] = useState(false);
+  const [displayValue, setDisplayValue] = useState(pathObject.path);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    setDisplayValue(pathObject.path);
+  }, [pathObject.path]);
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = event.target.value;
     if (!value.trim()) {
       updatePath(value);
+      setDisplayValue(value);
       return;
     }
 
-    const svgWidth = svgDimensions.width;
-    const svgHeight = svgDimensions.height;
-    const pathBBox = getPathBBox(value);
+    // const svgWidth = svgDimensions.width;
+    // const svgHeight = svgDimensions.height;
+    // const pathBBox = getPathBBox(value);
 
-    let pathWidth = pathBBox.width;
-    let pathHeight = pathBBox.height;
-    let pathX = pathBBox.x;
-    let pathY = pathBBox.y;
-    const svgAspectRatio = svgHeight / svgWidth;
-    const pathAspectRatio = pathHeight / pathWidth;
-    if (svgAspectRatio < pathAspectRatio) {
-      pathWidth = pathHeight / svgAspectRatio;
-    } else {
-      pathHeight = svgAspectRatio * pathWidth;
-    }
+    // let pathWidth = pathBBox.width;
+    // let pathHeight = pathBBox.height;
+    // let pathX = pathBBox.x;
+    // let pathY = pathBBox.y;
+    // const svgAspectRatio = svgHeight / svgWidth;
+    // const pathAspectRatio = pathHeight / pathWidth;
+    // if (svgAspectRatio < pathAspectRatio) {
+    //   pathWidth = pathHeight / svgAspectRatio;
+    // } else {
+    //   pathHeight = svgAspectRatio * pathWidth;
+    // }
 
-    const percentFactorWidth = pathWidth * 0.1;
-    const percentFactorHeight = pathHeight * 0.1;
+    // const percentFactorWidth = pathWidth * 0.1;
+    // const percentFactorHeight = pathHeight * 0.1;
 
-    pathX = pathX - (pathWidth + percentFactorWidth - pathBBox.width) / 2;
-    pathY = pathY - (pathHeight + percentFactorHeight - pathBBox.height) / 2;
+    // pathX = pathX - (pathWidth + percentFactorWidth - pathBBox.width) / 2;
+    // pathY = pathY - (pathHeight + percentFactorHeight - pathBBox.height) / 2;
 
-    updateViewbox({
-      x: pathX,
-      y: pathY,
-      width: pathWidth + percentFactorWidth,
-      height: pathHeight + percentFactorHeight,
-    });
+    // updateViewbox({
+    //   x: pathX,
+    //   y: pathY,
+    //   width: pathWidth + percentFactorWidth,
+    //   height: pathHeight + percentFactorHeight,
+    // });
 
+    setDisplayValue(value);
     updatePath(value);
   };
 
@@ -86,7 +93,7 @@ export default function PathInput({
         cols={30}
         rows={3}
         onChange={handleChange}
-        value={pathObject.path}
+        value={displayValue}
       ></textarea>
       <button
         ref={buttonRef}
