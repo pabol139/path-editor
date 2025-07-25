@@ -36,13 +36,17 @@ function reducer(state: PathState, action: Action) {
         return {
           path: action.payload,
           commands: newCommands,
-          undoStack: [],
+          undoStack: [
+            ...state.undoStack,
+            { path: state.path, commands: state.commands },
+          ],
           redoStack: [],
           error: null,
         };
       } catch (e: any) {
+        console.log("error");
         return {
-          path: action.payload,
+          path: state.path,
           commands: state.commands,
           undoStack: [],
           redoStack: [],
