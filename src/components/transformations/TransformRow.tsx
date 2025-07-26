@@ -1,4 +1,3 @@
-import { act } from "react";
 import Input from "../inputs/Input";
 import AnimatedButton from "../animated-button";
 import { Check } from "lucide-react";

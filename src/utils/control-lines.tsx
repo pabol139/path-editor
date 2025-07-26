@@ -190,9 +190,9 @@ const createSmoothCubicLines: LineCreator = (
 
 const createSmoothQuadraticLines: LineCreator = (
   point,
-  points,
+  _points,
   commands,
-  pointIndex,
+  _pointIndex,
   commandIndex
 ) => {
   const lines: Line[] = [];

@@ -35,34 +35,38 @@ function CommandsSection() {
   };
 
   return (
-    <CollapsedSection title="Commands">
-      <ul className="pb-5 gap-2 flex flex-col">
-        {commands.map(
-          ({ id, letter, coordinates, selected, hovered }, index) => (
-            <Command
-              key={id}
-              id={id}
-              letter={letter}
-              coordinates={coordinates}
-              selected={selected}
-              hovered={hovered}
-              isFirst={index === 0}
-              handleEnter={() =>
-                onPointerEnterCommand(commands, updateCommands, id)
-              }
-              handleLeave={() =>
-                onPointerLeaveCommand(commands, updateCommands)
-              }
-              handleDown={() =>
-                onPointerDownCommand(commands, updateCommands, id)
-              }
-              handleInput={handleInput}
-              handleClickCommandLetter={handleClickCommandLetter}
-            />
-          )
-        )}
-      </ul>
-    </CollapsedSection>
+    <>
+      {commands.length > 0 && (
+        <CollapsedSection title="Commands">
+          <ul className="pb-5 gap-2 flex flex-col">
+            {commands.map(
+              ({ id, letter, coordinates, selected, hovered }, index) => (
+                <Command
+                  key={id}
+                  id={id}
+                  letter={letter}
+                  coordinates={coordinates}
+                  selected={selected}
+                  hovered={hovered}
+                  isFirst={index === 0}
+                  handleEnter={() =>
+                    onPointerEnterCommand(commands, updateCommands, id)
+                  }
+                  handleLeave={() =>
+                    onPointerLeaveCommand(commands, updateCommands)
+                  }
+                  handleDown={() =>
+                    onPointerDownCommand(commands, updateCommands, id)
+                  }
+                  handleInput={handleInput}
+                  handleClickCommandLetter={handleClickCommandLetter}
+                />
+              )
+            )}
+          </ul>
+        </CollapsedSection>
+      )}
+    </>
   );
 }
 

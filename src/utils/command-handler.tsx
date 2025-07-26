@@ -39,7 +39,7 @@ interface CommandHandler {
     values: { x: number; y: number }
   ) => number[];
   scale: (coordinates: number[], values: { x: number; y: number }) => number[];
-  rotate: (
+  rotate?: (
     coordinates: number[],
     origin: { x: number; y: number },
     angle: number
@@ -77,10 +77,10 @@ export const commandHandlers: Record<string, CommandHandler> = {
       },
     ],
     updateCoordinates: (
-      coords,
+      _coords,
       x,
       y,
-      pointIndex,
+      _pointIndex,
       currentPosition,
       isRelative
     ) => {
@@ -156,10 +156,10 @@ export const commandHandlers: Record<string, CommandHandler> = {
       },
     ],
     updateCoordinates: (
-      coords,
+      _coords,
       x,
       y,
-      pointIndex,
+      _pointIndex,
       currentPosition,
       isRelative
     ) => {
@@ -219,10 +219,10 @@ export const commandHandlers: Record<string, CommandHandler> = {
       },
     ],
     updateCoordinates: (
-      coords,
+      _coords,
       x,
-      y,
-      pointIndex,
+      _y,
+      _pointIndex,
       currentPosition,
       isRelative
     ) => {
@@ -274,10 +274,10 @@ export const commandHandlers: Record<string, CommandHandler> = {
       },
     ],
     updateCoordinates: (
-      coords,
-      x,
+      _coords,
+      _x,
       y,
-      pointIndex,
+      _pointIndex,
       currentPosition,
       isRelative
     ) => {
@@ -431,10 +431,10 @@ export const commandHandlers: Record<string, CommandHandler> = {
       },
     ],
     updateCoordinates: (
-      coords,
+      _coords,
       x,
       y,
-      pointIndex,
+      _pointIndex,
       currentPosition,
       isRelative
     ) => {

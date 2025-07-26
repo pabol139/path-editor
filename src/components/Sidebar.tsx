@@ -4,9 +4,8 @@ import TransformSection from "@/components/transformations/Transforms";
 import PathSection from "@/components/path/Path";
 import type { SvgDimensions } from "@/types/Svg";
 import CommandsSection from "@/components/commands/Commands";
-import React, { useState } from "react";
+import React from "react";
 import { ArrowRight } from "lucide-react";
-import { usePathObject } from "@/context/PathContext";
 
 type SiderbarProps = {
   svgDimensions: SvgDimensions;
@@ -14,6 +13,7 @@ type SiderbarProps = {
   updateViewbox: (viewbox: Viewbox) => void;
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setSvgDimensions: React.Dispatch<React.SetStateAction<SvgDimensions>>;
 };
 
 export default function Sidebar({
@@ -22,21 +22,12 @@ export default function Sidebar({
   updateViewbox,
   open,
   setOpen,
+  setSvgDimensions,
 }: SiderbarProps) {
-  const { svgRef } = usePathObject();
-
   const handleOpen = (isOpen: boolean) => {
-    // if (svgRef.current && svgRef.current.parentElement) {
-    //   if (isOpen) {
-    //     svgRef.current.parentElement.style.width =
-    //       "calc(100% - var(--aside-width))";
-    //   } else {
-    //     svgRef.current.parentElement.style.width = "100%";
-    //   }
-    // }
-
     setOpen(isOpen);
   };
+
   return (
     <aside
       className={`absolute top-0 right-0 h-full transition-transform ease-out-sidebar duration-500 ${
@@ -47,6 +38,7 @@ export default function Sidebar({
         <PathSection
           svgDimensions={svgDimensions}
           updateViewbox={updateViewbox}
+          setSvgDimensions={setSvgDimensions}
         />
 
         <ViewboxSection viewbox={viewbox} updateViewbox={updateViewbox} />

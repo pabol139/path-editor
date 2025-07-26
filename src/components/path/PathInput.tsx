@@ -2,64 +2,35 @@ import { useEffect, useRef, useState } from "react";
 import { usePathObject } from "@/context/PathContext";
 import type { Viewbox } from "@/types/Viewbox";
 import type { SvgDimensions } from "@/types/Svg";
-import { getPathBBox } from "@/utils/path";
+import { centerViewbox } from "@/utils/path";
 import { Copy, Check } from "lucide-react";
 import clsx from "clsx";
 
 export default function PathInput({
-  svgDimensions,
   updateViewbox,
+  setSvgDimensions,
 }: {
   svgDimensions: SvgDimensions;
   updateViewbox: (viewbox: Viewbox) => void;
+  setSvgDimensions: React.Dispatch<React.SetStateAction<SvgDimensions>>;
 }) {
-  const { pathObject, updatePath, error } = usePathObject();
+  const { pathObject, updatePath, error, svgRef } = usePathObject();
   const [copied, setCopied] = useState(false);
-  const [displayValue, setDisplayValue] = useState(pathObject.path);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const { displayPath } = pathObject;
+  const [justTyped, setJustTyped] = useState(false);
 
+  // whenever the “real” path changes *and* it was triggered by typing *and* there's no error:
   useEffect(() => {
-    setDisplayValue(pathObject.path);
-  }, [pathObject.path]);
-
-  const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = event.target.value;
-    if (!value.trim()) {
-      updatePath(value);
-      setDisplayValue(value);
-      return;
+    if (justTyped && !error) {
+      centerViewbox(svgRef, updateViewbox, setSvgDimensions);
     }
+    setJustTyped(false);
+  }, [pathObject.path, error]);
 
-    // const svgWidth = svgDimensions.width;
-    // const svgHeight = svgDimensions.height;
-    // const pathBBox = getPathBBox(value);
-
-    // let pathWidth = pathBBox.width;
-    // let pathHeight = pathBBox.height;
-    // let pathX = pathBBox.x;
-    // let pathY = pathBBox.y;
-    // const svgAspectRatio = svgHeight / svgWidth;
-    // const pathAspectRatio = pathHeight / pathWidth;
-    // if (svgAspectRatio < pathAspectRatio) {
-    //   pathWidth = pathHeight / svgAspectRatio;
-    // } else {
-    //   pathHeight = svgAspectRatio * pathWidth;
-    // }
-
-    // const percentFactorWidth = pathWidth * 0.1;
-    // const percentFactorHeight = pathHeight * 0.1;
-
-    // pathX = pathX - (pathWidth + percentFactorWidth - pathBBox.width) / 2;
-    // pathY = pathY - (pathHeight + percentFactorHeight - pathBBox.height) / 2;
-
-    // updateViewbox({
-    //   x: pathX,
-    //   y: pathY,
-    //   width: pathWidth + percentFactorWidth,
-    //   height: pathHeight + percentFactorHeight,
-    // });
-
-    setDisplayValue(value);
+  const handleChange = (evt: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = evt.target.value;
+    setJustTyped(true);
     updatePath(value);
   };
 
@@ -93,7 +64,7 @@ export default function PathInput({
         cols={30}
         rows={3}
         onChange={handleChange}
-        value={displayValue}
+        value={displayPath}
       ></textarea>
       <button
         ref={buttonRef}

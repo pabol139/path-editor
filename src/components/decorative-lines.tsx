@@ -1,4 +1,4 @@
-import { useRef, useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import type { Viewbox } from "@/types/Viewbox";
 
 export default function DecorativeLines({
@@ -62,11 +62,11 @@ export default function DecorativeLines({
   // 3) grid math
   const CELLS = 20;
   const hPx = size.w / CELLS;
-  const vPx = size.h / CELLS;
+  // const vPx = size.h / CELLS;
   const unitsPerPxX = viewbox.width / size.w;
-  const unitsPerPxY = viewbox.height / size.h;
+  // const unitsPerPxY = viewbox.height / size.h;
   const hSpacing = hPx * unitsPerPxX;
-  const vSpacing = vPx * unitsPerPxY;
+  // const vSpacing = vPx * unitsPerPxY;
 
   // 4) index ranges, using the _state_ worldBounds
   const { left, top, right, bottom } = worldBounds;
@@ -74,6 +74,14 @@ export default function DecorativeLines({
   const xEndIdx = Math.ceil(right / hSpacing) + 1;
   const yStartIdx = Math.floor(top / hSpacing) - 1;
   const yEndIdx = Math.ceil(bottom / hSpacing) + 1;
+
+  if (
+    !isFinite(xStartIdx) ||
+    !isFinite(xEndIdx) ||
+    !isFinite(yStartIdx) ||
+    !isFinite(yEndIdx)
+  )
+    return <></>;
 
   return (
     <>

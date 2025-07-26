@@ -10,5 +10,6 @@ export type ParsePath<T> = Command<T>[];
 
 export type PathObject = {
   path: string;
+  displayPath: string;
   commands: ParsePath<number>;
 };

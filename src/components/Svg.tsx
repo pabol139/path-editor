@@ -23,7 +23,6 @@ export default function Svg({
   const { isVisible, points, overlappedPaths, lines, cleanSelectedCommands } =
     useSvg(viewbox, updateViewbox, setSvgDimensions);
   const {
-    dragging,
     handlePointerDown,
     handlePointerLeave,
     handlePointerMove,

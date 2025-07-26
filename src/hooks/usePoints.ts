@@ -4,7 +4,7 @@ import {
   isRelativeCommand,
 } from "@/utils/path";
 import type { Point as PointType } from "@/types/Point";
-import type { ParsePath, PathObject } from "@/types/Path";
+import type { PathObject } from "@/types/Path";
 import type { UpdateCommandsType } from "@/context/PathContext";
 import { useState } from "react";
 

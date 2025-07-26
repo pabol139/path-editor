@@ -136,8 +136,8 @@ export const getPathBBox = (path: string) => {
 export const formatNumber = (number: number, decimals: number): string => {
   return number
     .toFixed(decimals)
-    .replace(/^(-?[0-9]*\.([0-9]*[1-9])?)0*$/, "$1") // Search for meaningful decimals (non zero)
-    .replace(/\.$/, ""); // Removes any trailing point
+    .replace(/^(\d+)\.0+$/, "$1.")
+    .replace(/\.$/, "");
 };
 
 export const getSvgCenter = (svgRef: React.RefObject<SVGSVGElement | null>) => {
@@ -244,7 +244,7 @@ const getLastControlPointCurve = (
   currentIndex: number
 ) => {
   const command = commands[currentIndex];
-  const { letter, coordinates } = command;
+  const { letter } = command;
   const handler = commandHandlers[letter.toLocaleUpperCase()];
 
   // On S command, the prevControl is the control point of the prev S, else it will be the one of C
@@ -402,10 +402,6 @@ export const isRelativeCommand = (commandLetter: string): boolean => {
   return commandLetter === commandLetter.toLowerCase();
 };
 
-const isAbsoluteCommand = (commandLetter: string): boolean => {
-  return commandLetter === commandLetter.toUpperCase();
-};
-
 export function getCurrentPositionBeforeCommand(
   commands: Command<number>[],
   targetCommandId: string
@@ -512,7 +508,7 @@ export const updatePoints = (commands: ParsePath<number>) => {
   let points: Point[] = [];
 
   const absoluteCommands = convertCommandsRelativeToAbsolute(commands);
-  absoluteCommands.forEach((absoluteCommand, index) => {
+  absoluteCommands.forEach((absoluteCommand) => {
     if (absoluteCommand.letter.toLocaleUpperCase() === LINE_COMMANDS.Close) {
       return;
     }

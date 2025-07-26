@@ -1,5 +1,4 @@
 import {
-  isRelativeCommand,
   onPointerDownCommand,
   onPointerEnterCommand,
   onPointerLeaveCommand,
@@ -9,10 +8,17 @@ import type { Point as PointType } from "@/types/Point";
 import usePoints from "@/hooks/usePoints";
 import { usePathObject } from "@/context/PathContext";
 import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
 import React from "react";
-import CommandActionsWrapper from "./commands/command-actions-wrapper";
 import PointsPortal from "./points-portal";
+
+type PortalInfo = {
+  id: string;
+  isFirst: boolean;
+  position: {
+    x: number;
+    y: number;
+  };
+};
 
 export default function Points({
   points,
@@ -37,7 +43,7 @@ export default function Points({
     updateCommands
   );
   const [openPortal, setOpenPortal] = useState(false);
-  const [portalInfo, setPortalInfo] = useState();
+  const [portalInfo, setPortalInfo] = useState<PortalInfo | null>();
   const { commands } = pathObject;
 
   useEffect(() => {

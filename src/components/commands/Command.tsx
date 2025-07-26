@@ -33,14 +33,21 @@ export default function Command({
   const [coordinatesDisplayValues, setCoordinatesDisplayValues] = useState(() =>
     coordinates.map((coordinate) => coordinate.toString())
   );
+  // Track which inputs are currently being edited
+  const [focusedInputs, setFocusedInputs] = useState<Set<number>>(new Set());
 
   const coordKey = coordinates.join(",");
 
   useEffect(() => {
-    setCoordinatesDisplayValues(
-      coordinates.map((coordinate) => coordinate.toString())
+    // Only update display values for inputs that are NOT currently focused
+    setCoordinatesDisplayValues((prevDisplayValues) =>
+      coordinates.map((coordinate, index) =>
+        focusedInputs.has(index)
+          ? prevDisplayValues[index]
+          : coordinate.toString()
+      )
     );
-  }, [coordKey]);
+  }, [coordKey, focusedInputs]);
 
   const updatedCoordinatesDisplayValues = (index: number, value: string) => {
     const newCoordinatesDisplayValues = [...coordinatesDisplayValues];
@@ -73,6 +80,15 @@ export default function Command({
 
     if (String(newValue) !== coordinatesDisplayValues[index])
       handleInput(id, index, newValue);
+
+    setFocusedInputs((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(index);
+      return newSet;
+    });
+  };
+  const handleInputFocus = (index: number) => {
+    setFocusedInputs((prev) => new Set(prev).add(index));
   };
 
   const isRelative = isRelativeCommand(letter);
@@ -111,9 +127,6 @@ export default function Command({
               index={key}
               coordinate={coordinate}
               updatedCoordinatesDisplayValues={updatedCoordinatesDisplayValues}
-              updatedCoordinatesDisplayValuesOnBlur={
-                updatedCoordinatesDisplayValuesOnBlur
-              }
             ></CommandAtomCheckbox>
           ) : (
             <CommandAtom
@@ -124,6 +137,7 @@ export default function Command({
               updatedCoordinatesDisplayValuesOnBlur={
                 updatedCoordinatesDisplayValuesOnBlur
               }
+              handleInputFocus={handleInputFocus}
             ></CommandAtom>
           );
         })}
@@ -150,11 +164,13 @@ function CommandAtom({
   coordinate,
   updatedCoordinatesDisplayValues,
   updatedCoordinatesDisplayValuesOnBlur,
+  handleInputFocus,
 }: {
   index: number;
   coordinate: string;
   updatedCoordinatesDisplayValues: (index: number, value: string) => void;
   updatedCoordinatesDisplayValuesOnBlur: (index: number, value: string) => void;
+  handleInputFocus: any;
 }) {
   return (
     <div className="flex items-center bg-secondary text-[10px] text-white border-r border-gray300 w-10 justify-center last:rounded-br-[5px] last:rounded-tr-[5px] last:border-none group">
@@ -174,8 +190,9 @@ function CommandAtom({
 
           updatedCoordinatesDisplayValuesOnBlur(index, formattedValue);
         }}
+        onFocus={() => handleInputFocus(index)}
         value={coordinate}
-        className="px-1 overflow-auto bg-transparent h-full text-center w-10 focus-visible:outline-[deeppink] focus-visible:outline group-last:focus-visible:rounded-tr-[5px] group-last:focus-visible:rounded-br-[5px] focus-visible:z-10"
+        className="px-1 overflow-auto tabular-nums bg-transparent h-full text-center w-10 focus-visible:outline-[deeppink] focus-visible:outline group-last:focus-visible:rounded-tr-[5px] group-last:focus-visible:rounded-br-[5px] focus-visible:z-10"
       ></input>
     </div>
   );
@@ -185,12 +202,10 @@ function CommandAtomCheckbox({
   index,
   coordinate,
   updatedCoordinatesDisplayValues,
-  updatedCoordinatesDisplayValuesOnBlur,
 }: {
   index: number;
   coordinate: string;
   updatedCoordinatesDisplayValues: (index: number, value: string) => void;
-  updatedCoordinatesDisplayValuesOnBlur: (index: number, value: string) => void;
 }) {
   return (
     <div className="flex relative items-center bg-secondary text-[10px] text-white border-r border-gray300 w-5 justify-center last:rounded-br-[5px] last:rounded-tr-[5px] last:border-none group">

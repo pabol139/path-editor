@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react";
+import { type ReactNode, useState } from "react";
 import SectionHeader from "@/components/SectionHeader";
 
 export function CollapsedSection({

@@ -1,3 +1,5 @@
+import type { InputHTMLAttributes } from "react";
+
 type InputProps = {
   id: string;
   leftText: string;
@@ -11,7 +13,7 @@ export default function Input({
   value,
   setter,
   ...props
-}: InputProps) {
+}: InputProps & InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className="relative flex-1 min-w-0">
       <label

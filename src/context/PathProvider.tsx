@@ -1,7 +1,7 @@
 "use client";
 import type { ParsePath, PathObject } from "@/types/Path";
 import { parsePath, convertCommandsToPath, formatCommands } from "@/utils/path";
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef } from "react";
 import {
   type PathProviderProps,
   DEFAULT_PATH,
@@ -11,10 +11,11 @@ import {
 // --- Types ---
 interface PathState {
   path: string;
+  displayPath: string;
   commands: ParsePath<number>;
-  undoStack: Array<{ path: string; commands: ParsePath<number> }>;
-  redoStack: Array<{ path: string; commands: ParsePath<number> }>;
-  error: string | null;
+  undoStack: Array<{ error: boolean } & PathObject>;
+  redoStack: Array<{ error: boolean } & PathObject>;
+  error: boolean;
 }
 
 type Action =
@@ -36,25 +37,40 @@ function reducer(state: PathState, action: Action) {
   switch (action.type) {
     case "SET_PATH": {
       try {
+        console.log("entro");
         const newCommands = parsePath(action.payload);
         return {
           path: action.payload,
+          displayPath: action.payload,
           commands: newCommands,
           undoStack: [
             ...state.undoStack,
-            { path: state.path, commands: state.commands },
+            {
+              path: state.path,
+              displayPath: state.displayPath,
+              commands: state.commands,
+              error: state.error,
+            },
           ],
           redoStack: [],
-          error: null,
+          error: false,
         };
       } catch (e: any) {
-        console.log("error");
+        console.error(e);
         return {
-          path: state.path,
-          commands: state.commands,
-          undoStack: [],
+          ...state,
+          displayPath: action.payload,
+          undoStack: [
+            ...state.undoStack,
+            {
+              path: state.path,
+              displayPath: state.displayPath,
+              commands: state.commands,
+              error: state.error,
+            },
+          ],
           redoStack: [],
-          error: e.message,
+          error: true,
         };
       }
     }
@@ -70,20 +86,27 @@ function reducer(state: PathState, action: Action) {
         const newPath = convertCommandsToPath(formatted);
         return {
           path: newPath,
+          displayPath: newPath,
           commands: formatted,
           undoStack: shouldSave
             ? [
                 ...state.undoStack,
-                { path: state.path, commands: state.commands },
+                {
+                  path: state.path,
+                  displayPath: state.displayPath,
+                  commands: state.commands,
+                  error: state.error,
+                },
               ]
             : [...state.undoStack],
           redoStack: shouldSave ? [] : [...state.redoStack],
-          error: null,
+          error: false,
         };
       } catch (e: any) {
+        console.error(e);
         return {
           ...state,
-          error: e.message,
+          error: true,
         };
       }
     }
@@ -91,14 +114,17 @@ function reducer(state: PathState, action: Action) {
       const last = state.undoStack[state.undoStack.length - 1];
       if (!last) return state;
       return {
-        path: last.path,
-        commands: last.commands,
+        ...last,
         undoStack: state.undoStack.slice(0, -1),
         redoStack: [
           ...state.redoStack,
-          { path: state.path, commands: state.commands },
+          {
+            path: state.path,
+            displayPath: state.displayPath,
+            commands: state.commands,
+            error: state.error,
+          },
         ],
-        error: null,
       };
     }
 
@@ -106,28 +132,34 @@ function reducer(state: PathState, action: Action) {
       const last = state.redoStack[state.redoStack.length - 1];
       if (!last) return state;
       return {
-        path: last.path,
-        commands: last.commands,
+        ...last,
         undoStack: [
           ...state.undoStack,
-          { path: state.path, commands: state.commands },
+          {
+            path: state.path,
+            displayPath: state.displayPath,
+            commands: state.commands,
+            error: state.error,
+          },
         ],
         redoStack: state.redoStack.slice(0, -1),
-        error: null,
       };
     }
     case "STORE": {
       const { newPathObject } = action.payload;
 
       return {
-        path: state.path,
-        commands: state.commands,
+        ...state,
         undoStack: [
           ...state.undoStack,
-          { path: newPathObject.path, commands: newPathObject.commands },
+          {
+            path: newPathObject.path,
+            displayPath: newPathObject.displayPath,
+            commands: newPathObject.commands,
+            error: false,
+          },
         ],
         redoStack: [],
-        error: null,
       };
     }
   }
@@ -136,10 +168,11 @@ function reducer(state: PathState, action: Action) {
 export function PathProvider({ children }: PathProviderProps) {
   const [state, dispatch] = useReducer(reducer, {
     path: DEFAULT_PATH,
+    displayPath: DEFAULT_PATH,
     commands: parsePath(DEFAULT_PATH),
     undoStack: [],
     redoStack: [],
-    error: null,
+    error: false,
   });
 
   const updatePath = useCallback((path: string) => {
@@ -197,6 +230,7 @@ export function PathProvider({ children }: PathProviderProps) {
       value={{
         pathObject: {
           path: state.path,
+          displayPath: state.displayPath,
           commands: state.commands,
         },
         updatePath,

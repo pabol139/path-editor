@@ -46,8 +46,8 @@ export default function useDragging(
     handleMove(
       {
         id: id,
-        x: parseFloat(svgPoint.x.toFixed(2)),
-        y: parseFloat(svgPoint.y.toFixed(2)),
+        x: svgPoint.x,
+        y: svgPoint.y,
       },
       !hasMoved
     );

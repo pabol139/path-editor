@@ -1,13 +1,11 @@
-export interface CircleType {
+export interface PointType {
   id: string;
   id_command: string;
   coordinate_index: number;
   radius: string;
-  cy: string;
   cx: string;
+  cy: string;
   control: boolean;
-  strokeWidth: string;
-  fill: string;
   hovered: boolean;
   selected: boolean;
 }

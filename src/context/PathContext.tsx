@@ -25,7 +25,7 @@ type PathContextType = {
     shouldSave?: boolean
   ) => void;
   svgRef: React.RefObject<SVGSVGElement | null>;
-  error: string | null;
+  error: boolean;
   undoUtils: {
     store: (newPathObject: PathObject) => void;
     undoStack: PathObject[];

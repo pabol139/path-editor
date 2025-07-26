@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import Svg from "@/components/Svg";
 import type { Viewbox } from "@/types/Viewbox";
@@ -78,6 +78,7 @@ export default function SvgWrapper() {
         updateViewbox={updateViewbox}
         open={isSidebarOpen}
         setOpen={setisSidebarOpen}
+        setSvgDimensions={setSvgDimensions}
       />
     </>
   );

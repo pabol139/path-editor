@@ -2,7 +2,7 @@ import { isRelativeCommand } from "@/utils/path";
 import CommandActionsWrapper from "./commands/command-actions-wrapper";
 import { createPortal } from "react-dom";
 import type { ParsePath } from "@/types/Path";
-import { useEffect, useState } from "react";
+import type { CSSProperties } from "react";
 
 export default function PointsPortal({
   open,
@@ -34,18 +34,20 @@ export default function PointsPortal({
         >
           <button
             aria-hidden={true}
-            style={{
-              "--button-size": "15px",
-              position: "absolute",
-              left: `calc(${portalInfo.position.x}px - (var(--button-size) / 2))`,
-              top: `calc(${portalInfo.position.y}px - (var(--button-size) / 2))`,
-              height: "15px",
-              width: "15px",
-              pointerEvents: "none",
-              zIndex: "1111",
-              opacity: "0",
-              visibility: "hidden",
-            }}
+            style={
+              {
+                "--button-size": "15px",
+                position: "absolute",
+                left: `calc(${portalInfo.position.x}px - (var(--button-size) / 2))`,
+                top: `calc(${portalInfo.position.y}px - (var(--button-size) / 2))`,
+                height: "15px",
+                width: "15px",
+                pointerEvents: "none",
+                zIndex: "1111",
+                opacity: "0",
+                visibility: "hidden",
+              } as CSSProperties
+            }
           ></button>
         </CommandActionsWrapper>,
         document.body

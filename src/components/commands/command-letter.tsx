@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, type ButtonHTMLAttributes } from "react";
 
 export default function CommandLetter({
   id,
@@ -10,7 +10,7 @@ export default function CommandLetter({
   id: string;
   letter: string;
   backgroundColorLetter: string;
-}) {
+} & ButtonHTMLAttributes<HTMLButtonElement>) {
   const counterRef = useRef(0);
   const prevLetterRef = useRef(letter);
 
