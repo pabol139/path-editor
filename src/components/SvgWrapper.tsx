@@ -22,6 +22,7 @@ export default function SvgWrapper() {
   });
 
   const [isSidebarOpen, setisSidebarOpen] = useState(true);
+  const [showControlElements, setShowControlElements] = useState(true);
 
   // Type for updateViewbox function
   const updateViewbox = (
@@ -61,6 +62,7 @@ export default function SvgWrapper() {
         )}
       >
         <Svg
+          showControlElements={showControlElements}
           svgDimensions={svgDimensions}
           setSvgDimensions={setSvgDimensions}
           viewbox={viewbox}
@@ -70,6 +72,8 @@ export default function SvgWrapper() {
           viewbox={viewbox}
           updateViewbox={updateViewbox}
           setSvgDimensions={setSvgDimensions}
+          showControlElements={showControlElements}
+          setShowControlElements={setShowControlElements}
         ></SvgActions>
       </div>
       <Sidebar

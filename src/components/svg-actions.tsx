@@ -3,7 +3,14 @@ import { usePanZoom } from "@/hooks/usePanZoom";
 import type { SvgDimensions } from "@/types/Svg";
 import type { Viewbox } from "@/types/Viewbox";
 import { centerViewbox } from "@/utils/path";
-import { Focus, Redo, SquareDashed, Undo } from "lucide-react";
+import {
+  Focus,
+  Redo,
+  Spline,
+  SplinePointer,
+  SquareDashed,
+  Undo,
+} from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
 import { Square, ZoomIn, ZoomOut } from "lucide-react";
@@ -18,10 +25,14 @@ export default function SvgActions({
   viewbox,
   updateViewbox,
   setSvgDimensions,
+  showControlElements,
+  setShowControlElements,
 }: {
   viewbox: Viewbox;
   updateViewbox: (viewbox: Viewbox) => void;
   setSvgDimensions: React.Dispatch<React.SetStateAction<SvgDimensions>>;
+  showControlElements: boolean;
+  setShowControlElements: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const {
     svgRef,
@@ -93,6 +104,16 @@ export default function SvgActions({
       onClick: handleFill,
       disabled: false,
       message: isPathFilled ? "Unfill" : "Fill",
+    },
+    {
+      icon: showControlElements ? (
+        <Spline></Spline>
+      ) : (
+        <SplinePointer></SplinePointer>
+      ),
+      onClick: () => setShowControlElements(!showControlElements),
+      disabled: false,
+      message: showControlElements ? "Hide controls" : "Show controls",
     },
   ];
 

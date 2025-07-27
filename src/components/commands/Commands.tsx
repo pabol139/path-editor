@@ -1,6 +1,6 @@
 import Command from "@/components/commands/Command";
 import { usePathObject } from "@/context/PathContext";
-import { CollapsedSection } from "@/components/CollapsedSection";
+import { CollapsedSection } from "@/components/collapsed-section";
 import {
   convertAbsoluteToRelative,
   convertRelativeToAbsolute,

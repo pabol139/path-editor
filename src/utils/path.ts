@@ -113,6 +113,14 @@ const generateCommands = (
     });
 
     if (regexTable.length === 0) return [i, generatedCommands];
+
+    // Case of: M 10 10 20 20 30 30 -> M 10 10 L 20 20 L 30 30
+    if (commandLetter === LINE_COMMANDS.MoveTo) {
+      commandLetter = LINE_COMMANDS.LineTo;
+    }
+    if (commandLetter === LINE_COMMANDS.MoveTo.toLocaleLowerCase()) {
+      commandLetter = LINE_COMMANDS.LineTo.toLocaleLowerCase();
+    }
   }
 
   throw new Error("malformed path (first error at " + i + ")");

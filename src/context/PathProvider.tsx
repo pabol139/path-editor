@@ -37,7 +37,6 @@ function reducer(state: PathState, action: Action) {
   switch (action.type) {
     case "SET_PATH": {
       try {
-        console.log("entro");
         const newCommands = parsePath(action.payload);
         return {
           path: action.payload,
@@ -56,7 +55,6 @@ function reducer(state: PathState, action: Action) {
           error: false,
         };
       } catch (e: any) {
-        console.error(e);
         return {
           ...state,
           displayPath: action.payload,
@@ -75,8 +73,6 @@ function reducer(state: PathState, action: Action) {
       }
     }
     case "UPDATE_COMMANDS": {
-      // save current for undo
-
       try {
         const { updater, shouldSave = true } = action.payload;
 
@@ -103,7 +99,6 @@ function reducer(state: PathState, action: Action) {
           error: false,
         };
       } catch (e: any) {
-        console.error(e);
         return {
           ...state,
           error: true,

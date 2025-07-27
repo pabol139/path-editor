@@ -1,6 +1,6 @@
 import Input from "@/components/inputs/Input";
 import type { Viewbox } from "@/types/Viewbox";
-import { CollapsedSection } from "@/components/CollapsedSection";
+import { CollapsedSection } from "@/components/collapsed-section";
 import { useEffect, useState } from "react";
 
 type ViewboxSectionProps = {

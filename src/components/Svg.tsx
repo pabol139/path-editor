@@ -9,11 +9,13 @@ import type { SvgDimensions } from "@/types/Svg";
 import DecorativeLines from "./decorative-lines";
 
 export default function Svg({
+  showControlElements = true,
   viewbox,
   svgDimensions,
   setSvgDimensions,
   updateViewbox,
 }: {
+  showControlElements?: boolean;
   viewbox: Viewbox;
   svgDimensions: SvgDimensions;
   setSvgDimensions: React.Dispatch<React.SetStateAction<SvgDimensions>>;
@@ -43,32 +45,38 @@ export default function Svg({
     >
       {isVisible ? (
         <>
-          <DecorativeLines
-            viewbox={viewbox}
-            strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}
-            svgRef={svgRef}
-          ></DecorativeLines>
+          {showControlElements && (
+            <DecorativeLines
+              viewbox={viewbox}
+              strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}
+              svgRef={svgRef}
+            ></DecorativeLines>
+          )}
           <path
             d={pathObject.path}
             fill="#ffffff40"
             stroke="#fff"
             strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}
           ></path>
-          <ControlLines
-            lines={lines}
-            viewboxWidth={viewbox.width}
-            svgDimensionsWidth={svgDimensions.width}
-          ></ControlLines>
-          <OverlappedPaths
-            overlappedPaths={overlappedPaths}
-            viewboxWidth={viewbox.width}
-            svgDimensionsWidth={svgDimensions.width}
-          ></OverlappedPaths>
-          <Points
-            points={points}
-            viewboxWidth={viewbox.width}
-            svgDimensionsWidth={svgDimensions.width}
-          ></Points>
+          {showControlElements && (
+            <>
+              <ControlLines
+                lines={lines}
+                viewboxWidth={viewbox.width}
+                svgDimensionsWidth={svgDimensions.width}
+              ></ControlLines>
+              <OverlappedPaths
+                overlappedPaths={overlappedPaths}
+                viewboxWidth={viewbox.width}
+                svgDimensionsWidth={svgDimensions.width}
+              ></OverlappedPaths>
+              <Points
+                points={points}
+                viewboxWidth={viewbox.width}
+                svgDimensionsWidth={svgDimensions.width}
+              ></Points>
+            </>
+          )}
         </>
       ) : (
         <svg className="opacity-0">
