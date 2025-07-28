@@ -78,9 +78,14 @@ export default function Points({
               handleLeave={() =>
                 onPointerLeaveCommand(commands, updateCommands)
               }
-              handleDown={() =>
-                onPointerDownCommand(commands, updateCommands, point.id_command)
-              }
+              handleDown={() => {
+                onPointerDownCommand(
+                  commands,
+                  updateCommands,
+                  point.id_command,
+                  true
+                );
+              }}
               handleUp={handleUp}
               handleClick={(
                 e: React.MouseEvent<SVGCircleElement, MouseEvent>
