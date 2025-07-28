@@ -1,4 +1,4 @@
-import { usePathObject } from "@/context/PathContext";
+import { usePathObject } from "@/context/path-context";
 
 export default function useCommands() {
   const { pathObject, updateCommands } = usePathObject();

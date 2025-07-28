@@ -5,7 +5,7 @@ import {
 } from "@/utils/path";
 import type { Point as PointType } from "@/types/Point";
 import type { PathObject } from "@/types/Path";
-import type { UpdateCommandsType } from "@/context/PathContext";
+import type { UpdateCommandsType } from "@/context/path-context";
 import { useState } from "react";
 
 type Coordinates = {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { usePathObject } from "@/context/PathContext";
+import { usePathObject } from "@/context/path-context";
 import {
   convertCommandsAbsoluteToRelative,
   convertCommandsRelativeToAbsolute,
@@ -100,7 +100,7 @@ function TransformSection() {
 
   return (
     <CollapsedSection title="Operations">
-      <div className="px-4 pb-5 space-y-4">
+      <div className="px-4 pb-5 space-y-4 -mt-1">
         <TransformRow
           title="Translate"
           action="translate"

@@ -1,10 +1,12 @@
-import { usePathObject } from "@/context/PathContext";
+import { usePathObject } from "@/context/path-context";
 import { usePanZoom } from "@/hooks/usePanZoom";
 import type { SvgDimensions } from "@/types/Svg";
 import type { Viewbox } from "@/types/Viewbox";
 import { centerViewbox } from "@/utils/path";
 import {
   Focus,
+  Minus,
+  Plus,
   Redo,
   Spline,
   SplinePointer,
@@ -68,7 +70,7 @@ export default function SvgActions({
     }
   }
 
-  const ACTIONS = [
+  const UNDO_ACTIONS = [
     {
       icon: <Undo></Undo>,
       onClick: handleUndo,
@@ -81,14 +83,11 @@ export default function SvgActions({
       disabled: redoStackIsEmpty,
       message: "Redo",
     },
+  ];
+
+  const ZOOM_ACTIONS = [
     {
-      icon: <ZoomIn></ZoomIn>,
-      onClick: () => newHandleZoom(0),
-      disabled: false,
-      message: "Zoom In",
-    },
-    {
-      icon: <ZoomOut></ZoomOut>,
+      icon: <Minus></Minus>,
       onClick: () => newHandleZoom(1),
       disabled: false,
       message: "Zoom Out",
@@ -99,6 +98,15 @@ export default function SvgActions({
       disabled: false,
       message: "Fit",
     },
+    {
+      icon: <Plus></Plus>,
+      onClick: () => newHandleZoom(0),
+      disabled: false,
+      message: "Zoom In",
+    },
+  ];
+
+  const STYLING_ACTIONS = [
     {
       icon: isPathFilled ? <SquareDashed></SquareDashed> : <Square></Square>,
       onClick: handleFill,
@@ -118,30 +126,69 @@ export default function SvgActions({
   ];
 
   return (
-    <motion.div
-      transition={{
-        type: "spring",
-        duration: 0.5,
-        bounce: 0.15,
-      }}
-      initial={{ y: 75 }}
-      animate={{ y: -50 }}
-      className="absolute right-0 left-0 bottom-0 m-auto w-fit flex gap-[2px] bg-primary px-1 py-1 rounded-md border border-secondary shadow-md"
-    >
+    <>
       <TooltipProvider delayDuration={200}>
-        {ACTIONS.map(({ icon, onClick, disabled, message }, key) => (
-          <ActionTooltip key={key} message={message}>
-            <button
-              onClick={onClick}
-              disabled={disabled}
-              className=" px-1 py-1 rounded-sm h-10 w-10 flex items-center justify-center text-tertiary hover:bg-secondary transition-[background-color,opacity] disabled:opacity-50"
-            >
-              {icon}
-            </button>
-          </ActionTooltip>
-        ))}
+        <motion.div
+          transition={{
+            type: "spring",
+            duration: 0.5,
+            bounce: 0.15,
+          }}
+          initial={{ y: 75 }}
+          animate={{ y: -16 }}
+          className=" absolute left-4 bottom-0 m-auto w-fit flex gap-3"
+        >
+          <div className="flex gap-[2px] bg-primary px-1 py-1 rounded-md border border-secondary shadow-md">
+            {ZOOM_ACTIONS.map(({ icon, onClick, disabled, message }, key) => (
+              <ActionTooltip key={key} message={message}>
+                <button
+                  onClick={onClick}
+                  disabled={disabled}
+                  className=" px-1 py-1 rounded-sm h-10 w-10 flex items-center justify-center text-tertiary hover:bg-secondary transition-[background-color,opacity] disabled:opacity-50"
+                >
+                  {icon}
+                </button>
+              </ActionTooltip>
+            ))}
+          </div>
+          <div className="flex gap-[2px] bg-primary px-1 py-1 rounded-md border border-secondary shadow-md">
+            {UNDO_ACTIONS.map(({ icon, onClick, disabled, message }, key) => (
+              <ActionTooltip key={key} message={message}>
+                <button
+                  onClick={onClick}
+                  disabled={disabled}
+                  className=" px-1 py-1 rounded-sm h-10 w-10 flex items-center justify-center text-tertiary hover:bg-secondary transition-[background-color,opacity] disabled:opacity-50"
+                >
+                  {icon}
+                </button>
+              </ActionTooltip>
+            ))}
+          </div>
+        </motion.div>
+        <motion.div
+          transition={{
+            type: "spring",
+            duration: 0.5,
+            bounce: 0.15,
+          }}
+          initial={{ y: 75 }}
+          animate={{ y: -16 }}
+          className=" absolute right-4 bottom-0 m-auto w-fit flex gap-[2px] bg-primary px-1 py-1 rounded-md border border-secondary shadow-md"
+        >
+          {STYLING_ACTIONS.map(({ icon, onClick, disabled, message }, key) => (
+            <ActionTooltip key={key} message={message}>
+              <button
+                onClick={onClick}
+                disabled={disabled}
+                className=" px-1 py-1 rounded-sm h-10 w-10 flex items-center justify-center text-tertiary hover:bg-secondary transition-[background-color,opacity] disabled:opacity-50"
+              >
+                {icon}
+              </button>
+            </ActionTooltip>
+          ))}
+        </motion.div>
       </TooltipProvider>
-    </motion.div>
+    </>
   );
 }
 

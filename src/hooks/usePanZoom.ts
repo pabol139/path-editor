@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Viewbox } from "@/types/Viewbox";
-import { usePathObject } from "@/context/PathContext";
+import { usePathObject } from "@/context/path-context";
 
 export function usePanZoom(
   viewbox: Viewbox,
@@ -25,7 +25,8 @@ export function usePanZoom(
       x: svgPoint.x,
       y: svgPoint.y,
     });
-    // (event.target as HTMLElement).setPointerCapture(event.pointerId);
+
+    (event.target as HTMLElement).setPointerCapture(event.pointerId);
   };
 
   const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
@@ -116,7 +117,7 @@ export function usePanZoom(
     setDragging(false);
     setHasMoved(false);
     setLastPosition({ x: 0, y: 0 });
-    // (event.target as HTMLElement).releasePointerCapture(event.pointerId);
+    (event.target as HTMLElement).releasePointerCapture(event.pointerId);
   };
   return {
     dragging,

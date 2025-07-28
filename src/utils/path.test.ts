@@ -1,4 +1,10 @@
-import { convertCommandsToPath, formatCommands, parsePath } from "./path";
+import {
+  convertCommandsToPath,
+  formatCommands,
+  parsePath,
+  scale,
+  translate,
+} from "./path";
 
 beforeAll(() => {
   jest.spyOn(crypto, "randomUUID").mockReturnValue("mock-id-id-id-id");
@@ -129,6 +135,15 @@ describe("parsePath", () => {
     expect(() => parsePath("m 10 10 t 10.5")).toThrow();
   });
 
+  test("should parse arc to", () => {
+    expect(parsePath("m 10 10 a 14 14, 0 1 1 51, 15")).toEqual([
+      createCommandObject("m", [10, 10]),
+      createCommandObject("a", [14, 14, 0, 1, 1, 51, 15]),
+    ]);
+
+    expect(() => parsePath("m 10 10 a 14 14 0 1 1")).toThrow();
+  });
+
   test("should parse close", () => {
     expect(parsePath("m 10 10 z")).toEqual([
       createCommandObject("m", [10, 10]),
@@ -156,6 +171,70 @@ describe("formatCommands", () => {
     const commands = [createCommandObject("m", [10.12, -20.12])];
     const result = formatCommands(commands, 1);
     expect(result).toEqual([createCommandObject("m", [10.1, -20.1])]);
+  });
+});
+
+describe("transformations", () => {
+  test("should translate commands", () => {
+    const commands = [
+      createCommandObject("m", [10.1, 20.1]),
+      createCommandObject("l", [10.1, 10.1]),
+      createCommandObject("v", [1]),
+      createCommandObject("h", [-2.1]),
+      createCommandObject("c", [0, 1, 0, 1, 0, 1]),
+      createCommandObject("s", [0, 1, 0, 1]),
+      createCommandObject("q", [0, 1, 0, 1]),
+      createCommandObject("t", [0, 1]),
+      createCommandObject("a", [14, 14, 0, 1, 1, 51, 15]),
+      createCommandObject("z", []),
+    ];
+
+    expect(translate(commands, "1", "2")).toEqual([
+      createCommandObject("m", [11.1, 22.1]),
+      createCommandObject("l", [11.1, 12.1]),
+      createCommandObject("v", [3]),
+      createCommandObject("h", [-1.1]),
+      createCommandObject("c", [1, 3, 1, 3, 1, 3]),
+      createCommandObject("s", [1, 3, 1, 3]),
+      createCommandObject("q", [1, 3, 1, 3]),
+      createCommandObject("t", [1, 3]),
+      createCommandObject("a", [14, 14, 0, 1, 1, 52, 17]),
+      createCommandObject("z", []),
+    ]);
+
+    expect(translate(commands, "1", "")).toEqual(commands);
+    expect(translate(commands, "", "1")).toEqual(commands);
+  });
+
+  test("should scale commands", () => {
+    const commands = [
+      createCommandObject("m", [10.1, 20.1]),
+      createCommandObject("l", [10.1, 10.1]),
+      createCommandObject("v", [1]),
+      createCommandObject("h", [-2.1]),
+      createCommandObject("c", [0, 1, 0, 1, 0, 1]),
+      createCommandObject("s", [0, 1, 0, 1]),
+      createCommandObject("q", [0, 1, 0, 1]),
+      createCommandObject("t", [0, 1]),
+      createCommandObject("a", [14, 14, 0, 1, 1, 51, 15]),
+      createCommandObject("z", []),
+    ];
+
+    expect(scale(commands, "2", "2")).toEqual([
+      createCommandObject("m", [20.2, 40.2]),
+      createCommandObject("l", [20.2, 20.2]),
+      createCommandObject("v", [2]),
+      createCommandObject("h", [-4.2]),
+      createCommandObject("c", [0, 2, 0, 2, 0, 2]),
+      createCommandObject("s", [0, 2, 0, 2]),
+      createCommandObject("q", [0, 2, 0, 2]),
+      createCommandObject("t", [0, 2]),
+      createCommandObject("a", [28, 28, 0, 1, 1, 102, 30]),
+      createCommandObject("z", []),
+    ]);
+
+    expect(scale(commands, "1", "")).toEqual(commands);
+    expect(scale(commands, "", "1")).toEqual(commands);
   });
 });
 

@@ -10,7 +10,7 @@ export default function SectionHeader({
   setter: () => void;
 }) {
   return (
-    <div className="relative px-4 py-5 w-full">
+    <div className="relative px-4 py-4 w-full">
       <h3 className="lowercase first-letter:uppercase">{title}</h3>
       <button
         onClick={setter}

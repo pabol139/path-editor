@@ -1,73 +1,62 @@
-"use client";
-import type { ParsePath, PathObject } from "@/types/Path";
-import { parsePath, convertCommandsToPath, formatCommands } from "@/utils/path";
-import { useCallback, useEffect, useReducer, useRef } from "react";
+import type { Action, ParsePath, PathObject, PathState } from "@/types/Path";
 import {
-  type PathProviderProps,
-  DEFAULT_PATH,
-  PathContext,
-} from "./PathContext";
+  parsePath,
+  convertCommandsToPath,
+  formatCommands,
+  cleanSelectedAndHoveredCommands,
+} from "@/utils/path";
+import {
+  getInitialPath,
+  savePathToStorage,
+  updateStack,
+} from "@/utils/path-state";
+import { useCallback, useEffect, useReducer } from "react";
 
-// --- Types ---
-interface PathState {
-  path: string;
-  displayPath: string;
-  commands: ParsePath<number>;
-  undoStack: Array<{ error: boolean } & PathObject>;
-  redoStack: Array<{ error: boolean } & PathObject>;
-  error: boolean;
-}
-
-type Action =
-  | { type: "SET_PATH"; payload: string }
-  | {
-      type: "UPDATE_COMMANDS";
-      payload: {
-        updater:
-          | ParsePath<number>
-          | ((commands: ParsePath<number>) => ParsePath<number>);
-        shouldSave?: boolean;
-      };
-    }
-  | { type: "UNDO" }
-  | { type: "REDO" }
-  | { type: "STORE"; payload: { newPathObject: PathObject } };
+const INITIAL_STATE = {
+  path: getInitialPath(),
+  displayPath: getInitialPath(),
+  commands: parsePath(getInitialPath()),
+  undoStack: [],
+  redoStack: [],
+  error: false,
+};
 
 function reducer(state: PathState, action: Action) {
   switch (action.type) {
     case "SET_PATH": {
       try {
         const newCommands = parsePath(action.payload);
+        savePathToStorage(action.payload);
         return {
           path: action.payload,
           displayPath: action.payload,
           commands: newCommands,
-          undoStack: [
+          undoStack: updateStack([
             ...state.undoStack,
             {
               path: state.path,
               displayPath: state.displayPath,
-              commands: state.commands,
+              commands: cleanSelectedAndHoveredCommands(state.commands),
               error: state.error,
             },
-          ],
-          redoStack: [],
+          ]),
+          redoStack: updateStack([]),
           error: false,
         };
       } catch (e: any) {
         return {
           ...state,
           displayPath: action.payload,
-          undoStack: [
+          undoStack: updateStack([
             ...state.undoStack,
             {
               path: state.path,
               displayPath: state.displayPath,
-              commands: state.commands,
+              commands: cleanSelectedAndHoveredCommands(state.commands),
               error: state.error,
             },
-          ],
-          redoStack: [],
+          ]),
+          redoStack: updateStack([]),
           error: true,
         };
       }
@@ -80,25 +69,31 @@ function reducer(state: PathState, action: Action) {
           typeof updater === "function" ? updater(state.commands) : updater;
         const formatted = formatCommands(updatedCommands, 2);
         const newPath = convertCommandsToPath(formatted);
+
+        shouldSave && savePathToStorage(newPath);
+
         return {
           path: newPath,
           displayPath: newPath,
           commands: formatted,
-          undoStack: shouldSave
-            ? [
-                ...state.undoStack,
-                {
-                  path: state.path,
-                  displayPath: state.displayPath,
-                  commands: state.commands,
-                  error: state.error,
-                },
-              ]
-            : [...state.undoStack],
-          redoStack: shouldSave ? [] : [...state.redoStack],
+          undoStack: updateStack(
+            shouldSave
+              ? [
+                  ...state.undoStack,
+                  {
+                    path: state.path,
+                    displayPath: state.displayPath,
+                    commands: cleanSelectedAndHoveredCommands(state.commands),
+                    error: state.error,
+                  },
+                ]
+              : [...state.undoStack]
+          ),
+          redoStack: updateStack(shouldSave ? [] : [...state.redoStack]),
           error: false,
         };
       } catch (e: any) {
+        console.error(e);
         return {
           ...state,
           error: true,
@@ -108,67 +103,67 @@ function reducer(state: PathState, action: Action) {
     case "UNDO": {
       const last = state.undoStack[state.undoStack.length - 1];
       if (!last) return state;
+
+      savePathToStorage(last.path);
+
       return {
         ...last,
-        undoStack: state.undoStack.slice(0, -1),
-        redoStack: [
+        undoStack: updateStack(state.undoStack.slice(0, -1)),
+        redoStack: updateStack([
           ...state.redoStack,
           {
             path: state.path,
             displayPath: state.displayPath,
-            commands: state.commands,
+            commands: cleanSelectedAndHoveredCommands(state.commands),
             error: state.error,
           },
-        ],
+        ]),
       };
     }
 
     case "REDO": {
       const last = state.redoStack[state.redoStack.length - 1];
       if (!last) return state;
+      savePathToStorage(last.path);
+
       return {
         ...last,
-        undoStack: [
+        undoStack: updateStack([
           ...state.undoStack,
           {
             path: state.path,
             displayPath: state.displayPath,
-            commands: state.commands,
+            commands: cleanSelectedAndHoveredCommands(state.commands),
             error: state.error,
           },
-        ],
-        redoStack: state.redoStack.slice(0, -1),
+        ]),
+        redoStack: updateStack(state.redoStack.slice(0, -1)),
       };
     }
     case "STORE": {
       const { newPathObject } = action.payload;
 
+      savePathToStorage(state.path);
+
       return {
         ...state,
-        undoStack: [
+        undoStack: updateStack([
           ...state.undoStack,
           {
             path: newPathObject.path,
             displayPath: newPathObject.displayPath,
-            commands: newPathObject.commands,
+            commands: cleanSelectedAndHoveredCommands(newPathObject.commands),
             error: false,
           },
-        ],
-        redoStack: [],
+        ]),
+        redoStack: updateStack([]),
       };
     }
   }
 }
 
-export function PathProvider({ children }: PathProviderProps) {
-  const [state, dispatch] = useReducer(reducer, {
-    path: DEFAULT_PATH,
-    displayPath: DEFAULT_PATH,
-    commands: parsePath(DEFAULT_PATH),
-    undoStack: [],
-    redoStack: [],
-    error: false,
-  });
+export default function usePathState() {
+  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
 
   const updatePath = useCallback((path: string) => {
     dispatch({ type: "SET_PATH", payload: path });
@@ -194,8 +189,6 @@ export function PathProvider({ children }: PathProviderProps) {
     []
   );
 
-  const svgRef = useRef<SVGSVGElement>(null);
-
   useEffect(() => {
     function handleKeydown(evt: KeyboardEvent) {
       evt.stopImmediatePropagation();
@@ -220,28 +213,21 @@ export function PathProvider({ children }: PathProviderProps) {
     };
   }, [undo, redo]);
 
-  return (
-    <PathContext.Provider
-      value={{
-        pathObject: {
-          path: state.path,
-          displayPath: state.displayPath,
-          commands: state.commands,
-        },
-        updatePath,
-        updateCommands,
-        error: state.error,
-        svgRef,
-        undoUtils: {
-          store,
-          undoStack: state.undoStack,
-          redoStack: state.redoStack,
-          handleUndo: undo,
-          handleRedo: redo,
-        },
-      }}
-    >
-      {children}
-    </PathContext.Provider>
-  );
+  return {
+    pathObject: {
+      path: state.path,
+      displayPath: state.displayPath,
+      commands: state.commands,
+    },
+    updatePath,
+    updateCommands,
+    error: state.error,
+    undoUtils: {
+      store,
+      undoStack: state.undoStack,
+      redoStack: state.redoStack,
+      handleUndo: undo,
+      handleRedo: redo,
+    },
+  };
 }

@@ -1,7 +1,7 @@
 import React from "react";
 import { renderHook, act } from "@testing-library/react";
-import { usePathObject } from "./PathContext";
-import { PathProvider } from "./PathProvider";
+import { usePathObject } from "./path-context";
+import { PathProvider } from "./path-provider";
 
 const wrapper = ({ children }: { children: React.ReactNode }) => {
   return <PathProvider>{children}</PathProvider>;
@@ -224,5 +224,79 @@ describe("PathContext", () => {
     });
 
     expect(result.current.undoUtils.undoStack).toHaveLength(1);
+  });
+
+  test("should limit undo stack with parsePath", () => {
+    const { result } = renderHook(() => usePathObject(), { wrapper });
+
+    // Perform 35 command updates
+    for (let i = 1; i <= 35; i++) {
+      act(() => {
+        result.current.updatePath(`M ${i * 10} ${i * 10}`);
+      });
+    }
+
+    // Should only keep 30 actions in undo stack
+    expect(result.current.undoUtils.undoStack).toHaveLength(30);
+  });
+
+  test("should limit undo stack with updateCommands", () => {
+    const { result } = renderHook(() => usePathObject(), { wrapper });
+
+    // Perform 35 command updates
+    for (let i = 1; i <= 35; i++) {
+      act(() => {
+        result.current.updateCommands([
+          createCommandObject("M", [i * 10, i * 10]),
+        ]);
+      });
+    }
+
+    // Should only keep 30 actions in undo stack
+    expect(result.current.undoUtils.undoStack).toHaveLength(30);
+  });
+
+  test("should limit undo stack with store operations", () => {
+    const { result } = renderHook(() => usePathObject(), { wrapper });
+
+    // Perform 35 store operations
+    for (let i = 1; i <= 35; i++) {
+      const pathObject = {
+        path: `M ${i * 10} ${i * 10}`,
+        displayPath: `M ${i * 10} ${i * 10}`,
+        commands: [createCommandObject("M", [i * 10, i * 10])],
+      };
+
+      act(() => {
+        result.current.undoUtils.store(pathObject);
+      });
+    }
+
+    // Should only keep 30 actions in undo stack
+    expect(result.current.undoUtils.undoStack).toHaveLength(30);
+  });
+
+  test("should limit redo stack to 30 actions", () => {
+    const { result } = renderHook(() => usePathObject(), { wrapper });
+
+    // Create 35 changes
+    for (let i = 1; i <= 35; i++) {
+      act(() => {
+        result.current.updatePath(`M ${i * 10} ${i * 10}`);
+      });
+    }
+
+    // Undo all 30 available actions (limited by stack size)
+    for (let i = 0; i < 30; i++) {
+      act(() => {
+        result.current.undoUtils.handleUndo();
+      });
+    }
+
+    // Redo stack should be limited to 30
+    expect(result.current.undoUtils.redoStack).toHaveLength(30);
+
+    // Should be at the final path
+    expect(result.current.pathObject.path).toBe("M 50 50");
   });
 });

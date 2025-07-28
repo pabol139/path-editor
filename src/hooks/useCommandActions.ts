@@ -1,14 +1,17 @@
-import { usePathObject } from "@/context/PathContext";
+import { usePathObject } from "@/context/path-context";
 import {
   convertAbsoluteToRelative,
   convertRelativeToAbsolute,
   createCommand,
   getSvgCenter,
 } from "@/utils/path";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 export default function useCommandActions() {
-  const { updateCommands, svgRef } = usePathObject();
+  const { updateCommands, svgRef, pathObject } = usePathObject();
+  const [commandsCounter, setCommandsCounter] = useState(
+    pathObject.commands.length
+  );
 
   const handleDelete = useCallback(
     (id: string) => {
@@ -60,20 +63,20 @@ export default function useCommandActions() {
         if (selectedIndex === -1) return currentCommands; // Command not found
 
         const centerOfSvg = getSvgCenter(svgRef);
-        const newCommand = createCommand(letter, centerOfSvg);
+        const newCommand = createCommand(letter, centerOfSvg, commandsCounter);
         const formatedCommands = currentCommands.map((command) => ({
           ...command,
           selected: false,
         }));
-
         return [
           ...formatedCommands.slice(0, selectedIndex + 1),
           newCommand,
           ...formatedCommands.slice(selectedIndex + 1),
         ];
       });
+      setCommandsCounter(commandsCounter + 1);
     },
-    [updateCommands]
+    [updateCommands, commandsCounter]
   );
 
   const handleDisabledCommand = useCallback(

@@ -7,7 +7,7 @@ export interface PathProviderProps {
 }
 
 export const DEFAULT_PATH =
-  "M 12 20.94 c 1.50 0 2.75 1.06 4 1.06 c 3 0 6 -8.00 6 -12.22 A 4.91 4.91 0 0 0 17 5 c -2.22 0 -4.00 1.44 -5.00 1.99 C 11.88 4.34 12.01 3 11.99 3.02 C 25.19 -4.79 13.14 -5.68 12 3 L 13.02 -2.85 H 11.68 C 11.35 -2.19 10.80 5.26 11.71 6.99 C 11 6.44 9.22 5 7 5 a 4.90 4.90 0 0 0 -5.00 4.78 C 2 14 5 22 8 22 c 1.25 0 2.50 -1.06 4 -1.06 Z";
+  "M 36 62.8223232 C 40.50 62.82 44.25 66 48 66 C 57 66 66 42 66 29.34 A 14.73 14.73 0 0 0 51 15 C 44.34 15 39 19.32 36 20.97 C 35.64 13.02 36.03 9 35.97 9.06 C 77.87 -10.66 38.03 -7.19 36 9 L 39.06 -8.55 H 35.04 C 34.05 -6.57 32.40 15.78 35.13 20.97 C 33 19.32 27.66 15 21 15 A 14.70 14.70 0 0 0 6 29.34 C 6 42 15 66 24 66 C 27.75 66 31.50 62.82 36 62.82 Z";
 
 export type UpdateCommandsType = (
   commands:
@@ -40,17 +40,9 @@ export const PathContext = createContext<PathContextType | undefined>(
   undefined
 );
 
-export const SetPathContext = createContext<
-  React.Dispatch<React.SetStateAction<PathObject>>
->(() => {});
-
 export function usePathObject() {
   const context = useContext(PathContext);
   if (!context) throw new Error("Context must be provided");
 
   return context;
-}
-
-export function useSetPath() {
-  return useContext(SetPathContext);
 }

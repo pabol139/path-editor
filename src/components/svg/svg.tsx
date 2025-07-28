@@ -1,4 +1,4 @@
-import { usePathObject } from "@/context/PathContext";
+import { usePathObject } from "@/context/path-context";
 import type { Viewbox } from "@/types/Viewbox";
 import { usePanZoom } from "@/hooks/usePanZoom";
 import ControlLines from "./control-lines";
@@ -7,6 +7,7 @@ import OverlappedPaths from "./overlapped-paths";
 import useSvg from "@/hooks/useSvg";
 import type { SvgDimensions } from "@/types/Svg";
 import DecorativeLines from "./decorative-lines";
+import { cleanSelectedAndHoveredCommands } from "@/utils/path";
 
 export default function Svg({
   showControlElements = true,
@@ -21,16 +22,27 @@ export default function Svg({
   setSvgDimensions: React.Dispatch<React.SetStateAction<SvgDimensions>>;
   updateViewbox: (viewbox: Viewbox) => void;
 }) {
-  const { pathObject, svgRef } = usePathObject();
-  const { isVisible, points, overlappedPaths, lines, cleanSelectedCommands } =
-    useSvg(viewbox, updateViewbox, setSvgDimensions);
+  const { pathObject, svgRef, updateCommands } = usePathObject();
+  const { isVisible, points, overlappedPaths, lines } = useSvg(
+    viewbox,
+    updateViewbox,
+    setSvgDimensions
+  );
+
+  function formatCommands() {
+    const formatedCommands = cleanSelectedAndHoveredCommands(
+      pathObject.commands
+    );
+    updateCommands(formatedCommands, false);
+  }
+
   const {
     handlePointerDown,
     handlePointerLeave,
     handlePointerMove,
     handlePointerUp,
     handleWheelZoom,
-  } = usePanZoom(viewbox, updateViewbox, cleanSelectedCommands);
+  } = usePanZoom(viewbox, updateViewbox, formatCommands);
 
   return (
     <svg

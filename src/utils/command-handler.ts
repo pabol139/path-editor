@@ -44,7 +44,10 @@ interface CommandHandler {
     origin: { x: number; y: number },
     angle: number
   ) => number[];
-  create: (currentPosition: { x: number; y: number }) => Command<number>;
+  create: (
+    currentPosition: { x: number; y: number },
+    commands_counter: number
+  ) => Command<number>;
 }
 
 const generateBasePoint = (
@@ -138,8 +141,8 @@ export const commandHandlers: Record<string, CommandHandler> = {
 
       return [finalX, finalY];
     },
-    create: (currentPosition) => ({
-      id: String(String(Math.random())),
+    create: (currentPosition, command_counter) => ({
+      id: command_counter + LINE_COMMANDS.MoveTo,
       letter: LINE_COMMANDS.MoveTo,
       coordinates: [currentPosition.x, currentPosition.y],
       hovered: false,
@@ -202,8 +205,8 @@ export const commandHandlers: Record<string, CommandHandler> = {
     getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
     translate: (coords, values) => [coords[0] + values.x, coords[1] + values.y],
     scale: (coords, values) => [coords[0] * values.x, coords[1] * values.y],
-    create: (currentPosition) => ({
-      id: String(Math.random()),
+    create: (currentPosition, command_counter) => ({
+      id: command_counter + LINE_COMMANDS.LineTo,
       letter: LINE_COMMANDS.LineTo,
       coordinates: [currentPosition.x, currentPosition.y],
       hovered: false,
@@ -254,10 +257,10 @@ export const commandHandlers: Record<string, CommandHandler> = {
       x: coords[0],
       y: currentPosition.y,
     }),
-    translate: (coords, values) => [coords[0] + values.x, coords[1]],
-    scale: (coords, values) => [coords[0] * values.x, coords[1]],
-    create: (currentPosition) => ({
-      id: String(Math.random()),
+    translate: (coords, values) => [coords[0] + values.x],
+    scale: (coords, values) => [coords[0] * values.x],
+    create: (currentPosition, command_counter) => ({
+      id: command_counter + LINE_COMMANDS.Horizontal,
       letter: LINE_COMMANDS.Horizontal,
       coordinates: [currentPosition.x],
       hovered: false,
@@ -311,10 +314,10 @@ export const commandHandlers: Record<string, CommandHandler> = {
       x: currentPosition.x,
       y: coords[1],
     }),
-    translate: (coords, values) => [coords[0], coords[1] + values.y],
-    scale: (coords, values) => [coords[0], coords[1] * values.y],
-    create: (currentPosition) => ({
-      id: String(Math.random()),
+    translate: (coords, values) => [coords[0] + values.y],
+    scale: (coords, values) => [coords[0] * values.y],
+    create: (currentPosition, command_counter) => ({
+      id: command_counter + LINE_COMMANDS.Vertical,
       letter: LINE_COMMANDS.Vertical,
       coordinates: [currentPosition.y],
       hovered: false,
@@ -409,8 +412,8 @@ export const commandHandlers: Record<string, CommandHandler> = {
       coords[2] * values.x,
       coords[3] * values.y,
     ],
-    create: (currentPosition) => ({
-      id: String(Math.random()),
+    create: (currentPosition, command_counter) => ({
+      id: command_counter + LINE_COMMANDS.QuadraticCurve,
       letter: LINE_COMMANDS.QuadraticCurve,
       coordinates: [
         currentPosition.x,
@@ -475,8 +478,8 @@ export const commandHandlers: Record<string, CommandHandler> = {
     getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
     translate: (coords, values) => [coords[0] + values.x, coords[1] + values.y],
     scale: (coords, values) => [coords[0] * values.x, coords[1] * values.y],
-    create: (currentPosition) => ({
-      id: String(Math.random()),
+    create: (currentPosition, command_counter) => ({
+      id: command_counter + LINE_COMMANDS.SmoothQuadraticCurve,
       letter: LINE_COMMANDS.SmoothQuadraticCurve,
       coordinates: [currentPosition.x, currentPosition.y],
       hovered: false,
@@ -585,8 +588,8 @@ export const commandHandlers: Record<string, CommandHandler> = {
       coords[4] * values.x,
       coords[5] * values.y,
     ],
-    create: (currentPosition) => ({
-      id: String(Math.random()),
+    create: (currentPosition, command_counter) => ({
+      id: command_counter + LINE_COMMANDS.Curve,
       letter: LINE_COMMANDS.Curve,
       coordinates: [
         currentPosition.x,
@@ -690,8 +693,8 @@ export const commandHandlers: Record<string, CommandHandler> = {
       coords[2] * values.x,
       coords[3] * values.y,
     ],
-    create: (currentPosition) => ({
-      id: String(Math.random()),
+    create: (currentPosition, command_counter) => ({
+      id: command_counter + LINE_COMMANDS.SmoothCurve,
       letter: LINE_COMMANDS.SmoothCurve,
       coordinates: [
         currentPosition.x,
@@ -796,8 +799,8 @@ export const commandHandlers: Record<string, CommandHandler> = {
       coords[5] * values.x,
       coords[6] * values.y,
     ],
-    create: (currentPosition) => ({
-      id: String(Math.random()),
+    create: (currentPosition, command_counter) => ({
+      id: command_counter + LINE_COMMANDS.Arc,
       letter: LINE_COMMANDS.Arc,
       coordinates: [1, 1, 0, 0, 0, currentPosition.x, currentPosition.y],
       hovered: false,

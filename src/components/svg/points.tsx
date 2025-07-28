@@ -6,7 +6,7 @@ import {
 import { Point } from "./point";
 import type { Point as PointType } from "@/types/Point";
 import usePoints from "@/hooks/usePoints";
-import { usePathObject } from "@/context/PathContext";
+import { usePathObject } from "@/context/path-context";
 import { useEffect, useState } from "react";
 import React from "react";
 import PointsPortal from "./points-portal";

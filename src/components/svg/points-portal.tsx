@@ -1,5 +1,5 @@
 import { isRelativeCommand } from "@/utils/path";
-import CommandActionsWrapper from "./commands/command-actions-wrapper";
+import CommandActionsWrapper from "../commands/command-actions-wrapper";
 import { createPortal } from "react-dom";
 import type { ParsePath } from "@/types/Path";
 import type { CSSProperties } from "react";

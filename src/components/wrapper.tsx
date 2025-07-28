@@ -1,14 +1,14 @@
 "use client";
 import { useState } from "react";
-import Sidebar from "@/components/Sidebar";
-import Svg from "@/components/Svg";
+import Sidebar from "@/components/sidebar";
+import Svg from "@/components/svg/svg";
 import type { Viewbox } from "@/types/Viewbox";
 import type { SvgDimensions } from "@/types/Svg";
 import { formatNumber } from "@/utils/path";
-import SvgActions from "./svg-actions";
+import SvgActions from "./toolbar";
 import { cn } from "@/lib/utils";
 
-export default function SvgWrapper() {
+export default function Wrapper() {
   const [viewbox, setViewbox] = useState<Viewbox>({
     x: 0,
     y: 0,

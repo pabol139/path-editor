@@ -1,4 +1,4 @@
-import { usePathObject } from "@/context/PathContext";
+import { usePathObject } from "@/context/path-context";
 import { useEffect, useMemo, useState } from "react";
 import { centerViewbox, updatePoints } from "@/utils/path";
 import { createControlLines } from "@/utils/control-lines";
@@ -69,20 +69,10 @@ export default function useSvg(
     }
   }, [viewbox]);
 
-  function cleanSelectedCommands() {
-    const unselectedCommands = commands.map((command) => ({
-      ...command,
-      hovered: false,
-      selected: false,
-    }));
-    updateCommands(unselectedCommands, false);
-  }
-
   return {
     isVisible,
     points,
     lines,
     overlappedPaths,
-    cleanSelectedCommands,
   };
 }

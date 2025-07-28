@@ -5,7 +5,7 @@ import { commandHandlers } from "./command-handler";
 import type { Viewbox } from "@/types/Viewbox";
 import type { SvgDimensions } from "@/types/Svg";
 import type { Dispatch, SetStateAction } from "react";
-import type { UpdateCommandsType } from "@/context/PathContext";
+import type { UpdateCommandsType } from "@/context/path-context";
 
 /** Regex based on https://github.com/Yqnn/svg-path-editor/blob/master/src/lib/path-parser.ts */
 const kCommandTypeRegex = /^[\t\n\f\r ]*([MLHVZCSQTAmlhvzcsqta])[\t\n\f\r ]*/;
@@ -131,20 +131,20 @@ const generateCommands = (
   throw new Error("malformed path (first error at " + i + ")");
 };
 
-export const getPathBBox = (path: string) => {
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  const pathElement = document.createElementNS(
-    "http://www.w3.org/2000/svg",
-    "path"
-  );
-  pathElement.setAttribute("d", path);
-  svg.appendChild(pathElement);
-  document.body.appendChild(svg);
-  const BBox = pathElement?.getBBox();
-  document.body.removeChild(svg);
+// export const getPathBBox = (path: string) => {
+//   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+//   const pathElement = document.createElementNS(
+//     "http://www.w3.org/2000/svg",
+//     "path"
+//   );
+//   pathElement.setAttribute("d", path);
+//   svg.appendChild(pathElement);
+//   document.body.appendChild(svg);
+//   const BBox = pathElement?.getBBox();
+//   document.body.removeChild(svg);
 
-  return BBox;
-};
+//   return BBox;
+// };
 
 export const formatNumber = (number: number, decimals: number): string => {
   return number
@@ -184,7 +184,6 @@ export const centerViewbox = (
   const svgWidth = svgRef.current.getBoundingClientRect().width || 0;
   const svgHeight = svgRef.current.getBoundingClientRect().height || 0;
   const bbox = path.getBBox();
-  const distanceFromBottomMinusBottomOffset = 50;
 
   let pathWidth = bbox.width;
   let pathHeight = bbox.height;
@@ -199,17 +198,11 @@ export const centerViewbox = (
   }
 
   const percentFactorWidth = pathWidth * 0.1;
-  const percentFactorHeight = pathHeight * 0.18;
+  const percentFactorHeight = pathHeight * 0.1;
 
   // Center svg on screen
   pathX = pathX - (pathWidth + percentFactorWidth - bbox.width) / 2;
   pathY = pathY - (pathHeight + percentFactorHeight - bbox.height) / 2;
-
-  const toolbarOffsetInViewboxUnits =
-    (distanceFromBottomMinusBottomOffset / svgHeight) *
-    (pathHeight + percentFactorHeight);
-
-  pathY = pathY + toolbarOffsetInViewboxUnits / 2;
 
   viewboxSetter({
     x: pathX,

@@ -1,4 +1,4 @@
-import Input from "@/components/inputs/Input";
+import Input from "@/components/inputs/input";
 import type { Viewbox } from "@/types/Viewbox";
 import { CollapsedSection } from "@/components/collapsed-section";
 import { useEffect, useState } from "react";
@@ -27,7 +27,7 @@ const viewboxArray = [
   },
 ];
 
-export default function ViewboxSection({
+export default function Viewbox({
   viewbox,
   updateViewbox,
 }: ViewboxSectionProps) {
@@ -113,7 +113,7 @@ export default function ViewboxSection({
 
   return (
     <CollapsedSection title="Viewbox">
-      <div className="grid px-4 pb-5 w-fit mt-1 grid-cols-2 gap-2">
+      <div className="grid px-4 pb-5 w-fit grid-cols-2 gap-2">
         {viewboxArray.map((item, index) => {
           return (
             <Input

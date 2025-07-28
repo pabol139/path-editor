@@ -1,4 +1,4 @@
-import PathInput from "@/components/path/PathInput";
+import PathInput from "@/components/path/path-input";
 import type { Viewbox } from "@/types/Viewbox";
 import type { SvgDimensions } from "@/types/Svg";
 

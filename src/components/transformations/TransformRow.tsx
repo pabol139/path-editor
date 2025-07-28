@@ -1,4 +1,4 @@
-import Input from "../inputs/Input";
+import Input from "../inputs/input";
 import AnimatedButton from "../animated-button";
 import { Check } from "lucide-react";
 
@@ -36,6 +36,7 @@ export function TransformRow({
         {axis.map((char, index) => {
           return (
             <Input
+              data-testid={char + action}
               id={char + action}
               leftText={char}
               key={index}
@@ -50,7 +51,12 @@ export function TransformRow({
           );
         })}
 
-        <AnimatedButton onClick={handleTransform} className="w-fit">
+        <AnimatedButton
+          data-testid={"button-" + action}
+          onClick={handleTransform}
+          className="w-fit"
+          aria-label={`Apply ${action}`}
+        >
           <Check size={16}></Check>
         </AnimatedButton>
       </div>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { usePathObject } from "@/context/PathContext";
+import { usePathObject } from "@/context/path-context";
 import type { Viewbox } from "@/types/Viewbox";
 import type { SvgDimensions } from "@/types/Svg";
 import { centerViewbox } from "@/utils/path";
@@ -67,6 +67,7 @@ export default function PathInput({
         value={displayPath}
       ></textarea>
       <button
+        aria-label="Copy path to clipboard"
         ref={buttonRef}
         onClick={handleCopy}
         className={clsx(

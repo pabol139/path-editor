@@ -1,9 +1,9 @@
 import type { Viewbox } from "@/types/Viewbox";
-import ViewboxSection from "@/components/Viewbox";
+import ViewboxSection from "@/components/viewbox";
 import TransformSection from "@/components/transformations/Transforms";
-import PathSection from "@/components/path/Path";
+import PathSection from "@/components/path/path";
 import type { SvgDimensions } from "@/types/Svg";
-import CommandsSection from "@/components/commands/Commands";
+import CommandsSection from "@/components/commands/commands";
 import React from "react";
 import { ArrowRight } from "lucide-react";
 
@@ -49,9 +49,9 @@ export default function Sidebar({
 
         <CommandsSection />
       </div>
-      <div className="absolute -left-0 -translate-x-[110%]  flex items-center  m-auto h-fit top-16 pointer-events-none">
+      <div className="absolute -left-4 -translate-x-[100%] shadow-md flex items-center  m-auto h-fit top-4 pointer-events-none">
         <button
-          className="bg-secondary px-1 py-1 rounded-sm h-10 text-tertiary border border-tertiary pointer-events-auto"
+          className="bg-secondary px-1 py-1 rounded-sm h-10 text-tertiary border border-tertiary/50 pointer-events-auto"
           onClick={() => handleOpen(!open)}
         >
           <ArrowRight

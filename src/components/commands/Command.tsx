@@ -107,6 +107,7 @@ export default function Command({
 
   return (
     <li
+      id={id}
       className={`pl-4 pr-4 flex justify-between gap-2  ${backgroundColor}`}
       onPointerEnter={handleEnter}
       onPointerDown={handleDown}

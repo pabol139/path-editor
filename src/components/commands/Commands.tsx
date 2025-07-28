@@ -1,5 +1,5 @@
-import Command from "@/components/commands/Command";
-import { usePathObject } from "@/context/PathContext";
+import Command from "@/components/commands/command";
+import { usePathObject } from "@/context/path-context";
 import { CollapsedSection } from "@/components/collapsed-section";
 import {
   convertAbsoluteToRelative,
