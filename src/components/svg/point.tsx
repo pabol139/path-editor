@@ -46,6 +46,8 @@ export function Point({
 
   return (
     <circle
+      role="button"
+      aria-label={`Control point ${id} at ${cx}, ${cy}`}
       style={{
         fill: fill,
       }}

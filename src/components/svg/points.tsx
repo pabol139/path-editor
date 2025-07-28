@@ -60,7 +60,6 @@ export default function Points({
           (command) => command.id === point.id_command
         );
         if (!command) return;
-
         return (
           <React.Fragment key={point.id}>
             <Point

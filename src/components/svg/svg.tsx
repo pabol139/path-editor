@@ -46,6 +46,8 @@ export default function Svg({
 
   return (
     <svg
+      role="application"
+      aria-label="Path editor"
       onWheel={handleWheelZoom}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -65,6 +67,8 @@ export default function Svg({
             ></DecorativeLines>
           )}
           <path
+            role="img"
+            aria-label={`SVG path with ${pathObject.commands.length} commands`}
             d={pathObject.path}
             fill="#ffffff40"
             stroke="#fff"

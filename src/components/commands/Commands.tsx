@@ -38,7 +38,11 @@ function CommandsSection() {
     <>
       {commands.length > 0 && (
         <CollapsedSection title="Commands">
-          <ul className="pb-5 gap-2 flex flex-col">
+          <ul
+            role="list"
+            aria-label={`${commands.length} path commands`}
+            className="pb-5 gap-2 flex flex-col"
+          >
             {commands.map(
               ({ id, letter, coordinates, selected, hovered }, index) => (
                 <Command

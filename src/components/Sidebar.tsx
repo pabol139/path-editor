@@ -6,6 +6,8 @@ import type { SvgDimensions } from "@/types/Svg";
 import CommandsSection from "@/components/commands/commands";
 import React from "react";
 import { ArrowRight } from "lucide-react";
+import { PanelRightCloseIcon } from "./animated-icons/panel-right-close";
+import { PanelRightOpenIcon } from "./animated-icons/panel-right-open";
 
 type SiderbarProps = {
   svgDimensions: SvgDimensions;
@@ -30,6 +32,7 @@ export default function Sidebar({
 
   return (
     <aside
+      aria-expanded={open}
       className={`absolute top-0 right-0 h-full transition-transform ease-out-sidebar duration-500 ${
         open ? "" : "translate-x-full"
       }`}
@@ -51,13 +54,19 @@ export default function Sidebar({
       </div>
       <div className="absolute -left-4 -translate-x-[100%] shadow-md flex items-center  m-auto h-fit top-4 pointer-events-none">
         <button
+          aria-label={`${open ? "Close sidebar" : "Open sidebar"}`}
           className="bg-secondary px-1 py-1 rounded-sm h-10 text-tertiary border border-tertiary/50 pointer-events-auto"
           onClick={() => handleOpen(!open)}
         >
-          <ArrowRight
+          {open ? (
+            <PanelRightCloseIcon size={24}></PanelRightCloseIcon>
+          ) : (
+            <PanelRightOpenIcon size={24}></PanelRightOpenIcon>
+          )}
+          {/* <ArrowRight
             size={16}
             className={`transition-transform ${open ? "" : "rotate-180"}`}
-          ></ArrowRight>
+          ></ArrowRight> */}
         </button>
       </div>
     </aside>

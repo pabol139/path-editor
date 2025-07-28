@@ -17,7 +17,7 @@ const createCommandObject = (
 });
 
 const mockUpdateCommands = jest.fn();
-jest.mock("@/context/PathContext", () => ({
+jest.mock("@/context/path-context", () => ({
   usePathObject: () => ({
     pathObject: {
       commands: [

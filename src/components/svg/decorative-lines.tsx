@@ -106,6 +106,8 @@ export default function DecorativeLines({
           y = j * hSpacing;
         return (
           <line
+            role="presentation"
+            aria-hidden="true"
             key={`h-${j}`}
             stroke="#ffffff05"
             strokeWidth={strokeWidth}

@@ -13,6 +13,8 @@ export default function OverlappedPaths({
     <>
       {overlappedPaths.map(({ color, overlappedPath }, index) => (
         <path
+          role="presentation"
+          aria-hidden="true"
           key={index}
           d={overlappedPath}
           stroke={color}

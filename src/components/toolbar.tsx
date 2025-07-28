@@ -3,25 +3,15 @@ import { usePanZoom } from "@/hooks/usePanZoom";
 import type { SvgDimensions } from "@/types/Svg";
 import type { Viewbox } from "@/types/Viewbox";
 import { centerViewbox } from "@/utils/path";
-import {
-  Focus,
-  Minus,
-  Plus,
-  Redo,
-  Spline,
-  SplinePointer,
-  SquareDashed,
-  Undo,
-} from "lucide-react";
+import { Redo, Spline, SplinePointer, SquareDashed, Undo } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
-import { Square, ZoomIn, ZoomOut } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "./ui/tooltip";
+import { Square } from "lucide-react";
+import { TooltipProvider } from "./ui/tooltip";
+import { Focus } from "./animated-icons/focus";
+import ToolbarAction from "./toolbar-action";
+import { Minus } from "./animated-icons/minus";
+import { Plus } from "./animated-icons/plus";
 
 export default function SvgActions({
   viewbox,
@@ -140,28 +130,24 @@ export default function SvgActions({
         >
           <div className="flex gap-[2px] bg-primary px-1 py-1 rounded-md border border-secondary shadow-md">
             {ZOOM_ACTIONS.map(({ icon, onClick, disabled, message }, key) => (
-              <ActionTooltip key={key} message={message}>
-                <button
-                  onClick={onClick}
-                  disabled={disabled}
-                  className=" px-1 py-1 rounded-sm h-10 w-10 flex items-center justify-center text-tertiary hover:bg-secondary transition-[background-color,opacity] disabled:opacity-50"
-                >
-                  {icon}
-                </button>
-              </ActionTooltip>
+              <ToolbarAction
+                key={key}
+                icon={icon}
+                onClick={onClick}
+                disabled={disabled}
+                message={message}
+              ></ToolbarAction>
             ))}
           </div>
           <div className="flex gap-[2px] bg-primary px-1 py-1 rounded-md border border-secondary shadow-md">
             {UNDO_ACTIONS.map(({ icon, onClick, disabled, message }, key) => (
-              <ActionTooltip key={key} message={message}>
-                <button
-                  onClick={onClick}
-                  disabled={disabled}
-                  className=" px-1 py-1 rounded-sm h-10 w-10 flex items-center justify-center text-tertiary hover:bg-secondary transition-[background-color,opacity] disabled:opacity-50"
-                >
-                  {icon}
-                </button>
-              </ActionTooltip>
+              <ToolbarAction
+                key={key}
+                icon={icon}
+                onClick={onClick}
+                disabled={disabled}
+                message={message}
+              ></ToolbarAction>
             ))}
           </div>
         </motion.div>
@@ -176,35 +162,16 @@ export default function SvgActions({
           className=" absolute right-4 bottom-0 m-auto w-fit flex gap-[2px] bg-primary px-1 py-1 rounded-md border border-secondary shadow-md"
         >
           {STYLING_ACTIONS.map(({ icon, onClick, disabled, message }, key) => (
-            <ActionTooltip key={key} message={message}>
-              <button
-                onClick={onClick}
-                disabled={disabled}
-                className=" px-1 py-1 rounded-sm h-10 w-10 flex items-center justify-center text-tertiary hover:bg-secondary transition-[background-color,opacity] disabled:opacity-50"
-              >
-                {icon}
-              </button>
-            </ActionTooltip>
+            <ToolbarAction
+              key={key}
+              icon={icon}
+              onClick={onClick}
+              disabled={disabled}
+              message={message}
+            ></ToolbarAction>
           ))}
         </motion.div>
       </TooltipProvider>
     </>
-  );
-}
-
-function ActionTooltip({
-  message,
-  children,
-}: {
-  message: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>{children}</TooltipTrigger>
-      <TooltipContent sideOffset={10}>
-        <p>{message}</p>
-      </TooltipContent>
-    </Tooltip>
   );
 }

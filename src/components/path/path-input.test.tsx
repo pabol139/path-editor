@@ -7,14 +7,14 @@ import {
 } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
-import Path from "./Path";
+import Path from "./path";
 
 // Mock the PathContext
 const mockUpdatePath = jest.fn();
 const mockUpdateViewbox = jest.fn();
 const mockSetSvgDimensions = jest.fn();
 
-jest.mock("@/context/PathContext", () => ({
+jest.mock("@/context/path-context", () => ({
   usePathObject: () => ({
     pathObject: {
       displayPath: "M 10 20 L 30 40",
