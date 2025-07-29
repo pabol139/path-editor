@@ -581,7 +581,8 @@ export const onPointerDownCommand = (
   commands: ParsePath<number>,
   updateCommands: UpdateCommandsType,
   id_command: string,
-  scrollIntoView: boolean = false
+  scrollIntoView: boolean = false,
+  isSidebarOpen?: boolean
 ) => {
   const newCommands = commands.map((command) => {
     if (command.id !== id_command) return { ...command, selected: false }; // Return unmodified command
@@ -589,12 +590,16 @@ export const onPointerDownCommand = (
     return { ...command, selected: true }; // Return new object
   });
   updateCommands(newCommands, false);
-  scrollIntoView && scrollCommandIntoView(id_command);
+  scrollIntoView && scrollCommandIntoView(id_command, isSidebarOpen);
 };
 
-const scrollCommandIntoView = (id_command: string) => {
-  const element = document.getElementById(`${id_command}`);
+const scrollCommandIntoView = (
+  id_command: string,
+  isSidebarOpen: boolean = true
+) => {
+  if (!isSidebarOpen) return;
 
+  const element = document.getElementById(`${id_command}`);
   element?.scrollIntoView({
     behavior: "smooth",
     block: "nearest",

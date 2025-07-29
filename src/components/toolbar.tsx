@@ -3,15 +3,14 @@ import { usePanZoom } from "@/hooks/usePanZoom";
 import type { SvgDimensions } from "@/types/Svg";
 import type { Viewbox } from "@/types/Viewbox";
 import { centerViewbox } from "@/utils/path";
-import { Redo, Spline, SplinePointer, SquareDashed, Undo } from "lucide-react";
+import { Minus, Plus, Redo, Spline, SquareDashed, Undo } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
 import { Square } from "lucide-react";
 import { TooltipProvider } from "./ui/tooltip";
 import { Focus } from "./animated-icons/focus";
 import ToolbarAction from "./toolbar-action";
-import { Minus } from "./animated-icons/minus";
-import { Plus } from "./animated-icons/plus";
+import { SplinePointer } from "./animated-icons/spline-pointer";
 
 export default function SvgActions({
   viewbox,
@@ -98,16 +97,16 @@ export default function SvgActions({
 
   const STYLING_ACTIONS = [
     {
-      icon: isPathFilled ? <SquareDashed></SquareDashed> : <Square></Square>,
+      icon: isPathFilled ? <Square></Square> : <SquareDashed></SquareDashed>,
       onClick: handleFill,
       disabled: false,
       message: isPathFilled ? "Unfill" : "Fill",
     },
     {
       icon: showControlElements ? (
-        <Spline></Spline>
-      ) : (
         <SplinePointer></SplinePointer>
+      ) : (
+        <Spline></Spline>
       ),
       onClick: () => setShowControlElements(!showControlElements),
       disabled: false,
@@ -129,9 +128,9 @@ export default function SvgActions({
           className=" absolute left-4 bottom-0 m-auto w-fit flex gap-3"
         >
           <div className="flex gap-[2px] bg-primary px-1 py-1 rounded-md border border-secondary shadow-md">
-            {ZOOM_ACTIONS.map(({ icon, onClick, disabled, message }, key) => (
+            {ZOOM_ACTIONS.map(({ icon, onClick, disabled, message }) => (
               <ToolbarAction
-                key={key}
+                key={message}
                 icon={icon}
                 onClick={onClick}
                 disabled={disabled}
@@ -140,9 +139,9 @@ export default function SvgActions({
             ))}
           </div>
           <div className="flex gap-[2px] bg-primary px-1 py-1 rounded-md border border-secondary shadow-md">
-            {UNDO_ACTIONS.map(({ icon, onClick, disabled, message }, key) => (
+            {UNDO_ACTIONS.map(({ icon, onClick, disabled, message }) => (
               <ToolbarAction
-                key={key}
+                key={message}
                 icon={icon}
                 onClick={onClick}
                 disabled={disabled}
@@ -161,9 +160,9 @@ export default function SvgActions({
           animate={{ y: -16 }}
           className=" absolute right-4 bottom-0 m-auto w-fit flex gap-[2px] bg-primary px-1 py-1 rounded-md border border-secondary shadow-md"
         >
-          {STYLING_ACTIONS.map(({ icon, onClick, disabled, message }, key) => (
+          {STYLING_ACTIONS.map(({ icon, onClick, disabled, message }) => (
             <ToolbarAction
-              key={key}
+              key={message}
               icon={icon}
               onClick={onClick}
               disabled={disabled}

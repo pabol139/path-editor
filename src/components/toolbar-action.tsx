@@ -17,16 +17,26 @@ export default function ToolbarAction({
     stopAnimation: () => void;
   }>(null);
 
+  const handleMouseEnter = () => {
+    if (ref.current && "startAnimation" in ref.current)
+      ref.current?.startAnimation();
+  };
+
+  const handleMouseLeave = () => {
+    if (ref.current && "stopAnimation" in ref.current)
+      ref.current?.stopAnimation();
+  };
+
   return (
     <ActionTooltip message={message}>
       <button
-        onMouseEnter={ref.current?.startAnimation}
-        onMouseLeave={ref.current?.stopAnimation}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         onClick={onClick}
         disabled={disabled}
-        className=" px-1 py-1 rounded-sm h-10 w-10 flex items-center justify-center text-tertiary hover:bg-secondary transition-[background-color,opacity] disabled:opacity-50"
+        className="px-1 py-1 rounded-sm h-9 w-9 flex items-center justify-center text-tertiary hover:bg-secondary transition-[background-color,opacity] disabled:opacity-50"
       >
-        {cloneElement(icon, { ref: ref })}
+        {cloneElement(icon, { ref: ref, size: 20 })}
       </button>
     </ActionTooltip>
   );

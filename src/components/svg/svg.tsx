@@ -7,22 +7,31 @@ import OverlappedPaths from "./overlapped-paths";
 import useSvg from "@/hooks/useSvg";
 import type { SvgDimensions } from "@/types/Svg";
 import DecorativeLines from "./decorative-lines";
-import { cleanSelectedAndHoveredCommands } from "@/utils/path";
+import {
+  cleanSelectedAndHoveredCommands,
+  onPointerDownCommand,
+} from "@/utils/path";
 
 export default function Svg({
   showControlElements = true,
+  isSidebarOpen = true,
   viewbox,
   svgDimensions,
   setSvgDimensions,
   updateViewbox,
 }: {
   showControlElements?: boolean;
+  isSidebarOpen?: boolean;
   viewbox: Viewbox;
   svgDimensions: SvgDimensions;
   setSvgDimensions: React.Dispatch<React.SetStateAction<SvgDimensions>>;
   updateViewbox: (viewbox: Viewbox) => void;
 }) {
-  const { pathObject, svgRef, updateCommands } = usePathObject();
+  const {
+    pathObject: { commands, path },
+    svgRef,
+    updateCommands,
+  } = usePathObject();
   const { isVisible, points, overlappedPaths, lines } = useSvg(
     viewbox,
     updateViewbox,
@@ -30,9 +39,7 @@ export default function Svg({
   );
 
   function formatCommands() {
-    const formatedCommands = cleanSelectedAndHoveredCommands(
-      pathObject.commands
-    );
+    const formatedCommands = cleanSelectedAndHoveredCommands(commands);
     updateCommands(formatedCommands, false);
   }
 
@@ -43,6 +50,16 @@ export default function Svg({
     handlePointerUp,
     handleWheelZoom,
   } = usePanZoom(viewbox, updateViewbox, formatCommands);
+
+  const handlePointsPointerDown = (id_command: string) => {
+    onPointerDownCommand(
+      commands,
+      updateCommands,
+      id_command,
+      true,
+      isSidebarOpen
+    );
+  };
 
   return (
     <svg
@@ -68,8 +85,8 @@ export default function Svg({
           )}
           <path
             role="img"
-            aria-label={`SVG path with ${pathObject.commands.length} commands`}
-            d={pathObject.path}
+            aria-label={`SVG path with ${commands.length} commands`}
+            d={path}
             fill="#ffffff40"
             stroke="#fff"
             strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}
@@ -90,6 +107,7 @@ export default function Svg({
                 points={points}
                 viewboxWidth={viewbox.width}
                 svgDimensionsWidth={svgDimensions.width}
+                handlePointerDown={handlePointsPointerDown}
               ></Points>
             </>
           )}
@@ -97,7 +115,7 @@ export default function Svg({
       ) : (
         <svg className="opacity-0">
           <path
-            d={pathObject.path}
+            d={path}
             fill="#ffffff40"
             stroke="#fff"
             strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}

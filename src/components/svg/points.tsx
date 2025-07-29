@@ -1,15 +1,12 @@
-import {
-  onPointerDownCommand,
-  onPointerEnterCommand,
-  onPointerLeaveCommand,
-} from "@/utils/path";
+import { onPointerEnterCommand, onPointerLeaveCommand } from "@/utils/path";
 import { Point } from "./point";
 import type { Point as PointType } from "@/types/Point";
 import usePoints from "@/hooks/usePoints";
-import { usePathObject } from "@/context/path-context";
+import { usePathObject, type UpdateCommandsType } from "@/context/path-context";
 import { useEffect, useState } from "react";
 import React from "react";
 import PointsPortal from "./points-portal";
+import type { ParsePath } from "@/types/Path";
 
 type PortalInfo = {
   id: string;
@@ -24,11 +21,12 @@ export default function Points({
   points,
   viewboxWidth,
   svgDimensionsWidth,
+  handlePointerDown,
 }: {
   points: PointType[];
-
   viewboxWidth: number;
   svgDimensionsWidth: number;
+  handlePointerDown: (id_command: string) => void;
 }) {
   const {
     pathObject,
@@ -78,12 +76,7 @@ export default function Points({
                 onPointerLeaveCommand(commands, updateCommands)
               }
               handleDown={() => {
-                onPointerDownCommand(
-                  commands,
-                  updateCommands,
-                  point.id_command,
-                  true
-                );
+                handlePointerDown(point.id_command);
               }}
               handleUp={handleUp}
               handleClick={(

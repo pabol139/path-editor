@@ -67,6 +67,7 @@ export default function Wrapper() {
           setSvgDimensions={setSvgDimensions}
           viewbox={viewbox}
           updateViewbox={updateViewbox}
+          isSidebarOpen={isSidebarOpen}
         ></Svg>
         <SvgActions
           viewbox={viewbox}

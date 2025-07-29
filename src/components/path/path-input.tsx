@@ -71,7 +71,7 @@ export default function PathInput({
         ref={buttonRef}
         onClick={handleCopy}
         className={clsx(
-          "bg-[#2A2A2A] transition-colors [&.copied]:bg-purple px-2 py-1 flex gap-2 text-sm items-center border border-tertiary rounded-md",
+          "bg-[#2A2A2A] transition-colors [&.copied]:bg-purple px-1 py-1 h-7 w-7 flex gap-2 text-sm items-center justify-center border border-tertiary rounded-md",
           copied && "copied"
         )}
       >

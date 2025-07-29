@@ -5,9 +5,9 @@ import PathSection from "@/components/path/path";
 import type { SvgDimensions } from "@/types/Svg";
 import CommandsSection from "@/components/commands/commands";
 import React from "react";
-import { ArrowRight } from "lucide-react";
-import { PanelRightCloseIcon } from "./animated-icons/panel-right-close";
-import { PanelRightOpenIcon } from "./animated-icons/panel-right-open";
+import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "motion/react";
+import { PanelRight } from "lucide-react";
 
 type SiderbarProps = {
   svgDimensions: SvgDimensions;
@@ -48,27 +48,58 @@ export default function Sidebar({
 
         <TransformSection />
 
-        {/* <StyleSection /> */}
-
         <CommandsSection />
       </div>
-      <div className="absolute -left-4 -translate-x-[100%] shadow-md flex items-center  m-auto h-fit top-4 pointer-events-none">
-        <button
-          aria-label={`${open ? "Close sidebar" : "Open sidebar"}`}
-          className="bg-secondary px-1 py-1 rounded-sm h-10 text-tertiary border border-tertiary/50 pointer-events-auto"
-          onClick={() => handleOpen(!open)}
-        >
-          {open ? (
-            <PanelRightCloseIcon size={24}></PanelRightCloseIcon>
-          ) : (
-            <PanelRightOpenIcon size={24}></PanelRightOpenIcon>
-          )}
-          {/* <ArrowRight
-            size={16}
-            className={`transition-transform ${open ? "" : "rotate-180"}`}
-          ></ArrowRight> */}
-        </button>
-      </div>
+
+      <AnimatePresence>
+        {open ? (
+          <motion.div
+            key={"close"}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{
+              opacity: 0,
+              transition: {
+                duration: 0.1,
+              },
+            }}
+            className={cn(
+              "absolute z-20 right-1.5 items-center transition-transform h-fit top-0 flex gap-[2px] px-1 py-0.5 rounded-md"
+            )}
+          >
+            <button
+              aria-label={`Close sidebar`}
+              className="px-1 py-1 rounded-sm h-9 w-9 flex items-center justify-center text-tertiary opacity-70 hover:opacity-100 hover:bg-secondary transition-[background-color,opacity] disabled:opacity-50"
+              onClick={() => handleOpen(false)}
+            >
+              <PanelRight size={18}></PanelRight>
+            </button>
+          </motion.div>
+        ) : (
+          <motion.div
+            key={"open"}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{
+              opacity: 0,
+              transition: {
+                duration: 0.15,
+              },
+            }}
+            className={cn(
+              "absolute z-20 items-center -left-4 -translate-x-full h-fit top-4 flex gap-[2px] px-1 py-1  bg-primary rounded-md  border border-secondary shadow-md"
+            )}
+          >
+            <button
+              aria-label={`Open sidebar`}
+              className="px-1 py-1 rounded-sm h-9 w-9 flex items-center justify-center text-tertiary opacity-70 hover:opacity-100 hover:bg-secondary transition-[background-color,opacity] disabled:opacity-50"
+              onClick={() => handleOpen(true)}
+            >
+              <PanelRight size={20}></PanelRight>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </aside>
   );
 }

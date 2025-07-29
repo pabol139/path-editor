@@ -11,7 +11,7 @@ export default function useSvg(
   updateViewbox: (viewbox: Viewbox) => void,
   setSvgDimensions: React.Dispatch<React.SetStateAction<SvgDimensions>>
 ) {
-  const { pathObject, updateCommands, svgRef } = usePathObject();
+  const { pathObject, svgRef } = usePathObject();
   const { commands } = pathObject;
   const [isVisible, setIsVisible] = useState(false);
 
