@@ -131,26 +131,11 @@ const generateCommands = (
   throw new Error("malformed path (first error at " + i + ")");
 };
 
-// export const getPathBBox = (path: string) => {
-//   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-//   const pathElement = document.createElementNS(
-//     "http://www.w3.org/2000/svg",
-//     "path"
-//   );
-//   pathElement.setAttribute("d", path);
-//   svg.appendChild(pathElement);
-//   document.body.appendChild(svg);
-//   const BBox = pathElement?.getBBox();
-//   document.body.removeChild(svg);
-
-//   return BBox;
-// };
-
-export const formatNumber = (number: number, decimals: number): string => {
-  return number
-    .toFixed(decimals)
-    .replace(/^(\d+)\.0+$/, "$1.")
-    .replace(/\.$/, "");
+export const formatNumberToString = (
+  number: number,
+  decimals: number
+): string => {
+  return String(Number(number.toFixed(decimals)));
 };
 
 export const getSvgCenter = (svgRef: React.RefObject<SVGSVGElement | null>) => {
@@ -274,7 +259,7 @@ export const convertCommandsToPath = (commands: ParsePath<number>) => {
         command.letter +
         " " +
         command.coordinates
-          .map((coordinate) => formatNumber(coordinate, 2))
+          .map((coordinate) => formatNumberToString(coordinate, 2))
           .join(" ")
       );
     })
@@ -312,18 +297,24 @@ export const translate = (
     return commands;
   }
 
-  const formatedCommands = commands.map((command) => {
+  const formatedCommands = commands.map((command, index) => {
     const { letter, coordinates } = command;
 
     if (letter.toLocaleUpperCase() === LINE_COMMANDS.Close) {
       return command;
     }
     const handler = commandHandlers[letter.toLocaleUpperCase()];
-
-    const updatedCoordinates = handler.translate(coordinates, {
-      x: xValue,
-      y: yValue,
-    });
+    const isRelative = isRelativeCommand(letter);
+    const isFirstCommand = index === 0;
+    const updatedCoordinates = handler.translate(
+      coordinates,
+      {
+        x: xValue,
+        y: yValue,
+      },
+      isRelative,
+      isFirstCommand
+    );
 
     return {
       ...command,

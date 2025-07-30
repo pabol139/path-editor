@@ -191,14 +191,14 @@ describe("transformations", () => {
 
     expect(translate(commands, "1", "2")).toEqual([
       createCommandObject("m", [11.1, 22.1]),
-      createCommandObject("l", [11.1, 12.1]),
-      createCommandObject("v", [3]),
-      createCommandObject("h", [-1.1]),
-      createCommandObject("c", [1, 3, 1, 3, 1, 3]),
-      createCommandObject("s", [1, 3, 1, 3]),
-      createCommandObject("q", [1, 3, 1, 3]),
-      createCommandObject("t", [1, 3]),
-      createCommandObject("a", [14, 14, 0, 1, 1, 52, 17]),
+      createCommandObject("l", [10.1, 10.1]),
+      createCommandObject("v", [1]),
+      createCommandObject("h", [-2.1]),
+      createCommandObject("c", [0, 1, 0, 1, 0, 1]),
+      createCommandObject("s", [0, 1, 0, 1]),
+      createCommandObject("q", [0, 1, 0, 1]),
+      createCommandObject("t", [0, 1]),
+      createCommandObject("a", [14, 14, 0, 1, 1, 51, 15]),
       createCommandObject("z", []),
     ]);
 
@@ -253,12 +253,12 @@ describe("Round-trip conversion", () => {
 
     // Numbers should be properly formatted
     expect(converted).toBe(
-      "M 10.12 20.46 L 30.79 40.01 C 50.10 60.20 70.30 80.40 90.50 100.60"
+      "M 10.12 20.46 L 30.79 40.01 C 50.1 60.2 70.3 80.4 90.5 100.6"
     );
   });
   test("should handle complex paths with all command types", () => {
     const complexPath =
-      "M 0 0 L 10 10 Q 20 20 30 30 T 10 10 C 40 40 50 50 60 60 S 20 20 20 20 A 30 50 0 0 1 162.52 162.42 Z";
+      "M 0 0 L 10 10 q -20 20 3 3 T 10 10 c -40.2 40 50 50 60 60 S 20 20 20 20 A 30 50 0 0 1 162.52 162.42 Z";
 
     const parsed = parsePath(complexPath);
     const formatted = formatCommands(parsed, 1);
@@ -266,7 +266,7 @@ describe("Round-trip conversion", () => {
 
     expect(() => parsePath(converted)).not.toThrow();
     expect(converted).toBe(
-      "M 0 0 L 10 10 Q 20 20 30 30 T 10 10 C 40 40 50 50 60 60 S 20 20 20 20 A 30 50 0 0 1 162.50 162.40 Z"
+      "M 0 0 L 10 10 q -20 20 3 3 T 10 10 c -40.2 40 50 50 60 60 S 20 20 20 20 A 30 50 0 0 1 162.5 162.4 Z"
     );
   });
 });

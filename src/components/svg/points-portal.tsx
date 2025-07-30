@@ -16,6 +16,7 @@ export default function PointsPortal({
   portalInfo: any;
 }) {
   const command = commands.find((command) => command.id === portalInfo.id);
+
   if (!command || !command.selected) return;
 
   const isRelative = isRelativeCommand(command.letter);

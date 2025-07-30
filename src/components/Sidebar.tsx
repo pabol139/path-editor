@@ -51,7 +51,7 @@ export default function Sidebar({
         <CommandsSection />
       </div>
 
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {open ? (
           <motion.div
             key={"close"}

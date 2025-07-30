@@ -4,7 +4,7 @@ import Sidebar from "@/components/sidebar";
 import Svg from "@/components/svg/svg";
 import type { Viewbox } from "@/types/Viewbox";
 import type { SvgDimensions } from "@/types/Svg";
-import { formatNumber } from "@/utils/path";
+import { formatNumberToString } from "@/utils/path";
 import SvgActions from "./toolbar";
 import { cn } from "@/lib/utils";
 
@@ -45,10 +45,14 @@ export default function Wrapper() {
 
       return {
         ...prevState,
-        x: parseFloat(formatNumber(newObject.x, 2)),
-        y: parseFloat(formatNumber(newObject.y, 2)),
-        width: parseFloat(formatNumber(Math.max(newObject.width, 0), 2)),
-        height: parseFloat(formatNumber(Math.max(newObject.height, 0), 2)),
+        x: parseFloat(formatNumberToString(newObject.x, 2)),
+        y: parseFloat(formatNumberToString(newObject.y, 2)),
+        width: parseFloat(
+          formatNumberToString(Math.max(newObject.width, 0), 2)
+        ),
+        height: parseFloat(
+          formatNumberToString(Math.max(newObject.height, 0), 2)
+        ),
       };
     });
   };

@@ -36,7 +36,9 @@ interface CommandHandler {
   getLastControlPoint?: (coordinates: number[]) => { x: number; y: number };
   translate: (
     coordinates: number[],
-    values: { x: number; y: number }
+    values: { x: number; y: number },
+    isRelative: boolean,
+    isFirstCommand?: boolean
   ) => number[];
   scale: (coordinates: number[], values: { x: number; y: number }) => number[];
   rotate?: (
@@ -123,7 +125,14 @@ export const commandHandlers: Record<string, CommandHandler> = {
       };
     },
     getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
-    translate: (coords, values) => [coords[0] + values.x, coords[1] + values.y],
+    translate: (coords, values, isRelative, isFirstCommand) => {
+      if (isRelative) {
+        if (isFirstCommand) return [coords[0] + values.x, coords[1] + values.y];
+
+        return coords;
+      }
+      return [coords[0] + values.x, coords[1] + values.y];
+    },
     scale: (coords, values) => [coords[0] * values.x, coords[1] * values.y],
     rotate: (coords, origin, angle) => {
       const translatedX = coords[0] - origin.x;
@@ -203,7 +212,11 @@ export const commandHandlers: Record<string, CommandHandler> = {
       };
     },
     getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
-    translate: (coords, values) => [coords[0] + values.x, coords[1] + values.y],
+    translate: (coords, values, isRelative) => {
+      if (isRelative) return coords;
+
+      return [coords[0] + values.x, coords[1] + values.y];
+    },
     scale: (coords, values) => [coords[0] * values.x, coords[1] * values.y],
     create: (currentPosition, command_counter) => ({
       id: command_counter + LINE_COMMANDS.LineTo,
@@ -257,7 +270,11 @@ export const commandHandlers: Record<string, CommandHandler> = {
       x: coords[0],
       y: currentPosition.y,
     }),
-    translate: (coords, values) => [coords[0] + values.x],
+    translate: (coords, values, isRelative) => {
+      if (isRelative) return coords;
+
+      return [coords[0] + values.x];
+    },
     scale: (coords, values) => [coords[0] * values.x],
     create: (currentPosition, command_counter) => ({
       id: command_counter + LINE_COMMANDS.Horizontal,
@@ -314,7 +331,10 @@ export const commandHandlers: Record<string, CommandHandler> = {
       x: currentPosition.x,
       y: coords[1],
     }),
-    translate: (coords, values) => [coords[0] + values.y],
+    translate: (coords, values, isRelative) => {
+      if (isRelative) return coords;
+      return [coords[0] + values.y];
+    },
     scale: (coords, values) => [coords[0] * values.y],
     create: (currentPosition, command_counter) => ({
       id: command_counter + LINE_COMMANDS.Vertical,
@@ -400,12 +420,16 @@ export const commandHandlers: Record<string, CommandHandler> = {
     },
     getEndPosition: (coords) => ({ x: coords[2], y: coords[3] }),
     getLastControlPoint: (coords) => ({ x: coords[0], y: coords[1] }),
-    translate: (coords, values) => [
-      coords[0] + values.x,
-      coords[1] + values.y,
-      coords[2] + values.x,
-      coords[3] + values.y,
-    ],
+    translate: (coords, values, isRelative) => {
+      if (isRelative) return coords;
+
+      return [
+        coords[0] + values.x,
+        coords[1] + values.y,
+        coords[2] + values.x,
+        coords[3] + values.y,
+      ];
+    },
     scale: (coords, values) => [
       coords[0] * values.x,
       coords[1] * values.y,
@@ -476,7 +500,11 @@ export const commandHandlers: Record<string, CommandHandler> = {
       };
     },
     getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
-    translate: (coords, values) => [coords[0] + values.x, coords[1] + values.y],
+    translate: (coords, values, isRelative) => {
+      if (isRelative) return coords;
+
+      return [coords[0] + values.x, coords[1] + values.y];
+    },
     scale: (coords, values) => [coords[0] * values.x, coords[1] * values.y],
     create: (currentPosition, command_counter) => ({
       id: command_counter + LINE_COMMANDS.SmoothQuadraticCurve,
@@ -572,14 +600,17 @@ export const commandHandlers: Record<string, CommandHandler> = {
     },
     getEndPosition: (coords) => ({ x: coords[4], y: coords[5] }),
     getLastControlPoint: (coords) => ({ x: coords[2], y: coords[3] }),
-    translate: (coords, values) => [
-      coords[0] + values.x,
-      coords[1] + values.y,
-      coords[2] + values.x,
-      coords[3] + values.y,
-      coords[4] + values.x,
-      coords[5] + values.y,
-    ],
+    translate: (coords, values, isRelative) => {
+      if (isRelative) return coords;
+      return [
+        coords[0] + values.x,
+        coords[1] + values.y,
+        coords[2] + values.x,
+        coords[3] + values.y,
+        coords[4] + values.x,
+        coords[5] + values.y,
+      ];
+    },
     scale: (coords, values) => [
       coords[0] * values.x,
       coords[1] * values.y,
@@ -681,12 +712,15 @@ export const commandHandlers: Record<string, CommandHandler> = {
     },
     getEndPosition: (coords) => ({ x: coords[2], y: coords[3] }),
     getLastControlPoint: (coords) => ({ x: coords[0], y: coords[1] }),
-    translate: (coords, values) => [
-      coords[0] + values.x,
-      coords[1] + values.y,
-      coords[2] + values.x,
-      coords[3] + values.y,
-    ],
+    translate: (coords, values, isRelative) => {
+      if (isRelative) return coords;
+      return [
+        coords[0] + values.x,
+        coords[1] + values.y,
+        coords[2] + values.x,
+        coords[3] + values.y,
+      ];
+    },
     scale: (coords, values) => [
       coords[0] * values.x,
       coords[1] * values.y,
@@ -781,15 +815,18 @@ export const commandHandlers: Record<string, CommandHandler> = {
       };
     },
     getEndPosition: (coords) => ({ x: coords[5], y: coords[6] }),
-    translate: (coords, values) => [
-      coords[0],
-      coords[1],
-      coords[2],
-      coords[3],
-      coords[4],
-      coords[5] + values.x,
-      coords[6] + values.y,
-    ],
+    translate: (coords, values, isRelative) => {
+      if (isRelative) return coords;
+      return [
+        coords[0],
+        coords[1],
+        coords[2],
+        coords[3],
+        coords[4],
+        coords[5] + values.x,
+        coords[6] + values.y,
+      ];
+    },
     scale: (coords, values) => [
       coords[0] * values.x,
       coords[1] * values.y,
