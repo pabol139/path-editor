@@ -7,6 +7,7 @@ import type { Point as PointType } from "@/types/Point";
 import type { PathObject } from "@/types/Path";
 import type { UpdateCommandsType } from "@/context/path-context";
 import { useState } from "react";
+import { LINE_COMMANDS } from "@/constants/path";
 
 type Coordinates = {
   id: string;
@@ -29,7 +30,11 @@ export default function usePoints(
     if (updateState) setStateBeforeDragging(pathObject);
 
     const newCommands = commands.map((command) => {
-      if (command.id !== pointInfo.id_command) return command; // Return unmodified command
+      if (
+        command.id !== pointInfo.id_command ||
+        command.letter.toLocaleUpperCase() === LINE_COMMANDS.Close
+      )
+        return command; // Return unmodified command
       const coordinate_index = pointInfo.coordinate_index;
       const handler = commandHandlers[command.letter.toLocaleUpperCase()];
 
