@@ -1,10 +1,4 @@
-import {
-  render,
-  screen,
-  fireEvent,
-  act,
-  waitFor,
-} from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
 import Path from "./path";
@@ -25,13 +19,6 @@ jest.mock("@/context/path-context", () => ({
     svgRef: { current: document.createElement("svg") },
   }),
 }));
-
-// Mock clipboard API
-Object.assign(navigator, {
-  clipboard: {
-    writeText: jest.fn(() => Promise.resolve()),
-  },
-});
 
 const defaultProps = {
   svgDimensions: { width: 100, height: 100 },

@@ -1,31 +1,28 @@
-import { render, screen, fireEvent, renderHook } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import TransformSection from "./Transforms";
 import * as pathUtils from "@/utils/path";
-
-const createCommandObject = (
-  letter: string,
-  coordinates: number[],
-  overrides = {}
-) => ({
-  id: expect.any(String),
-  letter,
-  coordinates,
-  hovered: false,
-  selected: false,
-  ...overrides,
-});
+import { createCommandObject } from "@/utils/test-utils";
 
 const testCommands = [
-  createCommandObject("M", [10, 20]),
-  createCommandObject("l", [30, 40]),
-  createCommandObject("V", [50]),
-  createCommandObject("h", [60]),
-  createCommandObject("c", [70, 70, 70, 70, 70, 70]),
-  createCommandObject("S", [80, 80, 80, 80]),
-  createCommandObject("Q", [90, 90, 90, 90]),
-  createCommandObject("t", [100, 100]),
-  createCommandObject("A", [110, 110, 0, 0, 0, 110, 110]),
+  createCommandObject(1, "M", [10, 20]),
+  createCommandObject(2, "m", [10, 20]),
+  createCommandObject(3, "L", [30, 40]),
+  createCommandObject(4, "l", [30, 40]),
+  createCommandObject(5, "V", [50]),
+  createCommandObject(6, "v", [50]),
+  createCommandObject(7, "H", [60]),
+  createCommandObject(8, "h", [60]),
+  createCommandObject(9, "C", [70.1, 70, 70, 70, 70, 70]),
+  createCommandObject(10, "c", [70.1, 70, 70, 70, 70, 70]),
+  createCommandObject(11, "S", [80, -80, 80, 80]),
+  createCommandObject(12, "s", [80, -80, 80, 80]),
+  createCommandObject(13, "Q", [90, 90, 90, 90]),
+  createCommandObject(14, "q", [90, 90, 90, 90]),
+  createCommandObject(15, "T", [100, 100]),
+  createCommandObject(16, "t", [100, 100]),
+  createCommandObject(17, "A", [110, 110, 0, 0, 0, 110, 110]),
+  createCommandObject(18, "a", [110, 110, 0, 0, 0, 110, 110]),
 ];
 
 import { usePathObject } from "@/context/path-context";
@@ -93,7 +90,7 @@ describe("transforms section", () => {
 
     expect(textarea).toBeInTheDocument();
     expect(textarea).toHaveTextContent(
-      "M 30 40 l 30 40 V 70 h 60 c 70 70 70 70 70 70 S 100 100 100 100 Q 110 110 110 110 t 100 100 A 110 110 0 0 0 130 130"
+      "M 30 40 m 10 20 L 50 60 l 30 40 V 70 v 50 H 80 h 60 C 90.1 90 90 90 90 90 c 70.1 70 70 70 70 70 S 100 -60 100 100 s 80 -80 80 80 Q 110 110 110 110 q 90 90 90 90 T 120 120 t 100 100 A 110 110 0 0 0 130 130 a 110 110 0 0 0 110 110"
     );
   });
 
@@ -113,7 +110,7 @@ describe("transforms section", () => {
 
     expect(textarea).toBeInTheDocument();
     expect(textarea).toHaveTextContent(
-      "M 20 40 l 60 80 V 100 h 120 c 140 140 140 140 140 140 S 160 160 160 160 Q 180 180 180 180 t 200 200 A 220 220 0 0 0 220 220"
+      "M 20 40 m 20 40 L 60 80 l 60 80 V 100 v 100 H 120 h 120 C 140.2 140 140 140 140 140 c 140.2 140 140 140 140 140 S 160 -160 160 160 s 160 -160 160 160 Q 180 180 180 180 q 180 180 180 180 T 200 200 t 200 200 A 220 220 0 0 0 220 220 a 220 220 0 0 0 220 220"
     );
   });
 
@@ -133,7 +130,7 @@ describe("transforms section", () => {
     expect(convertCommandsAbsoluteToRelativeSpy).toHaveBeenCalled();
     expect(textarea).toBeInTheDocument();
     expect(textarea).toHaveTextContent(
-      "m 10 20 l 30 40 v -10 h 60 c 70 70 70 70 70 70 s -90 -40 -90 -40 q 10 10 10 10 t 100 100 a 110 110 0 0 0 -80 -80"
+      "m 10 20 m 10 20 l 10 0 l 30 40 v -30 v 50 h 0 h 60 c -49.9 -30 -50 -30 -50 -30 c 70.1 70 70 70 70 70 s -60 -220 -60 -60 s 80 -80 80 80 q -70 -70 -70 -70 q 90 90 90 90 t -80 -80 t 100 100 a 110 110 0 0 0 -90 -90 a 110 110 0 0 0 110 110"
     );
   });
 
@@ -153,7 +150,7 @@ describe("transforms section", () => {
     expect(convertCommandsRelativeToAbsolute).toHaveBeenCalled();
     expect(textarea).toBeInTheDocument();
     expect(textarea).toHaveTextContent(
-      "M 10 20 L 40 60 V 50 H 100 C 170 120 170 120 170 120 S 80 80 80 80 Q 90 90 90 90 T 190 190 A 110 110 0 0 0 110 110"
+      "M 10 20 M 20 40 L 30 40 L 60 80 V 50 V 100 H 60 H 120 C 70.1 70 70 70 70 70 C 140.1 140 140 140 140 140 S 80 -80 80 80 S 160 0 160 160 Q 90 90 90 90 Q 180 180 180 180 T 100 100 T 200 200 A 110 110 0 0 0 110 110 A 110 110 0 0 0 220 220"
     );
   });
 });

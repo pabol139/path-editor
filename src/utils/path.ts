@@ -510,6 +510,7 @@ export function convertRelativeToAbsolute(
 export const updatePoints = (commands: ParsePath<number>) => {
   let currentPosition = { x: 0, y: 0 };
   let points: Point[] = [];
+  let interactedPoints: Point[] = [];
 
   const absoluteCommands = convertCommandsRelativeToAbsolute(commands);
   absoluteCommands.forEach((absoluteCommand) => {
@@ -533,7 +534,9 @@ export const updatePoints = (commands: ParsePath<number>) => {
     }
 
     const generatedPoints = handler.extractPoints(absoluteCommand);
-    points.push(...generatedPoints);
+    if (absoluteCommand.selected || absoluteCommand.hovered) {
+      interactedPoints.push(...generatedPoints);
+    } else points.push(...generatedPoints);
 
     currentPosition = handler.getEndPosition(
       absoluteCommand.coordinates,
@@ -541,7 +544,7 @@ export const updatePoints = (commands: ParsePath<number>) => {
     );
   });
 
-  return points;
+  return [...points, ...interactedPoints];
 };
 
 export const onPointerEnterCommand = (

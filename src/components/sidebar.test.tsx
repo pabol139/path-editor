@@ -1,25 +1,11 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { onPointerDownCommand } from "@/utils/path";
 
 import Sidebar from "./sidebar";
+import { createCommandObject } from "@/utils/test-utils";
 
 const mockUpdatePath = jest.fn();
 const mockStore = jest.fn();
-
-const createCommandObject = (
-  count: number,
-  letter: string,
-  coordinates: number[],
-  overrides = {}
-) => ({
-  id: count + letter,
-  letter,
-  coordinates,
-  hovered: false,
-  selected: false,
-  ...overrides,
-});
 
 const defaultProps = {
   svgDimensions: { width: 100, height: 100 },

@@ -12,7 +12,7 @@ import { Focus } from "./animated-icons/focus";
 import ToolbarAction from "./toolbar-action";
 import { SplinePointer } from "./animated-icons/spline-pointer";
 
-export default function SvgActions({
+export default function Toolbar({
   viewbox,
   updateViewbox,
   setSvgDimensions,
@@ -118,6 +118,7 @@ export default function SvgActions({
     <>
       <TooltipProvider delayDuration={200}>
         <motion.div
+          role="toolbar"
           transition={{
             type: "spring",
             duration: 0.5,
@@ -151,6 +152,7 @@ export default function SvgActions({
           </div>
         </motion.div>
         <motion.div
+          role="toolbar"
           transition={{
             type: "spring",
             duration: 0.5,

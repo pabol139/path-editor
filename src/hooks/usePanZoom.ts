@@ -111,7 +111,9 @@ export function usePanZoom(
   };
 
   const handlePointerUp = (event: React.PointerEvent<SVGSVGElement>) => {
-    if (!hasMoved && event.target === event.currentTarget) {
+    console.log(event.currentTarget);
+    console.log(event.target);
+    if (!hasMoved) {
       onClick();
     }
     setDragging(false);

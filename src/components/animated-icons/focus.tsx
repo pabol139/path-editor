@@ -1,6 +1,6 @@
 "use client";
 
-import type { Transition, Variants } from "motion/react";
+import type { Variants } from "motion/react";
 import { motion, useAnimation } from "motion/react";
 import type { HTMLAttributes } from "react";
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
@@ -14,11 +14,6 @@ export interface FocusHandle {
 interface FocusProps extends HTMLAttributes<HTMLDivElement> {
   size?: number;
 }
-
-const defaultTransition: Transition = {
-  times: [0, 0.4, 1],
-  duration: 0.5,
-};
 
 const pathVariants: Array<Variants> = [
   {

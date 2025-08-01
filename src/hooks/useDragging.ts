@@ -16,7 +16,10 @@ export default function useDragging(
   const handlePointerDown = (event: React.PointerEvent<SVGCircleElement>) => {
     setDragging(true);
     handleDown();
-    (event.target as HTMLElement).setPointerCapture(event.pointerId);
+
+    setTimeout(() => {
+      (event.target as HTMLElement).setPointerCapture(event.pointerId);
+    }, 0);
     event.stopPropagation();
   };
   const handlePointerLeave = (event: React.PointerEvent<SVGCircleElement>) => {

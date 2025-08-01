@@ -1,25 +1,11 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { onPointerDownCommand } from "@/utils/path";
-
+import { createCommandObject } from "@/utils/test-utils";
 import Command from "./command";
 
 const mockUpdatePath = jest.fn();
 const mockStore = jest.fn();
-
-const createCommandObject = (
-  count: number,
-  letter: string,
-  coordinates: number[],
-  overrides = {}
-) => ({
-  id: count + letter,
-  letter,
-  coordinates,
-  hovered: false,
-  selected: false,
-  ...overrides,
-});
 
 const mockedProps = {
   id: "2C",

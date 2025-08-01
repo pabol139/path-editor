@@ -4,8 +4,8 @@ import type { Point } from "@/types/Point";
 import { convertToRadians } from "./path";
 
 interface CommandHandler {
-  extractPoints: (command: Command<number>) => Point[];
-  updateCoordinates: (
+  extractPoints?: (command: Command<number>) => Point[];
+  updateCoordinates?: (
     coords: number[],
     x: number,
     y: number,
@@ -13,34 +13,34 @@ interface CommandHandler {
     currentPosition: { x: number; y: number },
     isRelative: boolean
   ) => number[];
-  toAbsolute: (
+  toAbsolute?: (
     coords: number[],
     currentPosition: { x: number; y: number },
     isRelative: boolean
   ) => [string, number[]];
-  toRelative: (
+  toRelative?: (
     coords: number[],
     currentPosition: { x: number; y: number },
     isRelative: boolean
   ) => [string, number[]];
-  getAccumulatedPosition: (
+  getAccumulatedPosition?: (
     currentPosition: { x: number; y: number },
     coords: number[],
     isRelative: boolean
   ) => { x: number; y: number };
   validate?: (coords: number[]) => boolean;
-  getEndPosition: (
+  getEndPosition?: (
     coordinates: number[],
     currentPosition: { x: number; y: number }
   ) => { x: number; y: number };
   getLastControlPoint?: (coordinates: number[]) => { x: number; y: number };
-  translate: (
+  translate?: (
     coordinates: number[],
     values: { x: number; y: number },
     isRelative: boolean,
     isFirstCommand?: boolean
   ) => number[];
-  scale: (coordinates: number[], values: { x: number; y: number }) => number[];
+  scale?: (coordinates: number[], values: { x: number; y: number }) => number[];
   rotate?: (
     coordinates: number[],
     origin: { x: number; y: number },
@@ -842,6 +842,15 @@ export const commandHandlers: Record<string, CommandHandler> = {
       coordinates: [1, 1, 0, 0, 0, currentPosition.x, currentPosition.y],
       hovered: false,
       selected: true,
+    }),
+  },
+  [LINE_COMMANDS.Close]: {
+    create: (_currentPosition, command_counter) => ({
+      id: command_counter + LINE_COMMANDS.Close,
+      letter: LINE_COMMANDS.Close,
+      coordinates: [],
+      hovered: false,
+      selected: false,
     }),
   },
 };

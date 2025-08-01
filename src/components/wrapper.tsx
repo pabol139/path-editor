@@ -5,7 +5,7 @@ import Svg from "@/components/svg/svg";
 import type { Viewbox } from "@/types/Viewbox";
 import type { SvgDimensions } from "@/types/Svg";
 import { formatNumberToString } from "@/utils/path";
-import SvgActions from "./toolbar";
+import Toolbar from "./toolbar";
 import { cn } from "@/lib/utils";
 
 export default function Wrapper() {
@@ -73,13 +73,13 @@ export default function Wrapper() {
           updateViewbox={updateViewbox}
           isSidebarOpen={isSidebarOpen}
         ></Svg>
-        <SvgActions
+        <Toolbar
           viewbox={viewbox}
           updateViewbox={updateViewbox}
           setSvgDimensions={setSvgDimensions}
           showControlElements={showControlElements}
           setShowControlElements={setShowControlElements}
-        ></SvgActions>
+        ></Toolbar>
       </div>
       <Sidebar
         svgDimensions={svgDimensions}

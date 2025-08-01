@@ -42,7 +42,7 @@ export const createControlLines = (
     const command = commandIndex !== -1 ? commands[commandIndex] : undefined;
     if (!command) return [];
 
-    const letter = command ? command.letter.toLocaleUpperCase() : "";
+    const letter = command.letter.toLocaleUpperCase();
 
     const lineCreator = getLineCreator(letter);
     if (lineCreator) {
@@ -70,14 +70,19 @@ const createCubicLines: LineCreator = (
   const lines: Line[] = [];
   const { coordinate_index } = point;
 
-  if (coordinate_index === 0) {
+  if (coordinate_index === 0 && commands[commandIndex - 1]) {
+    const prevCommand = commands[commandIndex - 1];
+    const prevPoints = points.filter(
+      (point) => point.id_command === prevCommand.id
+    );
+
     lines.push({
-      x1: points[pointIndex - 1].cx,
-      y1: points[pointIndex - 1].cy,
+      x1: prevPoints[prevPoints.length - 1].cx,
+      y1: prevPoints[prevPoints.length - 1].cy,
       x2: point.cx,
       y2: point.cy,
     });
-  } else if (coordinate_index === 2) {
+  } else if (coordinate_index === 2 && points[pointIndex + 1]) {
     lines.push({
       x1: points[pointIndex + 1].cx,
       y1: points[pointIndex + 1].cy,
@@ -115,10 +120,14 @@ const createQuadraticLines: LineCreator = (
   const lines: Line[] = [];
   const { coordinate_index } = point;
 
-  if (coordinate_index === 0) {
+  const prevCommand = commands[commandIndex - 1];
+  const prevPoints = points.filter(
+    (point) => point.id_command === prevCommand.id
+  );
+  if (coordinate_index === 0 && commands[commandIndex - 1]) {
     lines.push({
-      x1: points[pointIndex - 1].cx,
-      y1: points[pointIndex - 1].cy,
+      x1: prevPoints[prevPoints.length - 1].cx,
+      y1: prevPoints[prevPoints.length - 1].cy,
       x2: point.cx,
       y2: point.cy,
     });
@@ -199,22 +208,27 @@ const createSmoothQuadraticLines: LineCreator = (
 
   const prevControlPoint = getLastControlPoint(commands, commandIndex);
   if (!prevControlPoint) return lines;
-  const prevCommand = getCurrentPositionBeforeCommand(
+  const prevCommandPosition = getCurrentPositionBeforeCommand(
     commands,
     commands[commandIndex].id
   );
 
   const prevReflectionControlPoint = {
-    x: 2 * prevCommand.x - prevControlPoint.x,
-    y: 2 * prevCommand.y - prevControlPoint.y,
+    x: 2 * prevCommandPosition.x - prevControlPoint.x,
+    y: 2 * prevCommandPosition.y - prevControlPoint.y,
   };
 
-  lines.push({
-    x1: String(prevReflectionControlPoint.x),
-    y1: String(prevReflectionControlPoint.y),
-    x2: point.cx,
-    y2: point.cy,
-  });
+  if (
+    commands[commandIndex - 1]?.letter.toUpperCase() === "Q" ||
+    commands[commandIndex - 1]?.letter.toUpperCase() === "T"
+  ) {
+    lines.push({
+      x1: String(prevReflectionControlPoint.x),
+      y1: String(prevReflectionControlPoint.y),
+      x2: point.cx,
+      y2: point.cy,
+    });
+  }
 
   if (commands[commandIndex + 1]?.letter.toUpperCase() === "T") {
     const nextReflectionControlPoint = {

@@ -1,6 +1,6 @@
 "use client";
 
-import type { Transition, Variants } from "motion/react";
+import type { Variants } from "motion/react";
 import { motion, useAnimation } from "motion/react";
 import type { HTMLAttributes } from "react";
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
@@ -14,10 +14,6 @@ export interface PlusHandle {
 interface PlusProps extends HTMLAttributes<HTMLDivElement> {
   size?: number;
 }
-
-const defaultTransition: Transition = {
-  duration: 0.5,
-};
 
 const pathVariants: Variants = {
   normal: { rotate: 0 },

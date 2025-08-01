@@ -1,6 +1,4 @@
-import { isRelativeCommand } from "@/utils/path";
-import { Check, EllipsisVertical } from "lucide-react";
-import { useEffect, useState } from "react";
+import { EllipsisVertical } from "lucide-react";
 
 import CommandActionsWrapper from "./command-actions-wrapper";
 import CommandLetter from "./command-letter";

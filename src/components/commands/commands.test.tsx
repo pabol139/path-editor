@@ -1,24 +1,10 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-
+import { createCommandObject } from "@/utils/test-utils";
 import Commands from "./commands";
 
 const mockUpdatePath = jest.fn();
 const mockStore = jest.fn();
-
-const createCommandObject = (
-  count: number,
-  letter: string,
-  coordinates: number[],
-  overrides = {}
-) => ({
-  id: count + letter,
-  letter,
-  coordinates,
-  hovered: false,
-  selected: false,
-  ...overrides,
-});
 
 jest.mock("@/context/path-context", () => ({
   usePathObject: () => ({

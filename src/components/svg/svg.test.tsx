@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
 import Svg from "./svg";
+import { createCommandObject } from "@/utils/test-utils";
 
 const mockUpdatePath = jest.fn();
 const mockUpdateViewbox = jest.fn();
@@ -20,20 +21,6 @@ const defaultProps = {
   updateViewbox: mockUpdateViewbox,
 };
 
-const createCommandObject = (
-  count: number,
-  letter: string,
-  coordinates: number[],
-  overrides = {}
-) => ({
-  id: count + letter,
-  letter,
-  coordinates,
-  hovered: false,
-  selected: false,
-  ...overrides,
-});
-
 jest.mock("@/context/path-context", () => ({
   usePathObject: () => ({
     pathObject: {
@@ -49,12 +36,6 @@ jest.mock("@/context/path-context", () => ({
     svgRef: { current: document.createElement("svg") },
     undoUtils: { store: mockStore },
   }),
-}));
-
-global.ResizeObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
 }));
 
 describe("svg element", () => {
