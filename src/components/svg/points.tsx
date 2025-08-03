@@ -3,9 +3,10 @@ import { Point } from "./point";
 import type { Point as PointType } from "@/types/Point";
 import usePoints from "@/hooks/usePoints";
 import { usePathObject } from "@/context/path-context";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import React from "react";
 import PointsPortal from "./points-portal";
+import type { Viewbox } from "@/types/Viewbox";
 
 type PortalInfo = {
   id: string;
@@ -17,20 +18,23 @@ type PortalInfo = {
 };
 
 export default function Points({
+  viewbox,
   points,
-  viewboxWidth,
-  svgDimensionsWidth,
+  pointWidth,
+  pointStrokeWidth,
   handlePointerDown,
 }: {
+  viewbox: Viewbox;
+  pointWidth: string;
+  pointStrokeWidth: string;
   points: PointType[];
-  viewboxWidth: number;
-  svgDimensionsWidth: number;
   handlePointerDown: (id_command: string) => void;
 }) {
   const {
     pathObject,
     updateCommands,
     undoUtils: { store },
+    svgRef,
   } = usePathObject();
 
   const { handleMove, handleUp } = usePoints(
@@ -41,6 +45,8 @@ export default function Points({
   );
   const [openPortal, setOpenPortal] = useState(false);
   const [portalInfo, setPortalInfo] = useState<PortalInfo | null>();
+  const [isCircleDragging, setIsCircleDragging] = useState(false);
+  const activeCircle = useRef<EventTarget & SVGCircleElement>(null);
   const { commands } = pathObject;
 
   useEffect(() => {
@@ -61,27 +67,39 @@ export default function Points({
           <React.Fragment key={point.id}>
             <Point
               point={point}
-              radius={String((3.5 * viewboxWidth) / svgDimensionsWidth)}
-              strokeWidth={String((13 * viewboxWidth) / svgDimensionsWidth)}
-              handleMove={handleMove}
-              handleEnter={() =>
+              radius={pointWidth}
+              strokeWidth={pointStrokeWidth}
+              handleMove={(
+                values: { id: string; x: number; y: number },
+                updateState: boolean
+              ) => {
+                handleMove(values, updateState);
+              }}
+              handleEnter={() => {
                 onPointerEnterCommand(
                   commands,
                   updateCommands,
                   point.id_command
-                )
-              }
-              handleLeave={() =>
-                onPointerLeaveCommand(commands, updateCommands)
-              }
-              handleDown={() => {
-                handlePointerDown(point.id_command);
+                );
               }}
-              handleUp={handleUp}
+              handleLeave={(isDragging: boolean) => {
+                onPointerLeaveCommand(commands, updateCommands);
+                setIsCircleDragging(isDragging);
+              }}
+              handleDown={(isDragging: boolean) => {
+                handlePointerDown(point.id_command);
+                setIsCircleDragging(isDragging);
+              }}
+              handleUp={(hasMoved: boolean, isDragging: boolean) => {
+                handleUp(hasMoved);
+                setIsCircleDragging(isDragging);
+              }}
               handleClick={(
-                e: React.MouseEvent<SVGCircleElement, MouseEvent>
+                e:
+                  | React.MouseEvent<SVGCircleElement, MouseEvent>
+                  | React.TouchEvent<SVGCircleElement>
               ) => {
-                e.preventDefault();
+                activeCircle.current = e.currentTarget;
                 const rect = e.currentTarget.getBoundingClientRect();
                 setPortalInfo({
                   id: command.id,
@@ -92,18 +110,22 @@ export default function Points({
                   },
                 });
                 setOpenPortal(true);
+                e.preventDefault();
               }}
             ></Point>
           </React.Fragment>
         );
       })}
 
-      {portalInfo && openPortal && (
+      {portalInfo && openPortal && !isCircleDragging && (
         <PointsPortal
           open={openPortal}
           setOpen={setOpenPortal}
           portalInfo={portalInfo}
           commands={pathObject.commands}
+          activeCircle={activeCircle}
+          svgRef={svgRef}
+          viewbox={viewbox}
         ></PointsPortal>
       )}
     </>

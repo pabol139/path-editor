@@ -1,6 +1,11 @@
 import { useState } from "react";
 import type { Viewbox } from "@/types/Viewbox";
 import { usePathObject } from "@/context/path-context";
+import {
+  getPointersCenter,
+  getPointersDistance,
+  screenToSVG,
+} from "@/utils/svg";
 
 export function usePanZoom(
   viewbox: Viewbox,
@@ -8,46 +13,165 @@ export function usePanZoom(
   onClick: any
 ) {
   const { svgRef } = usePathObject();
-  const [dragging, setDragging] = useState(false);
-  const [lastPosition, setLastPosition] = useState({ x: 0, y: 0 });
   const [hasMoved, setHasMoved] = useState(false);
 
-  const handlePointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
-    // Right click
-    if (event.button === 2) return;
+  const [draggedEvent, setDraggedEvent] = useState<
+    MouseEvent | TouchEvent | null
+  >(null);
 
-    setDragging(true);
+  const pinch = (
+    previousEvent: MouseEvent | TouchEvent,
+    currentEvent: MouseEvent | TouchEvent
+  ) => {
+    // Only handle pinch if both events are TouchEvents with 2+ touches
+    if (
+      previousEvent instanceof TouchEvent &&
+      currentEvent instanceof TouchEvent &&
+      previousEvent.touches.length >= 2 &&
+      currentEvent.touches.length >= 2
+    ) {
+      // Get current touch positions in SVG coordinates
+      const pt1 = screenToSVG(
+        svgRef.current as SVGSVGElement,
+        currentEvent.touches[0].clientX,
+        currentEvent.touches[0].clientY
+      );
+      const pt2 = screenToSVG(
+        svgRef.current as SVGSVGElement,
+        currentEvent.touches[1].clientX,
+        currentEvent.touches[1].clientY
+      );
 
-    const svg = event.currentTarget as SVGSVGElement;
+      const oriPt1 = screenToSVG(
+        svgRef.current as SVGSVGElement,
+        previousEvent.touches[0].clientX,
+        previousEvent.touches[0].clientY
+      );
+      const oriPt2 = screenToSVG(
+        svgRef.current as SVGSVGElement,
+        previousEvent.touches[1].clientX,
+        previousEvent.touches[1].clientY
+      );
 
-    const point = svg.createSVGPoint();
-    point.x = event.clientX;
-    point.y = event.clientY;
-    const svgPoint = point.matrixTransform(svg.getScreenCTM()?.inverse());
-    setLastPosition({
-      x: svgPoint.x,
-      y: svgPoint.y,
-    });
+      // Calculate centers
+      const center = getPointersCenter(pt1, pt2);
+      const oriCenter = getPointersCenter(oriPt1, oriPt2);
 
-    (event.target as HTMLElement).setPointerCapture(event.pointerId);
+      // Calculate delta (movement of center)
+      const delta = { x: oriCenter.x - center.x, y: oriCenter.y - center.y };
+
+      // Calculate zoom factor
+      const oriDistance = getPointersDistance(oriPt1, oriPt2);
+      const currentDistance = getPointersDistance(pt1, pt2);
+
+      const zoom = oriDistance / currentDistance;
+
+      return { zoom, delta, center };
+    }
+
+    return null;
   };
 
-  const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
-    if (!dragging) {
+  const startDrag = (
+    event: React.MouseEvent<SVGSVGElement> | React.TouchEvent<SVGSVGElement>
+  ) => {
+    // Right click
+    if (
+      event.nativeEvent instanceof MouseEvent &&
+      event.nativeEvent.button === 2
+    ) {
       return;
     }
+
+    setDraggedEvent(event.nativeEvent);
+    setHasMoved(false);
+  };
+
+  const drag = (
+    event: React.MouseEvent<SVGSVGElement> | React.TouchEvent<SVGSVGElement>
+  ) => {
+    if (!draggedEvent) return;
+
+    // For mouse events, stop dragging if button is not pressed
+    if (event instanceof MouseEvent && event.buttons === 0) {
+      stopDrag(event);
+      return;
+    }
+
+    event.stopPropagation();
+
+    const pinchResult = pinch(draggedEvent, event.nativeEvent);
+
+    if (pinchResult) {
+      // Handle pinch to zoom
+
+      const w = pinchResult.zoom * viewbox.width;
+      const h = pinchResult.zoom * viewbox.height;
+      const x =
+        viewbox.x +
+        pinchResult.delta.x +
+        (pinchResult.center.x - viewbox.x) * (1 - pinchResult.zoom);
+      const y =
+        viewbox.y +
+        pinchResult.delta.y +
+        (pinchResult.center.y - viewbox.y) * (1 - pinchResult.zoom);
+
+      updateViewbox({ x, y, width: w, height: h });
+    } else {
+      // Handle pan
+
+      const eventPosition =
+        event.nativeEvent instanceof MouseEvent
+          ? { x: event.nativeEvent.clientX, y: event.nativeEvent.clientY }
+          : {
+              x: event.nativeEvent.touches[0].clientX,
+              y: event.nativeEvent.touches[0].clientY,
+            };
+
+      const draggedEventPosition =
+        draggedEvent instanceof MouseEvent
+          ? { x: draggedEvent.clientX, y: draggedEvent.clientY }
+          : {
+              x: draggedEvent.touches[0].clientX,
+              y: draggedEvent.touches[0].clientY,
+            };
+
+      const currentPt = screenToSVG(
+        svgRef.current as SVGSVGElement,
+        eventPosition.x,
+        eventPosition.y
+      );
+
+      const originalPt = screenToSVG(
+        svgRef.current as SVGSVGElement,
+        draggedEventPosition.x,
+        draggedEventPosition.y
+      );
+
+      updateViewbox({
+        x: viewbox.x + (originalPt.x - currentPt.x),
+        y: viewbox.y + (originalPt.y - currentPt.y),
+        width: viewbox.width,
+        height: viewbox.height,
+      });
+    }
+
+    setDraggedEvent(event.nativeEvent);
     setHasMoved(true);
-    const svg = event.currentTarget as SVGSVGElement;
+  };
 
-    const point = svg.createSVGPoint();
-    point.x = event.clientX;
-    point.y = event.clientY;
-    const svgPoint = point.matrixTransform(svg.getScreenCTM()?.inverse());
-
-    const deltaX = -(svgPoint.x - lastPosition.x);
-    const deltaY = -(svgPoint.y - lastPosition.y);
-
-    updateViewbox({ ...viewbox, x: viewbox.x + deltaX, y: viewbox.y + deltaY });
+  const stopDrag = (
+    e: React.MouseEvent<SVGSVGElement> | React.TouchEvent<SVGSVGElement>
+  ) => {
+    if (
+      !hasMoved &&
+      draggedEvent &&
+      (e.currentTarget === e.target || e.target instanceof SVGPathElement)
+    ) {
+      onClick();
+    }
+    setDraggedEvent(null);
+    setHasMoved(false);
   };
 
   const performZoom = (
@@ -108,27 +232,11 @@ export function usePanZoom(
     performZoom(deltaY, anchorPoint);
   };
 
-  const handlePointerLeave = () => {
-    setDragging(false);
-    setLastPosition({ x: 0, y: 0 });
-  };
-
-  const handlePointerUp = (event: React.PointerEvent<SVGSVGElement>) => {
-    if (!hasMoved) {
-      onClick();
-    }
-    setDragging(false);
-    setHasMoved(false);
-    setLastPosition({ x: 0, y: 0 });
-    (event.target as HTMLElement).releasePointerCapture(event.pointerId);
-  };
   return {
-    dragging,
     handleProgrammaticZoom,
     handleWheelZoom,
-    handlePointerDown,
-    handlePointerMove,
-    handlePointerLeave,
-    handlePointerUp,
+    startDrag,
+    drag,
+    stopDrag,
   };
 }

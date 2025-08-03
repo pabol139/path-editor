@@ -1,13 +1,11 @@
 import type { OverlappedPath } from "@/utils/overlapped-paths";
 
 export default function OverlappedPaths({
+  linesWidth,
   overlappedPaths,
-  viewboxWidth,
-  svgDimensionsWidth,
 }: {
+  linesWidth: string;
   overlappedPaths: OverlappedPath[];
-  viewboxWidth: number;
-  svgDimensionsWidth: number;
 }) {
   return (
     <>
@@ -19,7 +17,7 @@ export default function OverlappedPaths({
           d={overlappedPath}
           stroke={color}
           fill="transparent"
-          strokeWidth={String((1.5 * viewboxWidth) / svgDimensionsWidth)}
+          strokeWidth={linesWidth}
         ></path>
       ))}
     </>

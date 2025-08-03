@@ -6,16 +6,16 @@ export default function useDragging(
     { id, x, y }: { id: string; x: number; y: number },
     updateState: boolean
   ) => void,
-  handleDown: () => void,
-  handleLeave: () => void,
-  handleUp: (hasMoved: boolean) => void
+  handleDown: (isDragging: boolean) => void,
+  handleLeave: (isDragging: boolean) => void,
+  handleUp: (hasMoved: boolean, isDragging: boolean) => void
 ) {
   const [dragging, setDragging] = useState(false);
   const [hasMoved, setHasMoved] = useState(false);
 
   const handlePointerDown = (event: React.PointerEvent<SVGCircleElement>) => {
     setDragging(true);
-    handleDown();
+    handleDown(true);
 
     setTimeout(() => {
       (event.target as HTMLElement).setPointerCapture(event.pointerId);
@@ -24,7 +24,7 @@ export default function useDragging(
   };
   const handlePointerLeave = (event: React.PointerEvent<SVGCircleElement>) => {
     setDragging(false);
-    handleLeave();
+    handleLeave(false);
     event.stopPropagation();
   };
 
@@ -61,7 +61,7 @@ export default function useDragging(
     setDragging(false);
     setHasMoved(false);
 
-    handleUp(hasMoved);
+    handleUp(hasMoved, false);
 
     (event.target as HTMLElement).releasePointerCapture(event.pointerId);
     event.stopPropagation();

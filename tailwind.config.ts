@@ -19,6 +19,7 @@ export default {
         tertiary: "var(--tertiary)",
         gray100: "var(--gray100)",
         gray200: "var(--gray200)",
+        gray250: "var(--gray250)",
         gray300: "var(--gray300)",
         purple: "var(--purple)",
         purple300: "var(--purple300)",
@@ -72,4 +73,7 @@ export default {
     },
   },
   plugins: [require("tailwindcss-animate")],
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
 } satisfies Config;

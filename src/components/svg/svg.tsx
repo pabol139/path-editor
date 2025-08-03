@@ -11,6 +11,7 @@ import {
   cleanSelectedAndHoveredCommands,
   onPointerDownCommand,
 } from "@/utils/path";
+import { isTouchDevice } from "@/utils/svg";
 
 export default function Svg({
   showControlElements = true,
@@ -43,13 +44,11 @@ export default function Svg({
     updateCommands(formatedCommands, false);
   }
 
-  const {
-    handlePointerDown,
-    handlePointerLeave,
-    handlePointerMove,
-    handlePointerUp,
-    handleWheelZoom,
-  } = usePanZoom(viewbox, updateViewbox, formatCommands);
+  const { handleWheelZoom, startDrag, drag, stopDrag } = usePanZoom(
+    viewbox,
+    updateViewbox,
+    formatCommands
+  );
 
   const handlePointsPointerDown = (id_command: string) => {
     onPointerDownCommand(
@@ -61,17 +60,25 @@ export default function Svg({
     );
   };
 
+  const linesWidth = String((1.5 * viewbox.width) / svgDimensions.width);
+  const pointWidth = String((3.5 * viewbox.width) / svgDimensions.width);
+  const pointStrokeWidth = isTouchDevice()
+    ? String((33 * viewbox.width) / svgDimensions.width)
+    : String((13 * viewbox.width) / svgDimensions.width);
+
   return (
     <svg
       role="application"
       aria-label="Path editor"
       onWheel={handleWheelZoom}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerLeave={handlePointerLeave}
-      onPointerUp={handlePointerUp}
+      onMouseDown={startDrag}
+      onTouchStart={startDrag}
+      onTouchMove={drag}
+      onMouseMove={drag}
+      onMouseUp={stopDrag}
+      onTouchEnd={stopDrag}
       ref={svgRef}
-      className="h-full w-full"
+      className="h-full w-full !touch-pan-x !select-none"
       viewBox={`${viewbox.x} ${viewbox.y} ${viewbox.width} ${viewbox.height}`}
     >
       {isVisible ? (
@@ -79,7 +86,7 @@ export default function Svg({
           {showControlElements && (
             <DecorativeLines
               viewbox={viewbox}
-              strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}
+              strokeWidth={linesWidth}
               svgRef={svgRef}
             ></DecorativeLines>
           )}
@@ -89,24 +96,23 @@ export default function Svg({
             d={path}
             fill="#ffffff40"
             stroke="#fff"
-            strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}
+            strokeWidth={linesWidth}
           ></path>
           {showControlElements && (
             <>
               <ControlLines
                 lines={lines}
-                viewboxWidth={viewbox.width}
-                svgDimensionsWidth={svgDimensions.width}
+                linesWidth={linesWidth}
               ></ControlLines>
               <OverlappedPaths
                 overlappedPaths={overlappedPaths}
-                viewboxWidth={viewbox.width}
-                svgDimensionsWidth={svgDimensions.width}
+                linesWidth={linesWidth}
               ></OverlappedPaths>
               <Points
+                viewbox={viewbox}
                 points={points}
-                viewboxWidth={viewbox.width}
-                svgDimensionsWidth={svgDimensions.width}
+                pointWidth={pointWidth}
+                pointStrokeWidth={pointStrokeWidth}
                 handlePointerDown={handlePointsPointerDown}
               ></Points>
             </>
@@ -118,7 +124,7 @@ export default function Svg({
             d={path}
             fill="#ffffff40"
             stroke="#fff"
-            strokeWidth={String((1.5 * viewbox.width) / svgDimensions.width)}
+            strokeWidth={linesWidth}
           ></path>
         </svg>
       )}

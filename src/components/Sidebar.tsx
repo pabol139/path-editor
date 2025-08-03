@@ -33,11 +33,11 @@ export default function Sidebar({
   return (
     <aside
       aria-expanded={open}
-      className={`absolute top-0 right-0 h-full transition-transform ease-out-sidebar duration-500 ${
+      className={`isolate absolute z-20 top-0 right-0 h-full transition-transform ease-out-sidebar duration-500 w-full md:w-auto ${
         open ? "" : "translate-x-full"
       }`}
     >
-      <div className="overflow-auto border-l bg-primary border-secondary top-0 right-0 h-full text-tertiary w-full max-w-[var(--aside-width)]">
+      <div className="overflow-auto border-l bg-primary border-secondary h-full text-tertiary w-full md:max-w-[var(--aside-width)]">
         <PathSection
           svgDimensions={svgDimensions}
           updateViewbox={updateViewbox}
@@ -92,7 +92,7 @@ export default function Sidebar({
           >
             <button
               aria-label={`Open sidebar`}
-              className="px-1 py-1 rounded-sm h-9 w-9 flex items-center justify-center text-tertiary opacity-70 hover:opacity-100 hover:bg-secondary transition-[background-color,opacity] disabled:opacity-50"
+              className="px-1 py-1 rounded-sm h-9 w-9 flex items-center justify-center text-tertiary hover:bg-secondary transition-[background-color]"
               onClick={() => handleOpen(true)}
             >
               <PanelRight size={20}></PanelRight>

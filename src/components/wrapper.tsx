@@ -7,6 +7,7 @@ import type { SvgDimensions } from "@/types/Svg";
 import { formatNumberToString } from "@/utils/path";
 import Toolbar from "./toolbar";
 import { cn } from "@/lib/utils";
+import { isTouchDevice } from "@/utils/svg";
 
 export default function Wrapper() {
   const [viewbox, setViewbox] = useState<Viewbox>({
@@ -21,7 +22,7 @@ export default function Wrapper() {
     height: 1,
   });
 
-  const [isSidebarOpen, setisSidebarOpen] = useState(true);
+  const [isSidebarOpen, setisSidebarOpen] = useState(() => !isTouchDevice());
   const [showControlElements, setShowControlElements] = useState(true);
 
   // Type for updateViewbox function
@@ -61,8 +62,8 @@ export default function Wrapper() {
     <>
       <div
         className={cn(
-          "relative h-full w-[calc(100%-var(--aside-width))] transition-[width] ease-out-sidebar duration-500",
-          !isSidebarOpen && "w-full"
+          "relative h-full w-full md:w-[calc(100%-var(--aside-width))] transition-[width] ease-out-sidebar duration-500",
+          !isSidebarOpen && "md:w-full"
         )}
       >
         <Svg

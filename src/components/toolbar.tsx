@@ -126,9 +126,9 @@ export default function Toolbar({
           }}
           initial={{ y: 75 }}
           animate={{ y: -16 }}
-          className=" absolute left-4 bottom-0 m-auto w-fit flex gap-3"
+          className=" absolute left-4 bottom-0 m-auto w-fit flex gap-3 flex-col md:flex-row"
         >
-          <div className="flex gap-[2px] bg-primary px-1 py-1 rounded-md border border-secondary shadow-md">
+          <div className="flex flex-col-reverse  md:flex-row gap-[2px] bg-primary px-1 py-1 rounded-md border border-secondary shadow-md w-fit">
             {ZOOM_ACTIONS.map(({ icon, onClick, disabled, message }) => (
               <ToolbarAction
                 key={message}
@@ -139,7 +139,7 @@ export default function Toolbar({
               ></ToolbarAction>
             ))}
           </div>
-          <div className="flex gap-[2px] bg-primary px-1 py-1 rounded-md border border-secondary shadow-md">
+          <div className="flex gap-[2px] bg-primary px-1 py-1 rounded-md border border-secondary shadow-md w-fit">
             {UNDO_ACTIONS.map(({ icon, onClick, disabled, message }) => (
               <ToolbarAction
                 key={message}

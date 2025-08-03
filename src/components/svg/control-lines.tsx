@@ -2,12 +2,10 @@ import type { Line } from "@/types/Line";
 
 export default function ControlLines({
   lines,
-  viewboxWidth,
-  svgDimensionsWidth,
+  linesWidth,
 }: {
   lines: Line[];
-  viewboxWidth: number;
-  svgDimensionsWidth: number;
+  linesWidth: string;
 }) {
   return (
     <>
@@ -18,7 +16,7 @@ export default function ControlLines({
             aria-hidden="true"
             key={index}
             stroke="gray"
-            strokeWidth={String((1.5 * viewboxWidth) / svgDimensionsWidth)}
+            strokeWidth={linesWidth}
             x1={x1}
             y1={y1}
             x2={x2}

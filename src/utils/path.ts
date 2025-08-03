@@ -6,6 +6,7 @@ import type { Viewbox } from "@/types/Viewbox";
 import type { SvgDimensions } from "@/types/Svg";
 import type { Dispatch, SetStateAction } from "react";
 import type { UpdateCommandsType } from "@/context/path-context";
+import { isTouchDevice } from "./svg";
 
 /** Regex based on https://github.com/Yqnn/svg-path-editor/blob/master/src/lib/path-parser.ts */
 const kCommandTypeRegex = /^[\t\n\f\r ]*([MLHVZCSQTAmlhvzcsqta])[\t\n\f\r ]*/;
@@ -182,7 +183,7 @@ export const centerViewbox = (
     pathHeight = svgAspectRatio * pathWidth;
   }
 
-  const percentFactorWidth = pathWidth * 0.1;
+  const percentFactorWidth = pathWidth * (isTouchDevice() ? 0.2 : 0.1);
   const percentFactorHeight = pathHeight * 0.1;
 
   // Center svg on screen

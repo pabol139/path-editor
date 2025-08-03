@@ -90,6 +90,9 @@ export default function DecorativeLines({
           x = i * hSpacing;
         return (
           <line
+            className="pointer-events-none"
+            role="presentation"
+            aria-hidden="true"
             key={`v-${i}`}
             stroke="#ffffff05"
             strokeWidth={strokeWidth}
@@ -106,6 +109,7 @@ export default function DecorativeLines({
           y = j * hSpacing;
         return (
           <line
+            className="pointer-events-none"
             role="presentation"
             aria-hidden="true"
             key={`h-${j}`}

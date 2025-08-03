@@ -1,5 +1,6 @@
 import useDragging from "@/hooks/useDragging";
 import type { Point } from "@/types/Point";
+import { isTouchDevice } from "@/utils/svg";
 
 interface PointElement {
   point: Point;
@@ -9,10 +10,14 @@ interface PointElement {
     updateState: boolean
   ) => void;
   handleEnter: () => void;
-  handleLeave: () => void;
-  handleDown: () => void;
-  handleUp: (hasMoved: boolean) => void;
-  handleClick: (e: React.MouseEvent<SVGCircleElement, MouseEvent>) => void;
+  handleLeave: (isDragging: boolean) => void;
+  handleDown: (isDragging: boolean) => void;
+  handleUp: (hasMoved: boolean, isDragging: boolean) => void;
+  handleClick: (
+    e:
+      | React.MouseEvent<SVGCircleElement, MouseEvent>
+      | React.TouchEvent<SVGCircleElement>
+  ) => void;
   strokeWidth: string;
 }
 
@@ -44,6 +49,10 @@ export function Point({
     ? "#808080"
     : "#fff";
 
+  const clickEvent = isTouchDevice()
+    ? { onTouchEnd: handleClick }
+    : { onContextMenu: handleClick };
+
   return (
     <circle
       role="button"
@@ -57,12 +66,17 @@ export function Point({
       onPointerDown={handlers.onPointerDown}
       onPointerMove={handlers.onPointerMove}
       onPointerEnter={handleEnter}
+      onTouchMove={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+      onMouseMove={(e) => e.stopPropagation()}
+      {...clickEvent}
+      // onContextMenu={handleClick}
       r={radius}
       cx={cx}
       cy={cy}
       strokeWidth={strokeWidth}
       fill="currentColor"
-      onContextMenu={handleClick}
     ></circle>
   );
 }

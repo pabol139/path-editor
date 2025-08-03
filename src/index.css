@@ -9,6 +9,7 @@
     --tertiary: hsl(240deg 10% 90%);
     --gray100: hsl(0deg 0% 63%);
     --gray200: hsl(0deg 0% 57%);
+    --gray250: hsl(240, 3%, 36%);
     --gray300: hsl(240deg 9% 32%);
     --purple: hsl(240deg 36% 52%);
     --purple300: hsl(240deg 36% 52% / 30%);
@@ -228,6 +229,33 @@
     height: var(--input-size);
     width: var(--input-size);
     border-radius: 9999px;
+  }
+
+  /**
+  * Note: this is needed to prevent the popover from being cut off
+  * by the viewport when the popover is nested inside another popover
+  * https://github.com/radix-ui/primitives/issues/1749#issuecomment-2407815187
+  */
+
+  div[data-radix-popper-content-wrapper]
+    ~ div[data-radix-popper-content-wrapper]:has(> div[data-side="right"]) {
+    left: calc(
+      min(
+        0px,
+        var(--radix-popper-available-width) +
+          (-1 * var(--radix-popper-anchor-width)) - 24px
+      )
+    ) !important;
+  }
+  div[data-radix-popper-content-wrapper]
+    ~ div[data-radix-popper-content-wrapper]:has(> div[data-side="left"]) {
+    left: calc(
+      max(
+        0px,
+        (-1 * var(--radix-popper-available-width)) +
+          var(--radix-popper-anchor-width) + 24px
+      )
+    ) !important;
   }
   /* .dark {
     --background: 222.2 84% 4.9%;

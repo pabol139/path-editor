@@ -53,9 +53,9 @@ export default function Command({
       role="listitem"
       id={id}
       className={`pl-4 pr-4 flex justify-between gap-2  ${backgroundColor}`}
-      onPointerEnter={handleEnter}
-      onPointerDown={handleDown}
-      onPointerLeave={handleLeave}
+      // onMouseEnter={handleEnter}
+      // onMouseLeave={handleLeave}
+      onClick={handleDown}
       onFocus={handleDown}
       aria-selected={selected}
     >
@@ -68,7 +68,10 @@ export default function Command({
           id={id}
           letter={letter}
           backgroundColorLetter={backgroundColorLetter}
-          onClick={() => handleClickCommandLetter(id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleClickCommandLetter(id);
+          }}
           aria-label={`Toggle between relative and absolute`}
           aria-description={`Clicking this convert this command to ${
             isRelative ? "absolute" : "relative"
