@@ -53,8 +53,8 @@ export default function Command({
       role="listitem"
       id={id}
       className={`pl-4 pr-4 flex justify-between gap-2  ${backgroundColor}`}
-      // onMouseEnter={handleEnter}
-      // onMouseLeave={handleLeave}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
       onClick={handleDown}
       onFocus={handleDown}
       aria-selected={selected}

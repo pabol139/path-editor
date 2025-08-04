@@ -70,6 +70,26 @@ const wrapper = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+const openPointContextMenu = (circle: HTMLElement) => {
+  fireEvent.pointerDown(circle);
+  fireEvent.pointerUp(circle);
+  fireEvent.contextMenu(circle);
+};
+
+const clickOption = (optionName: string) => {
+  let insertAfterOption = screen.getByRole("menuitem", {
+    name: /insert after/i,
+  });
+
+  fireEvent.click(insertAfterOption);
+
+  const option = screen.getByRole("menuitem", {
+    name: optionName,
+  });
+
+  fireEvent.click(option);
+};
+
 describe("points", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -80,6 +100,7 @@ describe("points", () => {
     const circle = screen.getByLabelText("Control point circle_2m_0 at 20, 40");
 
     fireEvent.pointerDown(circle);
+    fireEvent.pointerUp(circle);
     fireEvent.contextMenu(circle);
 
     expect(screen.getByRole("menu")).toBeInTheDocument();
@@ -90,6 +111,7 @@ describe("points", () => {
     const textarea = screen.getAllByRole("textbox")[0];
 
     fireEvent.pointerDown(circle);
+    fireEvent.pointerUp(circle);
     fireEvent.contextMenu(circle);
 
     const deleteButton = screen.getByRole("menuitem", {
@@ -108,6 +130,7 @@ describe("points", () => {
     const textarea = screen.getAllByRole("textbox")[0];
 
     fireEvent.pointerDown(circle);
+    fireEvent.pointerUp(circle);
     fireEvent.contextMenu(circle);
 
     const setAbsolute = screen.getByRole("menuitem", {
@@ -126,6 +149,7 @@ describe("points", () => {
     const textarea = screen.getAllByRole("textbox")[0];
 
     fireEvent.pointerDown(circle);
+    fireEvent.pointerUp(circle);
     fireEvent.contextMenu(circle);
 
     const setRelative = screen.getByRole("menuitem", {
@@ -143,95 +167,40 @@ describe("points", () => {
     let circle = screen.getByLabelText("Control point circle_1M_0 at 10, 20");
     let textarea = screen.getAllByRole("textbox")[0];
 
-    fireEvent.pointerDown(circle);
-    fireEvent.contextMenu(circle);
+    openPointContextMenu(circle);
 
-    let insertAfterOption = screen.getByRole("menuitem", {
-      name: /insert after/i,
-    });
-
-    fireEvent.click(insertAfterOption);
-
-    const quadraticCurveOption = screen.getByRole("menuitem", {
-      name: "Q Quadratic curve to",
-    });
-
-    fireEvent.click(quadraticCurveOption);
+    clickOption("Q Quadratic curve to");
 
     expect(textarea).toHaveTextContent(
       "M 10 20 Q 50 50 50 50 m 10 20 L 30 40 l 30 40 V 50 v 50 H 60 h 60 C 70.1 70 70 70 70 70 c 70.1 70 70 70 70 70 S 80 -80 80 80 s 80 -80 80 80 Q 90 90 90 90 q 90 90 90 90 T 100 100 t 100 100 A 110 110 0 0 0 110 110 a 110 110 0 0 0 110 110"
     );
 
-    fireEvent.pointerDown(circle);
-    fireEvent.contextMenu(circle);
+    openPointContextMenu(circle);
 
-    insertAfterOption = screen.getByRole("menuitem", {
-      name: /insert after/i,
-    });
-
-    fireEvent.click(insertAfterOption);
-
-    const lineToOption = screen.getByRole("menuitem", {
-      name: "L Line to",
-    });
-
-    fireEvent.click(lineToOption);
+    clickOption("L Line to");
 
     expect(textarea).toHaveTextContent(
       "M 10 20 L 50 50 Q 50 50 50 50 m 10 20 L 30 40 l 30 40 V 50 v 50 H 60 h 60 C 70.1 70 70 70 70 70 c 70.1 70 70 70 70 70 S 80 -80 80 80 s 80 -80 80 80 Q 90 90 90 90 q 90 90 90 90 T 100 100 t 100 100 A 110 110 0 0 0 110 110 a 110 110 0 0 0 110 110"
     );
 
-    fireEvent.pointerDown(circle);
-    fireEvent.contextMenu(circle);
+    openPointContextMenu(circle);
 
-    insertAfterOption = screen.getByRole("menuitem", {
-      name: /insert after/i,
-    });
-
-    fireEvent.click(insertAfterOption);
-
-    const verticalLineTo = screen.getByRole("menuitem", {
-      name: "V Vertical line to",
-    });
-
-    fireEvent.click(verticalLineTo);
+    clickOption("V Vertical line to");
 
     expect(textarea).toHaveTextContent(
       "M 10 20 V 50 L 50 50 Q 50 50 50 50 m 10 20 L 30 40 l 30 40 V 50 v 50 H 60 h 60 C 70.1 70 70 70 70 70 c 70.1 70 70 70 70 70 S 80 -80 80 80 s 80 -80 80 80 Q 90 90 90 90 q 90 90 90 90 T 100 100 t 100 100 A 110 110 0 0 0 110 110 a 110 110 0 0 0 110 110"
     );
 
-    fireEvent.pointerDown(circle);
-    fireEvent.contextMenu(circle);
+    openPointContextMenu(circle);
 
-    insertAfterOption = screen.getByRole("menuitem", {
-      name: /insert after/i,
-    });
-
-    fireEvent.click(insertAfterOption);
-
-    const horizontalLineTo = screen.getByRole("menuitem", {
-      name: "H Horizontal line to",
-    });
-
-    fireEvent.click(horizontalLineTo);
+    clickOption("H Horizontal line to");
 
     expect(textarea).toHaveTextContent(
       "M 10 20 H 50 V 50 L 50 50 Q 50 50 50 50 m 10 20 L 30 40 l 30 40 V 50 v 50 H 60 h 60 C 70.1 70 70 70 70 70 c 70.1 70 70 70 70 70 S 80 -80 80 80 s 80 -80 80 80 Q 90 90 90 90 q 90 90 90 90 T 100 100 t 100 100 A 110 110 0 0 0 110 110 a 110 110 0 0 0 110 110"
     );
-    fireEvent.pointerDown(circle);
-    fireEvent.contextMenu(circle);
+    openPointContextMenu(circle);
 
-    insertAfterOption = screen.getByRole("menuitem", {
-      name: /insert after/i,
-    });
-
-    fireEvent.click(insertAfterOption);
-
-    const curveTo = screen.getByRole("menuitem", {
-      name: "C Curve to",
-    });
-
-    fireEvent.click(curveTo);
+    clickOption("C Curve to");
 
     expect(textarea).toHaveTextContent(
       "M 10 20 C 50 50 55 55 60 60 H 50 V 50 L 50 50 Q 50 50 50 50 m 10 20 L 30 40 l 30 40 V 50 v 50 H 60 h 60 C 70.1 70 70 70 70 70 c 70.1 70 70 70 70 70 S 80 -80 80 80 s 80 -80 80 80 Q 90 90 90 90 q 90 90 90 90 T 100 100 t 100 100 A 110 110 0 0 0 110 110 a 110 110 0 0 0 110 110"
@@ -240,20 +209,9 @@ describe("points", () => {
     let curveCircle = screen.getByLabelText(
       "Control point circle_22C_4 at 60, 60"
     );
-    fireEvent.pointerDown(curveCircle);
-    fireEvent.contextMenu(curveCircle);
+    openPointContextMenu(curveCircle);
 
-    insertAfterOption = screen.getByRole("menuitem", {
-      name: /insert after/i,
-    });
-
-    fireEvent.click(insertAfterOption);
-
-    const smoothCurveTo = screen.getByRole("menuitem", {
-      name: "S Smooth curve to",
-    });
-
-    fireEvent.click(smoothCurveTo);
+    clickOption("S Smooth curve to");
 
     expect(textarea).toHaveTextContent(
       "M 10 20 C 50 50 55 55 60 60 S 50 50 55 55 H 50 V 50 L 50 50 Q 50 50 50 50 m 10 20 L 30 40 l 30 40 V 50 v 50 H 60 h 60 C 70.1 70 70 70 70 70 c 70.1 70 70 70 70 70 S 80 -80 80 80 s 80 -80 80 80 Q 90 90 90 90 q 90 90 90 90 T 100 100 t 100 100 A 110 110 0 0 0 110 110 a 110 110 0 0 0 110 110"
@@ -263,58 +221,25 @@ describe("points", () => {
       "Control point circle_18Q_0 at 50, 50"
     );
 
-    fireEvent.pointerDown(quadraticCurveToCircle);
-    fireEvent.contextMenu(quadraticCurveToCircle);
+    openPointContextMenu(quadraticCurveToCircle);
 
-    insertAfterOption = screen.getByRole("menuitem", {
-      name: /insert after/i,
-    });
-
-    fireEvent.click(insertAfterOption);
-
-    const smoothQuadraticCurveTo = screen.getByRole("menuitem", {
-      name: "T Smooth quadratic curve to",
-    });
-
-    fireEvent.click(smoothQuadraticCurveTo);
+    clickOption("T Smooth quadratic curve to");
 
     expect(textarea).toHaveTextContent(
       "M 10 20 C 50 50 55 55 60 60 S 50 50 55 55 H 50 V 50 L 50 50 Q 50 50 50 50 T 50 50 m 10 20 L 30 40 l 30 40 V 50 v 50 H 60 h 60 C 70.1 70 70 70 70 70 c 70.1 70 70 70 70 70 S 80 -80 80 80 s 80 -80 80 80 Q 90 90 90 90 q 90 90 90 90 T 100 100 t 100 100 A 110 110 0 0 0 110 110 a 110 110 0 0 0 110 110"
     );
 
-    fireEvent.pointerDown(circle);
-    fireEvent.contextMenu(circle);
+    openPointContextMenu(circle);
 
-    insertAfterOption = screen.getByRole("menuitem", {
-      name: /insert after/i,
-    });
-
-    fireEvent.click(insertAfterOption);
-
-    const arcTo = screen.getByRole("menuitem", {
-      name: "A Arc to",
-    });
-
-    fireEvent.click(arcTo);
+    clickOption("A Arc to");
 
     expect(textarea).toHaveTextContent(
       "M 10 20 A 1 1 0 0 0 50 50 C 50 50 55 55 60 60 S 50 50 55 55 H 50 V 50 L 50 50 Q 50 50 50 50 T 50 50 m 10 20 L 30 40 l 30 40 V 50 v 50 H 60 h 60 C 70.1 70 70 70 70 70 c 70.1 70 70 70 70 70 S 80 -80 80 80 s 80 -80 80 80 Q 90 90 90 90 q 90 90 90 90 T 100 100 t 100 100 A 110 110 0 0 0 110 110 a 110 110 0 0 0 110 110"
     );
 
-    fireEvent.pointerDown(circle);
-    fireEvent.contextMenu(circle);
+    openPointContextMenu(circle);
 
-    insertAfterOption = screen.getByRole("menuitem", {
-      name: /insert after/i,
-    });
-
-    fireEvent.click(insertAfterOption);
-
-    const closeTo = screen.getByRole("menuitem", {
-      name: "Z Close path",
-    });
-
-    fireEvent.click(closeTo);
+    clickOption("Z Close path");
 
     expect(textarea).toHaveTextContent(
       "M 10 20 Z A 1 1 0 0 0 50 50 C 50 50 55 55 60 60 S 50 50 55 55 H 50 V 50 L 50 50 Q 50 50 50 50 T 50 50 m 10 20 L 30 40 l 30 40 V 50 v 50 H 60 h 60 C 70.1 70 70 70 70 70 c 70.1 70 70 70 70 70 S 80 -80 80 80 s 80 -80 80 80 Q 90 90 90 90 q 90 90 90 90 T 100 100 t 100 100 A 110 110 0 0 0 110 110 a 110 110 0 0 0 110 110"

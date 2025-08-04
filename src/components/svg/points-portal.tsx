@@ -27,8 +27,8 @@ export default function PointsPortal({
 }) {
   const [showPortal, setShowPortal] = useState(false);
   const [position, setPosition] = useState(() => {
-    const svgX = activeCircle.current?.cx.baseVal.value ?? 0;
-    const svgY = activeCircle.current?.cy.baseVal.value ?? 0;
+    const svgX = activeCircle.current?.cx?.baseVal?.value ?? 0;
+    const svgY = activeCircle.current?.cy?.baseVal?.value ?? 0;
     if (svgRef.current) return svgToScreen(svgRef.current, svgX, svgY);
     else
       return {

@@ -25,26 +25,61 @@ Object.defineProperty(SVGElement.prototype, "getBBox", {
   configurable: true,
 });
 
-// Object.defineProperty(SVGElement.prototype, "createSVGPoint", {
-//   value: jest.fn().mockReturnValue({
-//     x: 0,
-//     y: 0,
-//     matrixTransform: jest.fn().mockReturnValue({
-//       x: 0,
-//       y: 0,
-//     }),
-//   }),
-//   configurable: true,
-// });
+Object.defineProperty(window, "matchMedia", {
+  writable: true,
+  value: jest.fn().mockImplementation((query) => ({
+    matches: false, // toggle this to true if you need `.matches === true`
+    media: query,
+    onchange: null,
+    addListener: jest.fn(), // deprecated but some libs still call it
+    removeListener: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
+});
 
-// Object.defineProperty(SVGElement.prototype, "getScreenCTM", {
-//   value: jest.fn().mockReturnValue({
-//     inverse: jest.fn(),
-//   }),
-//   configurable: true,
-// });
+delete window.ontouchstart;
 
-// Object.defineProperty(Element.prototype, "setPointerCapture", {
-//   value: jest.fn(),
-//   configurable: true,
-// });
+Object.defineProperty(SVGElement.prototype, "createSVGPoint", {
+  value: jest.fn().mockReturnValue({
+    x: 0,
+    y: 0,
+    matrixTransform: jest.fn().mockReturnValue({
+      x: 0,
+      y: 0,
+    }),
+  }),
+  configurable: true,
+});
+
+Object.defineProperty(SVGElement.prototype, "getScreenCTM", {
+  value: jest.fn().mockReturnValue({
+    inverse: jest.fn(),
+  }),
+  configurable: true,
+});
+
+Object.defineProperty(Element.prototype, "setPointerCapture", {
+  value: jest.fn(),
+  configurable: true,
+});
+
+Object.defineProperty(Element.prototype, "releasePointerCapture", {
+  value: jest.fn(),
+  configurable: true,
+});
+
+Object.defineProperty(SVGElement.prototype, "cx", {
+  get() {
+    return { baseVal: { value: 0 } };
+  },
+  configurable: true,
+});
+
+Object.defineProperty(SVGElement.prototype, "cy", {
+  get() {
+    return { baseVal: { value: 0 } };
+  },
+  configurable: true,
+});

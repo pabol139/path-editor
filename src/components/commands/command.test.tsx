@@ -82,7 +82,7 @@ describe("commands", () => {
     );
 
     // Click the command
-    fireEvent.pointerDown(screen.getByRole("listitem"));
+    fireEvent.click(screen.getByRole("listitem"));
 
     // Verify the update function was called
     expect(mockUpdateCommands).toHaveBeenCalled();
