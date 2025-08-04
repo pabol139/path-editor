@@ -14,7 +14,7 @@ export default function SectionHeader({
       <h3 className="lowercase first-letter:uppercase">{title}</h3>
       <button
         onClick={setter}
-        className={`absolute flex items-center justify-end pr-4 right-0 top-0 w-full h-full`}
+        className={`absolute flex items-center justify-end pr-4 right-0 top-0 w-full h-full -outline-offset-1`}
       >
         <ChevronDown
           className={`${

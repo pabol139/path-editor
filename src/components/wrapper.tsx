@@ -62,7 +62,7 @@ export default function Wrapper() {
     <>
       <div
         className={cn(
-          "relative h-full w-full md:w-[calc(100%-var(--aside-width))] transition-[width] ease-out-sidebar duration-500",
+          "relative h-full w-full md:w-[calc(100%-var(--aside-width))] transition-[width] ease-sidebar [transition-duration:_600ms]",
           !isSidebarOpen && "md:w-full"
         )}
       >

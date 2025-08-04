@@ -59,7 +59,13 @@
     margin: 0;
     scrollbar-width: thin;
     scrollbar-color: var(--tertiary) var(--primary);
+    outline-color: transparent;
+  }
+
+  :focus-visible {
+    outline-style: solid;
     outline-color: deeppink;
+    outline-offset: 2px;
   }
 
   html,
