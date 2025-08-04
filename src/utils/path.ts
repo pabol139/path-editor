@@ -171,8 +171,8 @@ export const centerViewbox = (
   const svgHeight = svgRef.current.getBoundingClientRect().height || 0;
   const bbox = path.getBBox();
 
-  let pathWidth = bbox.width;
-  let pathHeight = bbox.height;
+  let pathWidth = bbox.width || 2;
+  let pathHeight = bbox.height || 2;
   let pathX = bbox.x;
   let pathY = bbox.y;
   const svgAspectRatio = svgHeight / svgWidth;
@@ -538,7 +538,7 @@ export const updatePoints = (commands: ParsePath<number>) => {
     if (absoluteCommand.selected || absoluteCommand.hovered) {
       interactedPoints.push(...generatedPoints);
     } else points.push(...generatedPoints);
-
+    // points.push(...generatedPoints);
     currentPosition = handler.getEndPosition(
       absoluteCommand.coordinates,
       currentPosition

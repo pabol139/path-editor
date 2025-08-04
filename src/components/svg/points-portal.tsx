@@ -50,7 +50,7 @@ export default function PointsPortal({
   if (!command || !command.selected) return;
 
   const isRelative = isRelativeCommand(command.letter);
-  const extraOffset = isTouchDevice() ? 25 : 0;
+  const extraOffset = isTouchDevice() ? 30 : 0;
   const positionStyle = {
     "--button-size": isTouchDevice() ? "2.25rem" : "1rem",
     left: `calc(${position.x + extraOffset}px - (var(--button-size) / 2))`,

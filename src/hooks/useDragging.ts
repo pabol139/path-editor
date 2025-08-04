@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 export default function useDragging(
   id: string,
@@ -7,28 +7,32 @@ export default function useDragging(
     updateState: boolean
   ) => void,
   handleDown: (isDragging: boolean) => void,
-  handleLeave: (isDragging: boolean) => void,
   handleUp: (hasMoved: boolean, isDragging: boolean) => void
 ) {
   const [dragging, setDragging] = useState(false);
   const [hasMoved, setHasMoved] = useState(false);
+  const draggedPoint = useRef<SVGCircleElement>(null);
+  const pointerIdRef = useRef<number | null>(null);
+
+  // Add pointer capture with the upfront point
+  useLayoutEffect(() => {
+    if (dragging && draggedPoint.current && pointerIdRef.current != null) {
+      draggedPoint.current.setPointerCapture(pointerIdRef.current);
+    }
+  }, [dragging]);
 
   const handlePointerDown = (event: React.PointerEvent<SVGCircleElement>) => {
+    event.preventDefault();
     setDragging(true);
     handleDown(true);
-
-    setTimeout(() => {
-      (event.target as HTMLElement).setPointerCapture(event.pointerId);
-    }, 0);
-    event.stopPropagation();
-  };
-  const handlePointerLeave = (event: React.PointerEvent<SVGCircleElement>) => {
-    setDragging(false);
-    handleLeave(false);
+    pointerIdRef.current = event.pointerId;
+    draggedPoint.current = event.currentTarget as SVGCircleElement;
     event.stopPropagation();
   };
 
   const handlePointerMove = (event: React.PointerEvent<SVGCircleElement>) => {
+    event.preventDefault();
+
     if (!dragging) {
       return;
     }
@@ -60,10 +64,11 @@ export default function useDragging(
   const handlePointerUp = (event: React.PointerEvent<SVGCircleElement>) => {
     setDragging(false);
     setHasMoved(false);
-
     handleUp(hasMoved, false);
 
-    (event.target as HTMLElement).releasePointerCapture(event.pointerId);
+    if ((event.target as HTMLElement).hasPointerCapture(event.pointerId)) {
+      (event.target as HTMLElement).releasePointerCapture(event.pointerId);
+    }
     event.stopPropagation();
   };
 
@@ -74,7 +79,6 @@ export default function useDragging(
       onPointerDown: handlePointerDown,
       onPointerMove: handlePointerMove,
       onPointerUp: handlePointerUp,
-      onPointerLeave: handlePointerLeave,
     },
   };
 }

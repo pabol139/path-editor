@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import React from "react";
 import PointsPortal from "./points-portal";
 import type { Viewbox } from "@/types/Viewbox";
+import { isTouchDevice } from "@/utils/svg";
 
 type PortalInfo = {
   id: string;
@@ -76,15 +77,17 @@ export default function Points({
                 handleMove(values, updateState);
               }}
               handleEnter={() => {
+                if (isTouchDevice()) {
+                  return;
+                }
                 onPointerEnterCommand(
                   commands,
                   updateCommands,
                   point.id_command
                 );
               }}
-              handleLeave={(isDragging: boolean) => {
+              handleLeave={() => {
                 onPointerLeaveCommand(commands, updateCommands);
-                setIsCircleDragging(isDragging);
               }}
               handleDown={(isDragging: boolean) => {
                 handlePointerDown(point.id_command);

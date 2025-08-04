@@ -77,8 +77,11 @@ export default function Svg({
       onMouseMove={drag}
       onMouseUp={stopDrag}
       onTouchEnd={stopDrag}
+      onContextMenu={(e) => {
+        isTouchDevice() && e.preventDefault();
+      }}
       ref={svgRef}
-      className="h-full w-full !touch-pan-x !select-none"
+      className="h-full w-full !touch-none !select-none"
       viewBox={`${viewbox.x} ${viewbox.y} ${viewbox.width} ${viewbox.height}`}
     >
       {isVisible ? (

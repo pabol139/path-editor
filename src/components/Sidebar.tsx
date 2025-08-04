@@ -87,7 +87,7 @@ export default function Sidebar({
               },
             }}
             className={cn(
-              "absolute z-20 items-center -left-4 -translate-x-full h-fit top-4 flex gap-[2px] px-1 py-1  bg-primary rounded-md  border border-secondary shadow-md"
+              "absolute z-20 active:scale-95 items-center -left-4 -translate-x-full h-fit top-4 flex gap-[2px] px-1 py-1  bg-primary rounded-md  border border-secondary shadow-md"
             )}
           >
             <button

@@ -11,6 +11,7 @@ import {
 } from "@/utils/path";
 import React from "react";
 import useCommands from "@/hooks/useCommands";
+import CommandCreateWrapper from "./command-create-wrapper";
 
 function CommandsSection() {
   const { pathObject, updateCommands } = usePathObject();
@@ -36,14 +37,14 @@ function CommandsSection() {
 
   return (
     <>
-      {commands.length > 0 && (
-        <CollapsedSection title="Commands">
-          <ul
-            role="list"
-            aria-label={`${commands.length} path commands`}
-            className="pb-5 gap-2 flex flex-col"
-          >
-            {commands.map(
+      <CollapsedSection title="Commands">
+        <ul
+          role="list"
+          aria-label={`${commands.length} path commands`}
+          className="pb-5 gap-2 flex flex-col"
+        >
+          {commands.length > 0 ? (
+            commands.map(
               ({ id, letter, coordinates, selected, hovered }, index) => (
                 <Command
                   key={id}
@@ -66,10 +67,18 @@ function CommandsSection() {
                   handleClickCommandLetter={handleClickCommandLetter}
                 />
               )
-            )}
-          </ul>
-        </CollapsedSection>
-      )}
+            )
+          ) : (
+            <div className="w-full px-4">
+              <CommandCreateWrapper>
+                <button className="w-full bg-purple h-10 rounded-md transition-transform active:scale-[.98]">
+                  Add new command
+                </button>
+              </CommandCreateWrapper>
+            </div>
+          )}
+        </ul>
+      </CollapsedSection>
     </>
   );
 }

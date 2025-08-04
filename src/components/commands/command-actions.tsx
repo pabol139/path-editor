@@ -90,10 +90,9 @@ function CommandActions({
         className="w-56 border-[#5a5a60]"
         align="end"
         onCloseAutoFocus={handleCloseAutoFocus}
-        // onPointerDown={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
         onPointerUp={(e) => e.stopPropagation()}
       >
-        {/* <DropdownMenuLabel>Actions</DropdownMenuLabel> */}
         <DropdownMenuGroup>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
@@ -105,7 +104,10 @@ function CommandActions({
                 {COMMANDS_INFO.map(({ letter, name }) => (
                   <DropdownMenuItem
                     key={letter}
-                    onClick={() => handleCreateCommandWithFlag(letter)}
+                    onClick={(e) => {
+                      handleCreateCommandWithFlag(letter);
+                      e.stopPropagation();
+                    }}
                     disabled={handleDisabledCommand(letter)}
                   >
                     <span className="border border-tertiary px-1 w-6 shrink-0 text-center rounded-sm">
@@ -119,18 +121,34 @@ function CommandActions({
           </DropdownMenuSub>
 
           {isRelative ? (
-            <DropdownMenuItem onClick={handleConvertToAbsolute}>
+            <DropdownMenuItem
+              onClick={(e) => {
+                handleConvertToAbsolute();
+                e.stopPropagation();
+              }}
+            >
               <ArrowRightLeft></ArrowRightLeft>
               Set absolute
             </DropdownMenuItem>
           ) : (
-            <DropdownMenuItem onClick={handleConvertToRelative}>
+            <DropdownMenuItem
+              onClick={(e) => {
+                handleConvertToRelative();
+                e.stopPropagation();
+              }}
+            >
               <ArrowRightLeft></ArrowRightLeft>
               Set relative
             </DropdownMenuItem>
           )}
 
-          <DropdownMenuItem disabled={isFirst} onClick={handleDelete}>
+          <DropdownMenuItem
+            disabled={isFirst}
+            onClick={(e) => {
+              handleDelete();
+              e.stopPropagation();
+            }}
+          >
             <Trash></Trash>
             Delete
           </DropdownMenuItem>

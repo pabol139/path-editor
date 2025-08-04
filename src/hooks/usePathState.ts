@@ -1,3 +1,4 @@
+import { DEFAULT_PATH } from "@/context/path-context";
 import type { Action, ParsePath, PathObject, PathState } from "@/types/Path";
 import {
   parsePath,
@@ -26,7 +27,10 @@ function reducer(state: PathState, action: Action) {
     case "SET_PATH": {
       try {
         const newCommands = parsePath(action.payload);
-        savePathToStorage(action.payload);
+
+        if (!action.payload.trim()) savePathToStorage(DEFAULT_PATH);
+        else savePathToStorage(action.payload);
+
         return {
           path: action.payload,
           displayPath: action.payload,
@@ -70,7 +74,8 @@ function reducer(state: PathState, action: Action) {
         const formatted = formatCommands(updatedCommands, 2); //TODO SIMPLIFY THIS ONLY WITH TOFIXED
         const newPath = convertCommandsToPath(formatted);
 
-        shouldSave && savePathToStorage(newPath);
+        if (!newPath.trim()) savePathToStorage(DEFAULT_PATH);
+        else shouldSave && savePathToStorage(newPath);
 
         return {
           path: newPath,
@@ -165,6 +170,7 @@ function reducer(state: PathState, action: Action) {
 export default function usePathState() {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
 
+  console.log(state.undoStack);
   const updatePath = useCallback((path: string) => {
     dispatch({ type: "SET_PATH", payload: path });
   }, []);
@@ -197,11 +203,15 @@ export default function usePathState() {
         (evt.ctrlKey || evt.metaKey) &&
         evt.shiftKey
       ) {
+        evt.preventDefault();
+        evt.stopPropagation();
         redo();
       } else if (
         evt.key.toLocaleLowerCase() === "z" &&
         (evt.ctrlKey || evt.metaKey)
       ) {
+        evt.preventDefault();
+        evt.stopPropagation();
         undo();
       }
     }

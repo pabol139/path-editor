@@ -64,6 +64,11 @@ export default function PathInput({
         cols={30}
         rows={3}
         onChange={handleChange}
+        onKeyDown={(e) => {
+          if (e.ctrlKey && e.key.toLocaleLowerCase() === "z") {
+            e.preventDefault();
+          }
+        }}
         value={displayPath}
       ></textarea>
       <button

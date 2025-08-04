@@ -1,3 +1,4 @@
+import { LINE_COMMANDS } from "@/constants/path";
 import { usePathObject } from "@/context/path-context";
 import {
   convertAbsoluteToRelative,
@@ -5,13 +6,11 @@ import {
   createCommand,
   getSvgCenter,
 } from "@/utils/path";
-import { useCallback, useState } from "react";
+import { useCallback, useRef } from "react";
 
 export default function useCommandActions() {
   const { updateCommands, svgRef, pathObject } = usePathObject();
-  const [commandsCounter, setCommandsCounter] = useState(
-    pathObject.commands.length
-  );
+  const commandsCounter = useRef(pathObject.commands.length);
 
   const handleDelete = useCallback(
     (id: string) => {
@@ -57,13 +56,35 @@ export default function useCommandActions() {
   const handleCreateCommand = useCallback(
     (id: string, letter: string) => {
       updateCommands((currentCommands) => {
+        if (currentCommands.length === 0) {
+          const centerOfSvg = getSvgCenter(svgRef);
+          if (letter.toLocaleUpperCase() === LINE_COMMANDS.MoveTo) {
+            const startCommand = createCommand(letter, centerOfSvg, 1);
+
+            commandsCounter.current = 1;
+
+            return [startCommand];
+          } else {
+            const startCommand = createCommand("M", centerOfSvg, 1);
+            const newCommand = createCommand(letter, centerOfSvg, 2);
+
+            commandsCounter.current = 2;
+
+            return [startCommand, { ...newCommand, selected: false }];
+          }
+        }
+
         const selectedIndex = currentCommands.findIndex(
           (command) => command.id === id
         );
         if (selectedIndex === -1) return currentCommands; // Command not found
 
         const centerOfSvg = getSvgCenter(svgRef);
-        const newCommand = createCommand(letter, centerOfSvg, commandsCounter);
+        const newCommand = createCommand(
+          letter,
+          centerOfSvg,
+          commandsCounter.current
+        );
         const formatedCommands = currentCommands.map((command) => ({
           ...command,
           selected: false,
@@ -74,9 +95,9 @@ export default function useCommandActions() {
           ...formatedCommands.slice(selectedIndex + 1),
         ];
       });
-      setCommandsCounter(commandsCounter + 1);
+      commandsCounter.current = commandsCounter.current + 1;
     },
-    [updateCommands, commandsCounter]
+    [updateCommands, commandsCounter.current]
   );
 
   const handleDisabledCommand = useCallback(

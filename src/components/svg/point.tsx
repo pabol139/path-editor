@@ -10,8 +10,8 @@ interface PointElement {
     updateState: boolean
   ) => void;
   handleEnter: () => void;
-  handleLeave: (isDragging: boolean) => void;
   handleDown: (isDragging: boolean) => void;
+  handleLeave: () => void;
   handleUp: (hasMoved: boolean, isDragging: boolean) => void;
   handleClick: (
     e:
@@ -26,20 +26,14 @@ export function Point({
   radius,
   handleMove,
   handleEnter,
-  handleLeave,
   handleDown,
   handleUp,
+  handleLeave,
   handleClick,
   strokeWidth,
 }: PointElement) {
   const { id, control, hovered, selected, cx, cy } = point;
-  const { handlers } = useDragging(
-    id,
-    handleMove,
-    handleDown,
-    handleLeave,
-    handleUp
-  );
+  const { handlers } = useDragging(id, handleMove, handleDown, handleUp);
 
   const fill = selected
     ? "deeppink"
@@ -61,17 +55,20 @@ export function Point({
         fill: fill,
       }}
       className={`cursor-pointer  stroke-transparent`}
-      onPointerLeave={handlers.onPointerLeave}
       onPointerUp={handlers.onPointerUp}
       onPointerDown={handlers.onPointerDown}
       onPointerMove={handlers.onPointerMove}
-      onPointerEnter={handleEnter}
+      onMouseLeave={handleLeave}
+      onMouseEnter={handleEnter}
       onTouchMove={(e) => e.stopPropagation()}
-      onTouchStart={(e) => e.stopPropagation()}
-      onMouseDown={(e) => e.stopPropagation()}
+      onTouchStart={(e) => {
+        e.stopPropagation();
+      }}
+      onMouseDown={(e) => {
+        e.stopPropagation();
+      }}
       onMouseMove={(e) => e.stopPropagation()}
       {...clickEvent}
-      // onContextMenu={handleClick}
       r={radius}
       cx={cx}
       cy={cy}

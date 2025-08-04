@@ -102,9 +102,9 @@ function CommandAtomCheckbox({
         className="px-1 cursor-pointer appearance-none peer checked:bg-purple checked:border-purple transition-colors h-4 bg-primary border border-gray300 rounded-[4px] overflow-auto text-center w-4 focus-visible:outline-[deeppink] focus-visible:outline group-last:focus-visible:rounded-tr-[5px] group-last:focus-visible:rounded-br-[5px] focus-visible:z-10"
       ></input>
       <Check
-        className="absolute 
+        className="absolute
           w-2 h-2
-          opacity-0 peer-checked:block
+          opacity-0 peer-checked:inline-block
           peer-checked:opacity-100
           transition-opacity
           pointer-events-none z-20"
