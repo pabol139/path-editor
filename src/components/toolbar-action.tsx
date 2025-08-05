@@ -49,7 +49,7 @@ export default function ToolbarAction({
         disabled={disabled}
         className="px-1 py-1 rounded-sm h-9 w-9 flex items-center justify-center text-tertiary hover:bg-secondary transition-[background-color,opacity,scale] disabled:opacity-50 active:scale-95 active:bg-secondary"
       >
-        {cloneElement(icon, { ref: ref, size: 20 })}
+        {cloneElement(icon, { key: message, ref: ref, size: 20 })}
       </button>
     </ActionTooltip>
   );

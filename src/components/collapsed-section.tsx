@@ -24,9 +24,9 @@ export function CollapsedSection({
       <div
         className={`${
           expanded ? "expanded" : ""
-        } grid overflow-hidden grid-rows-[0fr] [transform:_translateZ(0)] transition-[grid-template-rows] duration-300 [&.expanded]:grid-rows-[1fr]`}
+        } grid overflow-hidden grid-rows-[0fr] [transform:_translateZ(0)] transition-[grid-template-rows] duration-300 [&.expanded]:grid-rows-[1fr] motion-reduce:transition-none`}
       >
-        <div className="min-h-0 invisible transition-[visibility] duration-300 [.expanded_&]:visible">
+        <div className="min-h-0 invisible opacity-0 transition-[visibility, opacity] duration-300 [.expanded_&]:visible [.expanded_&]:opacity-100">
           {children}
         </div>
       </div>

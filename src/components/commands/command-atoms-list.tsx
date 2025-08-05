@@ -54,7 +54,7 @@ function CommandAtom({
   handleInputFocus: any;
 }) {
   return (
-    <div className="flex items-center bg-secondary text-[10px] text-white border-r border-gray300 w-10 justify-center last:rounded-br-[5px] last:rounded-tr-[5px] last:border-none group">
+    <div className="flex shrink-0 items-center bg-secondary text-[10px] text-white border-r border-gray300 w-10 justify-center last:rounded-br-[5px] last:rounded-tr-[5px] last:border-none group">
       <input
         type="text"
         inputMode="decimal"
@@ -74,7 +74,7 @@ function CommandAtom({
         }}
         onFocus={() => handleInputFocus(index)}
         value={coordinate}
-        className="px-1 overflow-auto tabular-nums bg-transparent h-full text-center w-10 focus-visible:outline-[deeppink] focus-visible:outline group-last:focus-visible:rounded-tr-[5px] group-last:focus-visible:rounded-br-[5px] focus-visible:z-10"
+        className="px-1 overflow-auto shrink-0 tabular-nums bg-transparent h-full text-center w-10 focus-visible:outline-[deeppink] focus-visible:outline group-last:focus-visible:rounded-tr-[5px] group-last:focus-visible:rounded-br-[5px] focus-visible:z-10"
       ></input>
     </div>
   );
@@ -90,7 +90,7 @@ function CommandAtomCheckbox({
   updatedCoordinatesDisplayValues: (index: number, value: string) => void;
 }) {
   return (
-    <div className="flex relative items-center bg-secondary text-[10px] text-white border-r border-gray300 w-5 justify-center last:rounded-br-[5px] last:rounded-tr-[5px] last:border-none group">
+    <div className="flex relative shrink-0 items-center bg-secondary text-[10px] text-white border-r border-gray300 w-5 justify-center last:rounded-br-[5px] last:rounded-tr-[5px] last:border-none group">
       <input
         type="checkbox"
         checked={coordinate === "1"}
@@ -104,6 +104,7 @@ function CommandAtomCheckbox({
       <Check
         className="absolute
           w-2 h-2
+          shrink-0
           opacity-0 peer-checked:inline-block
           peer-checked:opacity-100
           transition-opacity

@@ -170,7 +170,6 @@ function reducer(state: PathState, action: Action) {
 export default function usePathState() {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
 
-  console.log(state.undoStack);
   const updatePath = useCallback((path: string) => {
     dispatch({ type: "SET_PATH", payload: path });
   }, []);

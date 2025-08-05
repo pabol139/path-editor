@@ -3,24 +3,30 @@ import { usePathObject } from "@/context/path-context";
 import type { Viewbox } from "@/types/Viewbox";
 import type { SvgDimensions } from "@/types/Svg";
 import { centerViewbox } from "@/utils/path";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, WandSparkles } from "lucide-react";
 import clsx from "clsx";
+import React from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { cn } from "@/lib/utils";
+import { isTouchDevice } from "@/utils/svg";
+import { PATH_LIST } from "@/constants/path-list";
 
-export default function PathInput({
+export default React.memo(function PathInput({
   updateViewbox,
   setSvgDimensions,
 }: {
-  svgDimensions: SvgDimensions;
   updateViewbox: (viewbox: Viewbox) => void;
   setSvgDimensions: React.Dispatch<React.SetStateAction<SvgDimensions>>;
 }) {
   const { pathObject, updatePath, error, svgRef } = usePathObject();
   const [copied, setCopied] = useState(false);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
-  const { displayPath } = pathObject;
+  const pathNumberRef = useRef(1);
   const [justTyped, setJustTyped] = useState(false);
 
-  // whenever the “real” path changes *and* it was triggered by typing *and* there's no error:
+  const { displayPath } = pathObject;
+
+  // whenever the “real” path changes *and* it was triggered by typing in this input:
   useEffect(() => {
     if (justTyped && !error) {
       centerViewbox(svgRef, updateViewbox, setSvgDimensions);
@@ -42,7 +48,7 @@ export default function PathInput({
           setCopied(true);
           setTimeout(() => {
             setCopied(false);
-          }, 4000);
+          }, 2000);
         }
 
         /* clipboard successfully set */
@@ -53,11 +59,22 @@ export default function PathInput({
     );
   };
 
+  const handleGenerateRandom = () => {
+    const pathListLength = PATH_LIST.length;
+    const nextPathNumber = pathNumberRef.current + 1;
+
+    updatePath(PATH_LIST[pathNumberRef.current]);
+    setJustTyped(true);
+
+    pathNumberRef.current =
+      nextPathNumber >= pathListLength ? 0 : nextPathNumber;
+  };
+
   return (
     <>
       <textarea
-        className={`mt-2 w-full bg-secondary text-base tabular-nums ${
-          error ? "border-b border-red-600 text-[red]" : ""
+        className={`mt-2.5 w-full bg-secondary text-[calc((15_/_16)_*_1rem)] tabular-nums ${
+          error ? "!border-b-2 border-red-600" : ""
         }`}
         name=""
         id=""
@@ -71,17 +88,75 @@ export default function PathInput({
         }}
         value={displayPath}
       ></textarea>
-      <button
-        aria-label="Copy path to clipboard"
-        ref={buttonRef}
-        onClick={handleCopy}
-        className={clsx(
-          "bg-[#2A2A2A] transition-colors [&.copied]:bg-purple px-1 py-1 h-7 w-7 flex gap-2 text-sm items-center justify-center border border-tertiary rounded-md",
-          copied && "copied"
-        )}
-      >
-        {copied ? <Check size={16}></Check> : <Copy size={16}></Copy>}
-      </button>
+      <div className="flex gap-2 mt-1">
+        <button
+          aria-label="Copy path to clipboard"
+          ref={buttonRef}
+          onClick={handleCopy}
+          className={cn(
+            "bg-[#2A2A2A] px-1 py-1 h-8 w-8 flex gap-2 text-sm items-center justify-center border border-gray300 rounded-md active:scale-95 transition-transform",
+            copied && "copied",
+            isTouchDevice() && "w-9 h-9"
+          )}
+        >
+          <AnimatePresence initial={false} mode="wait">
+            {copied ? (
+              <motion.span
+                key={"Copied"}
+                initial={{ opacity: 0, scale: 0.7 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.7 }}
+                transition={{
+                  type: "spring",
+                  duration: 0.1,
+                  bounce: 0.15,
+                }}
+              >
+                <Check size={16}></Check>
+              </motion.span>
+            ) : (
+              <motion.span
+                key={"Copy"}
+                initial={{ opacity: 0, scale: 0.7 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.7 }}
+                transition={{
+                  type: "spring",
+                  duration: 0.1,
+                  bounce: 0.15,
+                }}
+              >
+                <Copy size={16}></Copy>
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </button>
+        {/* <button
+          aria-label="Generate random path"
+          onClick={handleGenerateRandom}
+          className={cn(
+            "bg-[#2A2A2A] px-1 py-1 h-8 w-8 flex gap-2 text-sm items-center justify-center border border-gray300 rounded-md active:scale-95 transition-transform",
+            copied && "copied",
+            isTouchDevice() && "w-9 h-9"
+          )}
+        >
+          <AnimatePresence initial={false} mode="wait">
+            <motion.span
+              key={"Copied"}
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.7 }}
+              transition={{
+                type: "spring",
+                duration: 0.1,
+                bounce: 0.15,
+              }}
+            >
+              <WandSparkles size={16}></WandSparkles>
+            </motion.span>
+          </AnimatePresence>
+        </button> */}
+      </div>
     </>
   );
-}
+});

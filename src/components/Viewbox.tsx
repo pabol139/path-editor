@@ -113,7 +113,7 @@ export default function Viewbox({
 
   return (
     <CollapsedSection title="Viewbox">
-      <div className="grid px-4 pb-5 w-fit grid-cols-2 gap-2">
+      <div className="grid px-4 pb-5 pt-1 w-fit grid-cols-2 gap-2">
         {viewboxArray.map((item, index) => {
           return (
             <Input

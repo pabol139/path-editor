@@ -14,7 +14,7 @@
     --purple: hsl(240deg 36% 52%);
     --purple300: hsl(240deg 36% 52% / 30%);
     --purple600: hsl(240deg 36% 52% / 60%);
-    --aside-width: 326px;
+    --aside-width: 338px;
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -62,9 +62,21 @@
     outline-color: transparent;
   }
 
+  textarea:focus {
+    outline: transparent;
+  }
+
+  input:focus {
+    outline-style: solid;
+    outline-color: var(--purple);
+    outline-width: 2px;
+    outline-offset: 2px;
+  }
+
   :focus-visible {
     outline-style: solid;
-    outline-color: deeppink;
+    outline-color: var(--purple);
+    outline-width: 2px;
     outline-offset: 2px;
   }
 

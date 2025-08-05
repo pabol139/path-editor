@@ -90,8 +90,8 @@ function CommandActions({
         className="w-56 border-[#5a5a60]"
         align="end"
         onCloseAutoFocus={handleCloseAutoFocus}
-        onPointerDown={(e) => e.stopPropagation()}
-        onPointerUp={(e) => e.stopPropagation()}
+        // onPointerDown={(e) => e.stopPropagation()}
+        // onPointerUp={(e) => e.stopPropagation()}
       >
         <DropdownMenuGroup>
           <DropdownMenuSub>

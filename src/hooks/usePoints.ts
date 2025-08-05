@@ -6,10 +6,10 @@ import {
 import type { Point as PointType } from "@/types/Point";
 import type { PathObject } from "@/types/Path";
 import type { UpdateCommandsType } from "@/context/path-context";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { LINE_COMMANDS } from "@/constants/path";
 
-type Coordinates = {
+export type Coordinates = {
   id: string;
   x: number;
   y: number;
@@ -23,43 +23,52 @@ export default function usePoints(
 ) {
   const [stateBeforeDragging, setStateBeforeDragging] = useState(pathObject);
   const { commands } = pathObject;
-  const handleMove = (values: Coordinates, updateState: boolean) => {
-    const pointInfo = points.find((point) => point.id === values.id);
-    if (!pointInfo) return;
+  const handleMove = useCallback(
+    (values: Coordinates, updateState: boolean) => {
+      const pointInfo = points.find((point) => point.id === values.id);
+      if (!pointInfo) return;
 
-    if (updateState) setStateBeforeDragging(pathObject);
+      if (updateState) setStateBeforeDragging(pathObject);
 
-    const newCommands = commands.map((command) => {
-      if (
-        command.id !== pointInfo.id_command ||
-        command.letter.toLocaleUpperCase() === LINE_COMMANDS.Close
-      )
-        return command; // Return unmodified command
-      const coordinate_index = pointInfo.coordinate_index;
-      const handler = commandHandlers[command.letter.toLocaleUpperCase()];
+      const newCommands = commands.map((command) => {
+        if (
+          command.id !== pointInfo.id_command ||
+          command.letter.toLocaleUpperCase() === LINE_COMMANDS.Close
+        )
+          return command; // Return unmodified command
+        const coordinate_index = pointInfo.coordinate_index;
+        const handler = commandHandlers[command.letter.toLocaleUpperCase()];
 
-      // Current point position to convert absolute to relative and viceversa
-      const currentPos = getCurrentPositionBeforeCommand(commands, command.id);
+        // Current point position to convert absolute to relative and viceversa
+        const currentPos = getCurrentPositionBeforeCommand(
+          commands,
+          command.id
+        );
 
-      const isRelative = isRelativeCommand(command.letter);
-      // Create a new coordinates array to ensure immutability
-      const newCoordinates = handler.updateCoordinates(
-        command.coordinates,
-        values.x,
-        values.y,
-        coordinate_index,
-        currentPos,
-        isRelative
-      );
+        const isRelative = isRelativeCommand(command.letter);
+        // Create a new coordinates array to ensure immutability
+        const newCoordinates = handler.updateCoordinates(
+          command.coordinates,
+          values.x,
+          values.y,
+          coordinate_index,
+          currentPos,
+          isRelative
+        );
 
-      return { ...command, coordinates: newCoordinates }; // Return new object
-    });
-    updateCommands(newCommands, false);
-  };
+        return { ...command, coordinates: newCoordinates }; // Return new object
+      });
+      updateCommands(newCommands, false);
+    },
+    [points, updateCommands, pathObject]
+  );
 
-  const handleUp = (hasMoved: boolean) => {
-    if (hasMoved) store(stateBeforeDragging);
-  };
+  const handleUp = useCallback(
+    (hasMoved: boolean) => {
+      if (hasMoved) store(stateBeforeDragging);
+    },
+    [store, stateBeforeDragging]
+  );
 
   return { handleMove, handleUp };
 }

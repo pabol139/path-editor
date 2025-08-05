@@ -4,13 +4,12 @@ import TransformSection from "@/components/transformations/Transforms";
 import PathSection from "@/components/path/path";
 import type { SvgDimensions } from "@/types/Svg";
 import CommandsSection from "@/components/commands/commands";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { PanelRight } from "lucide-react";
 
 type SiderbarProps = {
-  svgDimensions: SvgDimensions;
   viewbox: Viewbox;
   updateViewbox: (viewbox: Viewbox) => void;
   open: boolean;
@@ -19,15 +18,25 @@ type SiderbarProps = {
 };
 
 export default function Sidebar({
-  svgDimensions,
   viewbox,
   updateViewbox,
   open,
   setOpen,
   setSvgDimensions,
 }: SiderbarProps) {
+  const shouldReduce = useReducedMotion();
+
   const handleOpen = (isOpen: boolean) => {
     setOpen(isOpen);
+  };
+
+  const variants = {
+    hidden: shouldReduce
+      ? { opacity: 1, x: "100%" }
+      : { transform: "translateX(100%)" },
+    visible: shouldReduce
+      ? { opacity: 1, x: "0%" }
+      : { transform: "translateX(0%)" },
   };
 
   return (
@@ -36,16 +45,17 @@ export default function Sidebar({
         {open && (
           <motion.aside
             key={"sidebar"}
-            initial={{ transform: "translateX(100%)" }}
-            exit={{ transform: "translateX(100%)" }}
-            animate={{ transform: "translateX(0px)" }}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            variants={variants}
             transition={{
               type: "tween",
               duration: 0.6,
               ease: [0.32, 0.72, 0, 1],
             }}
             aria-expanded={open}
-            className="absolute top-0 right-0 h-full w-full md:w-auto"
+            className="absolute top-0 right-0 h-full w-full md:w-auto motion-reduce:!transition-none"
           >
             {open && (
               <motion.div
@@ -64,7 +74,7 @@ export default function Sidebar({
               >
                 <button
                   aria-label={`Close sidebar`}
-                  className="px-1 py-1 rounded-sm h-9 w-9 flex items-center justify-center text-tertiary opacity-70 hover:opacity-100 hover:bg-secondary transition-[background-color,opacity] disabled:opacity-50"
+                  className="px-1 py-1 rounded-sm -outline-offset-2 h-10 w-10 flex items-center justify-center text-tertiary opacity-70 hover:opacity-100 transition-opacity disabled:opacity-50"
                   onClick={() => handleOpen(false)}
                 >
                   <PanelRight size={18}></PanelRight>
@@ -74,7 +84,6 @@ export default function Sidebar({
 
             <div className="overflow-auto border-l bg-primary border-secondary h-full text-tertiary w-full md:max-w-[var(--aside-width)]">
               <PathSection
-                svgDimensions={svgDimensions}
                 updateViewbox={updateViewbox}
                 setSvgDimensions={setSvgDimensions}
               />
@@ -105,7 +114,7 @@ export default function Sidebar({
           >
             <button
               aria-label={`Open sidebar`}
-              className="px-1 py-1 rounded-sm h-9 w-9 flex items-center justify-center text-tertiary hover:bg-secondary transition-[background-color]"
+              className="px-1 py-1 rounded-sm  h-9 w-9 flex items-center justify-center text-tertiary hover:bg-secondary transition-[background-color]"
               onClick={() => {
                 handleOpen(true);
               }}

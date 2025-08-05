@@ -10,6 +10,9 @@ export default function DecorativeLines({
   strokeWidth: string;
   svgRef: React.RefObject<SVGSVGElement | null>;
 }) {
+  const SPACING = 5;
+  const MAX_LINES = 250;
+
   // 1) track CSS size
   const [size, setSize] = useState({ w: 0, h: 0 });
   useEffect(() => {
@@ -59,35 +62,29 @@ export default function DecorativeLines({
     return null;
   }
 
-  // 3) grid math
-  const CELLS = 20;
-  const hPx = size.w / CELLS;
-  // const vPx = size.h / CELLS;
-  const unitsPerPxX = viewbox.width / size.w;
-  // const unitsPerPxY = viewbox.height / size.h;
-  const hSpacing = hPx * unitsPerPxX;
-  // const vSpacing = vPx * unitsPerPxY;
-
   // 4) index ranges, using the _state_ worldBounds
   const { left, top, right, bottom } = worldBounds;
-  const xStartIdx = Math.floor(left / hSpacing) - 1;
-  const xEndIdx = Math.ceil(right / hSpacing) + 1;
-  const yStartIdx = Math.floor(top / hSpacing) - 1;
-  const yEndIdx = Math.ceil(bottom / hSpacing) + 1;
+  const xStartIdx = Math.floor(left / SPACING);
+  const xEndIdx = Math.ceil(right / SPACING);
+  const yStartIdx = Math.floor(top / SPACING);
+  const yEndIdx = Math.ceil(bottom / SPACING);
+
+  const numberOfLines = xEndIdx - xStartIdx + (yEndIdx - yStartIdx);
 
   if (
     !isFinite(xStartIdx) ||
     !isFinite(xEndIdx) ||
     !isFinite(yStartIdx) ||
-    !isFinite(yEndIdx)
+    !isFinite(yEndIdx) ||
+    numberOfLines >= MAX_LINES
   )
     return <></>;
 
   return (
     <>
-      {Array.from({ length: xEndIdx - xStartIdx + 1 }).map((_, k) => {
+      {Array.from({ length: xEndIdx - xStartIdx }).map((_, k) => {
         const i = xStartIdx + k,
-          x = i * hSpacing;
+          x = i * SPACING;
         return (
           <line
             className="pointer-events-none"
@@ -104,9 +101,9 @@ export default function DecorativeLines({
         );
       })}
 
-      {Array.from({ length: yEndIdx - yStartIdx + 1 }).map((_, k) => {
+      {Array.from({ length: yEndIdx - yStartIdx }).map((_, k) => {
         const j = yStartIdx + k,
-          y = j * hSpacing;
+          y = j * SPACING;
         return (
           <line
             className="pointer-events-none"

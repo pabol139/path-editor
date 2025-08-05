@@ -2,7 +2,7 @@ import { usePathObject } from "@/context/path-context";
 import type { Viewbox } from "@/types/Viewbox";
 import { usePanZoom } from "@/hooks/usePanZoom";
 import ControlLines from "./control-lines";
-import Points from "./points";
+import PointsWrapper from "./points-wrapper";
 import OverlappedPaths from "./overlapped-paths";
 import useSvg from "@/hooks/useSvg";
 import type { SvgDimensions } from "@/types/Svg";
@@ -12,6 +12,7 @@ import {
   onPointerDownCommand,
 } from "@/utils/path";
 import { isTouchDevice } from "@/utils/svg";
+import { useCallback } from "react";
 
 export default function Svg({
   showControlElements = true,
@@ -50,15 +51,18 @@ export default function Svg({
     formatCommands
   );
 
-  const handlePointsPointerDown = (id_command: string) => {
-    onPointerDownCommand(
-      commands,
-      updateCommands,
-      id_command,
-      true,
-      isSidebarOpen
-    );
-  };
+  const handlePointsPointerDown = useCallback(
+    (id_command: string) => {
+      onPointerDownCommand(
+        commands,
+        updateCommands,
+        id_command,
+        true,
+        isSidebarOpen
+      );
+    },
+    [commands, updateCommands, isSidebarOpen]
+  );
 
   const linesWidth = String((1.5 * viewbox.width) / svgDimensions.width);
   const pointWidth = String((3.5 * viewbox.width) / svgDimensions.width);
@@ -111,13 +115,13 @@ export default function Svg({
                 overlappedPaths={overlappedPaths}
                 linesWidth={linesWidth}
               ></OverlappedPaths>
-              <Points
+              <PointsWrapper
                 viewbox={viewbox}
                 points={points}
                 pointWidth={pointWidth}
                 pointStrokeWidth={pointStrokeWidth}
                 handlePointerDown={handlePointsPointerDown}
-              ></Points>
+              ></PointsWrapper>
             </>
           )}
         </>

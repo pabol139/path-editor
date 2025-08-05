@@ -129,9 +129,9 @@ export default function Toolbar({
           className=" absolute left-4 bottom-0 m-auto w-fit flex gap-3 flex-col md:flex-row pointer-events-none"
         >
           <div className="flex flex-col-reverse  md:flex-row gap-[2px] bg-primary px-1 py-1 rounded-md border border-secondary shadow-md w-fit pointer-events-auto">
-            {ZOOM_ACTIONS.map(({ icon, onClick, disabled, message }) => (
+            {ZOOM_ACTIONS.map(({ icon, onClick, disabled, message }, index) => (
               <ToolbarAction
-                key={message}
+                key={index}
                 icon={icon}
                 onClick={onClick}
                 disabled={disabled}
@@ -140,9 +140,9 @@ export default function Toolbar({
             ))}
           </div>
           <div className="flex gap-[2px] bg-primary px-1 py-1 rounded-md border border-secondary shadow-md w-fit pointer-events-auto">
-            {UNDO_ACTIONS.map(({ icon, onClick, disabled, message }) => (
+            {UNDO_ACTIONS.map(({ icon, onClick, disabled, message }, index) => (
               <ToolbarAction
-                key={message}
+                key={index}
                 icon={icon}
                 onClick={onClick}
                 disabled={disabled}
@@ -162,15 +162,17 @@ export default function Toolbar({
           animate={{ y: -16 }}
           className=" absolute right-4 bottom-0 m-auto w-fit flex gap-[2px] bg-primary px-1 py-1 rounded-md border border-secondary shadow-md pointer-events-auto"
         >
-          {STYLING_ACTIONS.map(({ icon, onClick, disabled, message }) => (
-            <ToolbarAction
-              key={message}
-              icon={icon}
-              onClick={onClick}
-              disabled={disabled}
-              message={message}
-            ></ToolbarAction>
-          ))}
+          {STYLING_ACTIONS.map(
+            ({ icon, onClick, disabled, message }, index) => (
+              <ToolbarAction
+                key={index}
+                icon={icon}
+                onClick={onClick}
+                disabled={disabled}
+                message={message}
+              ></ToolbarAction>
+            )
+          )}
         </motion.div>
       </TooltipProvider>
     </>

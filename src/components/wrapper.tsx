@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Sidebar from "@/components/sidebar";
 import Svg from "@/components/svg/svg";
 import type { Viewbox } from "@/types/Viewbox";
@@ -26,43 +26,43 @@ export default function Wrapper() {
   const [showControlElements, setShowControlElements] = useState(true);
 
   // Type for updateViewbox function
-  const updateViewbox = (
-    newObject: Viewbox,
-    adaptAspectRatio: Boolean = false
-  ) => {
-    setViewbox((prevState) => {
-      const { height: oldHeight, width: oldWidth } = prevState;
-      if (adaptAspectRatio) {
-        const aspectRatio = oldHeight / oldWidth || 0;
+  const updateViewbox = useCallback(
+    (newObject: Viewbox, adaptAspectRatio: Boolean = false) => {
+      setViewbox((prevState) => {
+        const { height: oldHeight, width: oldWidth } = prevState;
+        if (adaptAspectRatio) {
+          const aspectRatio = oldHeight / oldWidth || 0;
 
-        if (newObject.height !== oldHeight) {
-          newObject.width = newObject.height / aspectRatio;
-          newObject.width = newObject.height / aspectRatio;
-        } else {
-          newObject.height = newObject.width * aspectRatio;
-          newObject.height = newObject.width * aspectRatio;
+          if (newObject.height !== oldHeight) {
+            newObject.width = newObject.height / aspectRatio;
+            newObject.width = newObject.height / aspectRatio;
+          } else {
+            newObject.height = newObject.width * aspectRatio;
+            newObject.height = newObject.width * aspectRatio;
+          }
         }
-      }
 
-      return {
-        ...prevState,
-        x: parseFloat(formatNumberToString(newObject.x, 2)),
-        y: parseFloat(formatNumberToString(newObject.y, 2)),
-        width: parseFloat(
-          formatNumberToString(Math.max(newObject.width, 0), 2)
-        ),
-        height: parseFloat(
-          formatNumberToString(Math.max(newObject.height, 0), 2)
-        ),
-      };
-    });
-  };
+        return {
+          ...prevState,
+          x: parseFloat(formatNumberToString(newObject.x, 2)),
+          y: parseFloat(formatNumberToString(newObject.y, 2)),
+          width: parseFloat(
+            formatNumberToString(Math.max(newObject.width, 0), 2)
+          ),
+          height: parseFloat(
+            formatNumberToString(Math.max(newObject.height, 0), 2)
+          ),
+        };
+      });
+    },
+    []
+  );
 
   return (
     <>
       <div
         className={cn(
-          "relative h-full w-full md:w-[calc(100%-var(--aside-width))] transition-[width] ease-sidebar [transition-duration:_600ms]",
+          "relative h-full w-full md:w-[calc(100%-var(--aside-width))] transition-[width] ease-sidebar [transition-duration:_600ms] motion-reduce:transition-none",
           !isSidebarOpen && "md:w-full"
         )}
       >
@@ -83,7 +83,6 @@ export default function Wrapper() {
         ></Toolbar>
       </div>
       <Sidebar
-        svgDimensions={svgDimensions}
         viewbox={viewbox}
         updateViewbox={updateViewbox}
         open={isSidebarOpen}

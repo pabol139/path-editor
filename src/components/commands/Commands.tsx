@@ -41,7 +41,7 @@ function CommandsSection() {
         <ul
           role="list"
           aria-label={`${commands.length} path commands`}
-          className="pb-5 gap-2 flex flex-col"
+          className="pb-5 gap-2 flex flex-col pt-1 [&_*]:!outline-offset-0 [&_*]:!outline-[deeppink]"
         >
           {commands.length > 0 ? (
             commands.map(
