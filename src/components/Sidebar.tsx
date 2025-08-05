@@ -55,6 +55,7 @@ export default function Sidebar({
               ease: [0.32, 0.72, 0, 1],
             }}
             aria-expanded={open}
+            role="complementary"
             className="absolute top-0 right-0 h-full w-full md:w-auto motion-reduce:!transition-none"
           >
             {open && (

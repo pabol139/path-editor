@@ -3,13 +3,11 @@ import { usePathObject } from "@/context/path-context";
 import type { Viewbox } from "@/types/Viewbox";
 import type { SvgDimensions } from "@/types/Svg";
 import { centerViewbox } from "@/utils/path";
-import { Copy, Check, WandSparkles } from "lucide-react";
-import clsx from "clsx";
+import { Copy, Check } from "lucide-react";
 import React from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { isTouchDevice } from "@/utils/svg";
-import { PATH_LIST } from "@/constants/path-list";
 
 export default React.memo(function PathInput({
   updateViewbox,
@@ -21,7 +19,6 @@ export default React.memo(function PathInput({
   const { pathObject, updatePath, error, svgRef } = usePathObject();
   const [copied, setCopied] = useState(false);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
-  const pathNumberRef = useRef(1);
   const [justTyped, setJustTyped] = useState(false);
 
   const { displayPath } = pathObject;
@@ -59,16 +56,16 @@ export default React.memo(function PathInput({
     );
   };
 
-  const handleGenerateRandom = () => {
-    const pathListLength = PATH_LIST.length;
-    const nextPathNumber = pathNumberRef.current + 1;
+  // const handleGenerateRandom = () => {
+  //   const pathListLength = PATH_LIST.length;
+  //   const nextPathNumber = pathNumberRef.current + 1;
 
-    updatePath(PATH_LIST[pathNumberRef.current]);
-    setJustTyped(true);
+  //   updatePath(PATH_LIST[pathNumberRef.current]);
+  //   setJustTyped(true);
 
-    pathNumberRef.current =
-      nextPathNumber >= pathListLength ? 0 : nextPathNumber;
-  };
+  //   pathNumberRef.current =
+  //     nextPathNumber >= pathListLength ? 0 : nextPathNumber;
+  // };
 
   return (
     <>

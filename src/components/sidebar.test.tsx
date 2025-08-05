@@ -56,11 +56,7 @@ describe("commands", () => {
   test("should render closed sidebar", async () => {
     render(<Sidebar {...defaultProps} open={false}></Sidebar>);
 
-    expect(screen.getByRole("complementary")).toBeInTheDocument();
-    expect(screen.getByRole("complementary")).toHaveAttribute(
-      "aria-expanded",
-      "false"
-    );
+    expect(screen.queryByRole("complementary")).not.toBeInTheDocument();
   });
 
   test("should open sidebar on click", async () => {

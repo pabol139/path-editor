@@ -70,6 +70,11 @@ Object.defineProperty(Element.prototype, "releasePointerCapture", {
   configurable: true,
 });
 
+Object.defineProperty(Element.prototype, "hasPointerCapture", {
+  value: jest.fn(),
+  configurable: true,
+});
+
 Object.defineProperty(SVGElement.prototype, "cx", {
   get() {
     return { baseVal: { value: 0 } };

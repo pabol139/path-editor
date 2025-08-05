@@ -480,6 +480,7 @@ export function createCommand(
   const handler = commandHandlers[letter.toLocaleUpperCase()];
 
   const newCommand = handler.create(position, commands_counter);
+
   return { ...newCommand };
 }
 

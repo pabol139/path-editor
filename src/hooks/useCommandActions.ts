@@ -10,7 +10,7 @@ import { useCallback, useRef } from "react";
 
 export default function useCommandActions() {
   const { updateCommands, svgRef, pathObject } = usePathObject();
-  const commandsCounter = useRef(pathObject.commands.length);
+  const commandsCounter = useRef(pathObject.commands.length - 1);
 
   const handleDelete = useCallback(
     (id: string) => {
@@ -59,16 +59,16 @@ export default function useCommandActions() {
         if (currentCommands.length === 0) {
           const centerOfSvg = getSvgCenter(svgRef);
           if (letter.toLocaleUpperCase() === LINE_COMMANDS.MoveTo) {
-            const startCommand = createCommand(letter, centerOfSvg, 1);
+            const startCommand = createCommand(letter, centerOfSvg, 0);
 
-            commandsCounter.current = 1;
+            commandsCounter.current = commandsCounter.current + 1;
 
             return [startCommand];
           } else {
-            const startCommand = createCommand("M", centerOfSvg, 1);
-            const newCommand = createCommand(letter, centerOfSvg, 2);
+            const startCommand = createCommand("M", centerOfSvg, 0);
+            const newCommand = createCommand(letter, centerOfSvg, 1);
 
-            commandsCounter.current = 2;
+            commandsCounter.current = commandsCounter.current + 2;
 
             return [startCommand, { ...newCommand, selected: false }];
           }
@@ -85,6 +85,7 @@ export default function useCommandActions() {
           centerOfSvg,
           commandsCounter.current
         );
+
         const formatedCommands = currentCommands.map((command) => ({
           ...command,
           selected: false,
