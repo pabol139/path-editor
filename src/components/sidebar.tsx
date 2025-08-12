@@ -1,6 +1,6 @@
 import type { Viewbox } from "@/types/Viewbox";
 import ViewboxSection from "@/components/viewbox";
-import TransformSection from "@/components/transformations/Transforms";
+import TransformSection from "@/components/transformations/transforms";
 import PathSection from "@/components/path/path";
 import type { SvgDimensions } from "@/types/Svg";
 import CommandsSection from "@/components/commands/commands";

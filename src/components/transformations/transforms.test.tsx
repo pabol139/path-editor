@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import TransformSection from "./Transforms";
+import TransformSection from "./transforms";
 import * as pathUtils from "@/utils/path";
 import { createCommandObject } from "@/utils/test-utils";
 
