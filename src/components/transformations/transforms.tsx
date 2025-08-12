@@ -8,7 +8,7 @@ import {
   translate,
 } from "@/utils/path";
 import { CollapsedSection } from "@/components/collapsed-section";
-import { TransformRow } from "@/components/transformations/TransformRow";
+import { TransformRow } from "@/components/transformations/trasnform-row";
 import React from "react";
 import AnimatedButton from "../animated-button";
 
