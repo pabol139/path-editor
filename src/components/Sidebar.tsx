@@ -56,7 +56,7 @@ export default function Sidebar({
             }}
             aria-expanded={open}
             role="complementary"
-            className="absolute top-0 right-0 h-full w-full md:w-auto motion-reduce:!transition-none"
+            className="isolate z-20 absolute top-0 right-0 h-full w-full md:w-auto motion-reduce:!transition-none"
           >
             {open && (
               <motion.div
