@@ -102,7 +102,12 @@ export default function Sidebar({
           <motion.div
             key={"open"}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            animate={{
+              opacity: 1,
+              transition: {
+                delay: 0.25,
+              },
+            }}
             exit={{
               opacity: 0,
               transition: {
