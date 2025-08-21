@@ -12,7 +12,7 @@ import {
   onPointerDownCommand,
 } from "@/utils/path";
 import { isTouchDevice } from "@/utils/svg";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 export default function Svg({
   showControlElements = true,
@@ -64,6 +64,18 @@ export default function Svg({
     [commands, updateCommands, isSidebarOpen]
   );
 
+  // Manual wheel event to remove default pinch zoom on trackpad
+  useEffect(() => {
+    if (svgRef.current)
+      svgRef.current.addEventListener("wheel", handleWheelZoom, {
+        passive: false,
+      });
+
+    return () => {
+      svgRef.current?.removeEventListener("wheel", handleWheelZoom);
+    };
+  }, [handleWheelZoom]);
+
   const linesWidth = String((1.5 * viewbox.width) / svgDimensions.width);
   const pointWidth = String((3.5 * viewbox.width) / svgDimensions.width);
   const pointStrokeWidth = isTouchDevice()
@@ -74,7 +86,6 @@ export default function Svg({
     <svg
       role="application"
       aria-label="Path editor"
-      onWheel={handleWheelZoom}
       onMouseDown={startDrag}
       onTouchStart={startDrag}
       onTouchMove={drag}
