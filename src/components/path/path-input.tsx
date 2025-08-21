@@ -132,7 +132,7 @@ export default React.memo(function PathInput({
         <a
           href="https://github.com/pabol139/path-editor"
           target="_blank"
-          aria-label="Go to Github repository"
+          aria-label="Go to Github repository (opens in new tab)"
           className={cn(
             "px-1 py-1 size-7 flex gap-2 text-sm items-center justify-center active:scale-95 transition-transform",
             isTouchDevice() && "w-9 h-9"
