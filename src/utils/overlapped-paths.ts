@@ -16,6 +16,7 @@ export const createOverlappedPathsFromCommands = (
   absoluteCommands.forEach((command, index) => {
     if (
       command.letter !== LINE_COMMANDS.MoveTo &&
+      command.letter !== LINE_COMMANDS.Close &&
       (command.hovered || command.selected)
     ) {
       // let finalCommand: Command<number> | null = null;
@@ -23,6 +24,7 @@ export const createOverlappedPathsFromCommands = (
         absoluteCommands,
         command.id
       );
+
       const moveToCommand = {
         id: String(Math.random()),
         letter: "M",

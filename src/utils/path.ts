@@ -213,7 +213,13 @@ export const getLastControlPoint = (
     const { letter, coordinates } = command;
 
     const handler = commandHandlers[letter.toLocaleUpperCase()];
-    const prevCommand = getCurrentPositionBeforeCommand(commands, command.id);
+
+    // If command is CloseTo, prevCommandCoordinates will be last Move To coordinates
+    const prevCommandCoordinates = getCurrentPositionBeforeCommand(
+      commands,
+      command.id
+    );
+
     if (letter.toLocaleUpperCase() === LINE_COMMANDS.SmoothQuadraticCurve) {
       const prevControlPoint =
         letter.toLocaleUpperCase() === LINE_COMMANDS.SmoothCurve
@@ -222,8 +228,8 @@ export const getLastControlPoint = (
 
       if (prevControlPoint) {
         return {
-          x: 2 * prevCommand.x - prevControlPoint.x,
-          y: 2 * prevCommand.y - prevControlPoint.y,
+          x: 2 * prevCommandCoordinates.x - prevControlPoint.x,
+          y: 2 * prevCommandCoordinates.y - prevControlPoint.y,
         };
       }
     } else if (letter.toLocaleUpperCase() === LINE_COMMANDS.SmoothCurve) {
@@ -231,7 +237,13 @@ export const getLastControlPoint = (
     } else if (handler.getLastControlPoint)
       return handler.getLastControlPoint(coordinates);
     else {
-      return handler.getEndPosition(coordinates, prevCommand);
+      if (letter.toLocaleUpperCase() === LINE_COMMANDS.Close)
+        return handler.getEndPosition(
+          [prevCommandCoordinates.x, prevCommandCoordinates.y],
+          prevCommandCoordinates
+        );
+
+      return handler.getEndPosition(coordinates, prevCommandCoordinates);
     }
   }
 
@@ -411,11 +423,31 @@ export function getCurrentPositionBeforeCommand(
   targetCommandId: string
 ) {
   let currentPosition = { x: 0, y: 0 };
+  let lastMoveToCommand = null;
 
   for (const command of commands) {
     const { id, letter, coordinates } = command;
 
-    if (letter.toLocaleUpperCase() === LINE_COMMANDS.Close) continue;
+    if (letter.toLocaleUpperCase() === LINE_COMMANDS.MoveTo) {
+      lastMoveToCommand = command;
+    }
+    if (letter.toLocaleUpperCase() === LINE_COMMANDS.Close) {
+      if (!lastMoveToCommand) continue;
+
+      const { letter: lastMoveToLetter, coordinates: lastMoveToCoordinates } =
+        lastMoveToCommand;
+
+      const handler = commandHandlers[lastMoveToLetter.toLocaleUpperCase()];
+      const isRelative = isRelativeCommand(lastMoveToLetter);
+      currentPosition = handler.getAccumulatedPosition(
+        currentPosition,
+        lastMoveToCoordinates,
+        isRelative
+      );
+
+      if (id === targetCommandId) break;
+      continue;
+    }
     if (id === targetCommandId) {
       break; // Stop before processing the target command
     }

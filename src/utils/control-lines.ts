@@ -71,7 +71,17 @@ const createCubicLines: LineCreator = (
   const { coordinate_index } = point;
 
   if (coordinate_index === 0 && commands[commandIndex - 1]) {
-    const prevCommand = commands[commandIndex - 1];
+    let prevCommand = commands[commandIndex - 1];
+
+    // Look for nearest MoveTo command if CloseTo is behind the curve
+    if (prevCommand.letter.toLocaleUpperCase() === LINE_COMMANDS.Close) {
+      let i = 2;
+      while (prevCommand.letter.toLocaleUpperCase() !== LINE_COMMANDS.MoveTo) {
+        prevCommand = commands[commandIndex - i];
+        i++;
+      }
+    }
+
     const prevPoints = points.filter(
       (point) => point.id_command === prevCommand.id
     );
@@ -120,7 +130,17 @@ const createQuadraticLines: LineCreator = (
   const lines: Line[] = [];
   const { coordinate_index } = point;
 
-  const prevCommand = commands[commandIndex - 1];
+  let prevCommand = commands[commandIndex - 1];
+
+  // Look for nearest MoveTo command if CloseTo is behind the curve
+  if (prevCommand.letter.toLocaleUpperCase() === LINE_COMMANDS.Close) {
+    let i = 2;
+    while (prevCommand.letter.toLocaleUpperCase() !== LINE_COMMANDS.MoveTo) {
+      prevCommand = commands[commandIndex - i];
+      i++;
+    }
+  }
+
   const prevPoints = points.filter(
     (point) => point.id_command === prevCommand.id
   );

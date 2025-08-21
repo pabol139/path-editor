@@ -69,9 +69,9 @@ function reducer(state: PathState, action: Action) {
       try {
         const { updater, shouldSave = true } = action.payload;
 
-        const updatedCommands =
+        const rawCommands =
           typeof updater === "function" ? updater(state.commands) : updater;
-        const formatted = formatCommands(updatedCommands, 2); //TODO SIMPLIFY THIS ONLY WITH TOFIXED
+        const formatted = formatCommands(rawCommands, 2);
         const newPath = convertCommandsToPath(formatted);
 
         if (!newPath.trim()) savePathToStorage(DEFAULT_PATH);
