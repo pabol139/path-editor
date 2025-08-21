@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { Viewbox } from "@/types/Viewbox";
 import { usePathObject } from "@/context/path-context";
 import {
@@ -19,14 +19,17 @@ export function usePanZoom(
     MouseEvent | TouchEvent | null
   >(null);
 
+  const isTouchEvent = (e: MouseEvent | TouchEvent): e is TouchEvent =>
+    typeof TouchEvent !== "undefined" && e instanceof TouchEvent;
+
   const pinch = (
     previousEvent: MouseEvent | TouchEvent,
     currentEvent: MouseEvent | TouchEvent
   ) => {
     // Only handle pinch if both events are TouchEvents with 2+ touches
     if (
-      previousEvent instanceof TouchEvent &&
-      currentEvent instanceof TouchEvent &&
+      isTouchEvent(previousEvent) &&
+      isTouchEvent(currentEvent) &&
       previousEvent.touches.length >= 2 &&
       currentEvent.touches.length >= 2
     ) {
@@ -72,20 +75,23 @@ export function usePanZoom(
     return null;
   };
 
-  const startDrag = (
-    event: React.MouseEvent<SVGSVGElement> | React.TouchEvent<SVGSVGElement>
-  ) => {
-    // Right click
-    if (
-      event.nativeEvent instanceof MouseEvent &&
-      event.nativeEvent.button === 2
-    ) {
-      return;
-    }
+  const startDrag = useCallback(
+    (
+      event: React.MouseEvent<SVGSVGElement> | React.TouchEvent<SVGSVGElement>
+    ) => {
+      // Right click
+      if (
+        event.nativeEvent instanceof MouseEvent &&
+        event.nativeEvent.button === 2
+      ) {
+        return;
+      }
 
-    setDraggedEvent(event.nativeEvent);
-    setHasMoved(false);
-  };
+      setDraggedEvent(event.nativeEvent);
+      setHasMoved(false);
+    },
+    []
+  );
 
   const drag = (
     event: React.MouseEvent<SVGSVGElement> | React.TouchEvent<SVGSVGElement>
@@ -174,63 +180,69 @@ export function usePanZoom(
     setHasMoved(false);
   };
 
-  const performZoom = (
-    deltaY: number,
-    anchorPoint: { x: number; y: number }
-  ) => {
-    let scale = 1.125;
-    let scaledWidth = 0;
-    let scaledHeight = 0;
-    let scaledX = 0;
-    let scaledY = 0;
+  const performZoom = useCallback(
+    (deltaY: number, anchorPoint: { x: number; y: number }) => {
+      let scale = 1.125;
+      let scaledWidth = 0;
+      let scaledHeight = 0;
+      let scaledX = 0;
+      let scaledY = 0;
 
-    const svg = svgRef.current as SVGSVGElement;
+      const svg = svgRef.current as SVGSVGElement;
 
-    if (deltaY > 0) {
-      // Zoom out
-      scaledWidth = viewbox.width * scale;
-      scaledHeight = viewbox.height * scale;
-    } else {
-      // Zoom in
-      scaledWidth = viewbox.width / scale;
-      scaledHeight = viewbox.height / scale;
-    }
+      if (deltaY > 0) {
+        // Zoom out
+        scaledWidth = viewbox.width * scale;
+        scaledHeight = viewbox.height * scale;
+      } else {
+        // Zoom in
+        scaledWidth = viewbox.width / scale;
+        scaledHeight = viewbox.height / scale;
+      }
 
-    scaledX =
-      viewbox.x -
-      (scaledWidth - viewbox.width) *
-        (anchorPoint.x / svg.getBoundingClientRect().width);
+      scaledX =
+        viewbox.x -
+        (scaledWidth - viewbox.width) *
+          (anchorPoint.x / svg.getBoundingClientRect().width);
 
-    scaledY =
-      viewbox.y -
-      (scaledHeight - viewbox.height) *
-        (anchorPoint.y / svg.getBoundingClientRect().height);
+      scaledY =
+        viewbox.y -
+        (scaledHeight - viewbox.height) *
+          (anchorPoint.y / svg.getBoundingClientRect().height);
 
-    updateViewbox({
-      x: scaledX,
-      y: scaledY,
-      width: scaledWidth,
-      height: scaledHeight,
-    });
-  };
+      updateViewbox({
+        x: scaledX,
+        y: scaledY,
+        width: scaledWidth,
+        height: scaledHeight,
+      });
+    },
+    [viewbox]
+  );
 
   // Handle wheel events
-  const handleWheelZoom = (event: React.WheelEvent<SVGSVGElement>) => {
-    const svg = svgRef.current as SVGSVGElement;
-    const point = svg.createSVGPoint();
-    point.x = event.clientX;
-    point.y = event.clientY;
+  const handleWheelZoom = useCallback(
+    (event: WheelEvent) => {
+      if (event.ctrlKey) {
+        event.preventDefault();
+      }
+      const svg = svgRef.current as SVGSVGElement;
+      const point = svg.createSVGPoint();
+      point.x = event.clientX;
+      point.y = event.clientY;
 
-    performZoom(event.deltaY, point);
-  };
+      performZoom(event.deltaY, point);
+    },
+    [performZoom]
+  );
 
   // Handle programmatic zoom with anchor point
-  const handleProgrammaticZoom = (
-    deltaY: number,
-    anchorPoint: { x: number; y: number }
-  ) => {
-    performZoom(deltaY, anchorPoint);
-  };
+  const handleProgrammaticZoom = useCallback(
+    (deltaY: number, anchorPoint: { x: number; y: number }) => {
+      performZoom(deltaY, anchorPoint);
+    },
+    [performZoom]
+  );
 
   return {
     handleProgrammaticZoom,
