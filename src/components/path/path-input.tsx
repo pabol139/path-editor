@@ -8,6 +8,7 @@ import React from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { isTouchDevice } from "@/utils/svg";
+import Github from "../icons/github";
 
 export default React.memo(function PathInput({
   updateViewbox,
@@ -85,7 +86,7 @@ export default React.memo(function PathInput({
         }}
         value={displayPath}
       ></textarea>
-      <div className="flex gap-2 mt-1">
+      <div className="flex justify-between gap-2 mt-1">
         <button
           aria-label="Copy path to clipboard"
           ref={buttonRef}
@@ -128,31 +129,17 @@ export default React.memo(function PathInput({
             )}
           </AnimatePresence>
         </button>
-        {/* <button
-          aria-label="Generate random path"
-          onClick={handleGenerateRandom}
+        <a
+          href="https://github.com/pabol139/path-editor"
+          target="_blank"
+          aria-label="Go to Github repository"
           className={cn(
-            "bg-[#2A2A2A] px-1 py-1 h-8 w-8 flex gap-2 text-sm items-center justify-center border border-gray300 rounded-md active:scale-95 transition-transform",
-            copied && "copied",
+            "px-1 py-1 size-7 flex gap-2 text-sm items-center justify-center active:scale-95 transition-transform",
             isTouchDevice() && "w-9 h-9"
           )}
         >
-          <AnimatePresence initial={false} mode="wait">
-            <motion.span
-              key={"Copied"}
-              initial={{ opacity: 0, scale: 0.7 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.7 }}
-              transition={{
-                type: "spring",
-                duration: 0.1,
-                bounce: 0.15,
-              }}
-            >
-              <WandSparkles size={16}></WandSparkles>
-            </motion.span>
-          </AnimatePresence>
-        </button> */}
+          <Github></Github>
+        </a>
       </div>
     </>
   );
