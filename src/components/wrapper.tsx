@@ -44,13 +44,13 @@ export default function Wrapper() {
 
         return {
           ...prevState,
-          x: parseFloat(formatNumberToString(newObject.x, 2)),
-          y: parseFloat(formatNumberToString(newObject.y, 2)),
+          x: parseFloat(formatNumberToString(newObject.x, 3)),
+          y: parseFloat(formatNumberToString(newObject.y, 3)),
           width: parseFloat(
-            formatNumberToString(Math.max(newObject.width, 0), 2)
+            formatNumberToString(Math.max(newObject.width, 0), 3)
           ),
           height: parseFloat(
-            formatNumberToString(Math.max(newObject.height, 0), 2)
+            formatNumberToString(Math.max(newObject.height, 0), 3)
           ),
         };
       });
