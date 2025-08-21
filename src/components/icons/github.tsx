@@ -1,10 +1,4 @@
-export default function Github({
-  size = 24,
-  color = "black",
-}: {
-  size?: string | number;
-  color?: string;
-}) {
+export default function Github({ size = 24 }: { size?: string | number }) {
   return (
     <svg
       role="img"
