@@ -41,6 +41,7 @@ export default function ToolbarAction({
   return (
     <ActionTooltip message={message}>
       <button
+        aria-label={message}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onTouchStart={handleTouchStart}

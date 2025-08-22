@@ -12,9 +12,43 @@
       name="description"
       content="PathEditor — an interactive SVG path editor where you can edit SVG paths"
     />
+    <link
+      rel="preload"
+      href="/fonts/InterTight-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <link
+      rel="preload"
+      href="/fonts/InterTight-Medium.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/InterTight-SemiBold.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/InterTight-Bold.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
     <link rel="canonical" href="https://patheditor.dev/" />
   </head>
-  <body class="!touch-none !select-none">
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <header>
+      <h1 class="sr-only">Path editor</h1>
+    </header>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

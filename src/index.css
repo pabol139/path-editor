@@ -83,6 +83,9 @@
   html,
   body {
     overflow: hidden;
+    font-family: "Inter Tight", ui-sans-serif, system-ui, sans-serif,
+      "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+      "Noto Color Emoji";
   }
 
   body {
@@ -301,4 +304,35 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   } */
+}
+
+@font-face {
+  font-family: "Inter Tight";
+  font-weight: 400;
+  src: local("Inter Tight"),
+    url("/fonts/InterTight-Regular.woff2") format("woff2"),
+    url("/fonts/InterTight-Regular.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Inter Tight";
+  font-weight: 500;
+  src: local("Inter Tight"),
+    url("/fonts/InterTight-Medium.woff2") format("woff2"),
+    url("/fonts/InterTight-Medium.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Inter Tight";
+  font-weight: 600;
+  src: local("Inter Tight"),
+    url("/fonts/InterTight-SemiBold.woff2") format("woff2"),
+    url("/fonts/InterTight-SemiBold.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Inter Tight";
+  font-weight: 700;
+  src: local("Inter Tight"), url("/fonts/InterTight-Bold.woff2") format("woff2"),
+    url("/fonts/InterTight-Bold.woff") format("woff");
 }
