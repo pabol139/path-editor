@@ -74,8 +74,6 @@ export default React.memo(function PathInput({
         className={`mt-2.5 w-full bg-secondary text-[calc((15_/_16)_*_1rem)] tabular-nums ${
           error ? "!border-b-2 border-red-600" : ""
         }`}
-        name=""
-        id=""
         cols={30}
         rows={3}
         onChange={handleChange}
