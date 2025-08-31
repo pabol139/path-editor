@@ -2,6 +2,9 @@
 
 An interactive SVG path editor where you can edit SVG paths, manipulating control points and transforming it.
 
+<img width="1512" height="823" alt="image" src="https://github.com/user-attachments/assets/6794f5bf-65b3-44d2-9828-44640103a064" />
+
+
 ## **Usage**
 
 - **Color guide:** Commands colored **"purple"** are **absolute**; commands colored **"orange"** are **relative**.
