@@ -137,14 +137,17 @@ export default function Svg({
           )}
         </>
       ) : (
-        <svg className="opacity-0">
-          <path
-            d={path}
-            fill="#ffffff40"
-            stroke="#fff"
-            strokeWidth={linesWidth}
-          ></path>
-        </svg>
+        <>
+          <p className="text-[#13171B]">Loading...</p>
+          <svg className="opacity-0">
+            <path
+              d={path}
+              fill="#ffffff40"
+              stroke="#fff"
+              strokeWidth={linesWidth}
+            ></path>
+          </svg>
+        </>
       )}
     </svg>
   );
