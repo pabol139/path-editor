@@ -2,22 +2,22 @@
 
 An interactive SVG path editor where you can edit SVG paths, manipulating control points and transforming it.
 
-##**Usage**
+## **Usage**
 
-- Purplish commands are ABSOLUTE and orangish are RELATIVE.
-- Paste or type a path in the path field.
-- Move the points dragging them.
-- Change the Viewbox panning, zooming or typing it manually.
-- Transform the whole path in the Operations section.
-- Manipulate the commands in the Commands section, where you can:
-  - Update each of their coordinates.
-  - Convert to relative/absolute by clicking on the letter or the ⠇.
-  - Delete it (Clicking on the ⠇)
-  - Add a subsequent command (Clicking on the ⠇)
-- Edit each of the commands by right clicking (tapping in mobile) one of its corresponding points and opening the options menu.
-- Manually change zoom or fit the path in the viewbox with the buttons located bottom left.
-- Undo and redo functionality located in the bottom left, shortcut with CMD/CTRL + Z or  CMD/CTRL + SHIFT + Z.
-- Toggle path fill and controls with the buttons located bottom right.
+- **Color guide:** Commands colored **"purple"** are **absolute**; commands colored **"orange"** are **relative**.
+- **Paste or type** an SVG path into the *Path* field to start, or click the + button in the Commands section.
+- **Move points:** drag any point to reposition it.
+- **Viewbox controls:** pan or zoom the viewbox with the mouse/touch gestures, or edit the viewbox values manually.
+- **Transform:** use the **Operations** section to scale or translate the whole path.
+- **Commands panel:** manage individual path commands in the **Commands** section:
+  - Edit any command’s coordinates inline.
+  - Toggle between **absolute** and **relative** by clicking the command letter (or the small action icon ⠇).
+  - **Delete** a command using the delete button in the actions menu clicking the ⠇ icon.
+  - **Insert** a new subsequent command with the add button in the actions menu clicking the ⠇ icon.
+- **Point options:** open a command’s actions menu by **right-clicking** a point (or **tap** on mobile).
+- **Zoom & fit:** use the buttons at the bottom-left to manually change zoom or to fit the path into the viewbox.
+- **Undo / redo:** found in the bottom-left. Shortcuts: `Cmd/Ctrl + Z` (undo) and `Cmd/Ctrl + Shift + Z` (redo).
+- **Display toggles:** toggle path **fill** and control handles with the buttons at the bottom-right.
 
 Made for learning purposes.
 
