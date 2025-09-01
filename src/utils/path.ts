@@ -423,27 +423,13 @@ export function getCurrentPositionBeforeCommand(
   targetCommandId: string
 ) {
   let currentPosition = { x: 0, y: 0 };
-  let lastMoveToCommand = null;
-
+  let lastMoveToCommandPosition = { x: 0, y: 0 };
   for (const command of commands) {
     const { id, letter, coordinates } = command;
 
-    if (letter.toLocaleUpperCase() === LINE_COMMANDS.MoveTo) {
-      lastMoveToCommand = command;
-    }
     if (letter.toLocaleUpperCase() === LINE_COMMANDS.Close) {
-      if (!lastMoveToCommand) continue;
-
-      const { letter: lastMoveToLetter, coordinates: lastMoveToCoordinates } =
-        lastMoveToCommand;
-
-      const handler = commandHandlers[lastMoveToLetter.toLocaleUpperCase()];
-      const isRelative = isRelativeCommand(lastMoveToLetter);
-      currentPosition = handler.getAccumulatedPosition(
-        currentPosition,
-        lastMoveToCoordinates,
-        isRelative
-      );
+      if (!lastMoveToCommandPosition) continue;
+      currentPosition = lastMoveToCommandPosition;
 
       if (id === targetCommandId) break;
       continue;
@@ -459,6 +445,10 @@ export function getCurrentPositionBeforeCommand(
       coordinates,
       isRelative
     );
+
+    if (letter.toLocaleUpperCase() === LINE_COMMANDS.MoveTo) {
+      lastMoveToCommandPosition = currentPosition;
+    }
   }
 
   return currentPosition;
