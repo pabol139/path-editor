@@ -12,6 +12,7 @@ import {
 import React from "react";
 import useCommands from "@/hooks/useCommands";
 import CommandCreateWrapper from "./command-create-wrapper";
+import { AnimatePresence } from "motion/react";
 
 function CommandsSection() {
   const { pathObject, updateCommands } = usePathObject();
@@ -43,40 +44,42 @@ function CommandsSection() {
           aria-label={`${commands.length} path commands`}
           className="pb-5 gap-2 flex flex-col pt-1 [&_*]:!outline-offset-0 [&_*]:!outline-[deeppink]"
         >
-          {commands.length > 0 ? (
-            commands.map(
-              ({ id, letter, coordinates, selected, hovered }, index) => (
-                <Command
-                  key={id}
-                  id={id}
-                  letter={letter}
-                  coordinates={coordinates}
-                  selected={selected}
-                  hovered={hovered}
-                  isFirst={index === 0}
-                  handleEnter={() =>
-                    onPointerEnterCommand(commands, updateCommands, id)
-                  }
-                  handleLeave={() =>
-                    onPointerLeaveCommand(commands, updateCommands)
-                  }
-                  handleDown={() =>
-                    onPointerDownCommand(commands, updateCommands, id)
-                  }
-                  handleInput={handleInput}
-                  handleClickCommandLetter={handleClickCommandLetter}
-                />
+          <AnimatePresence mode="popLayout">
+            {commands.length > 0 ? (
+              commands.map(
+                ({ id, letter, coordinates, selected, hovered }, index) => (
+                  <Command
+                    key={id}
+                    id={id}
+                    letter={letter}
+                    coordinates={coordinates}
+                    selected={selected}
+                    hovered={hovered}
+                    isFirst={index === 0}
+                    handleEnter={() =>
+                      onPointerEnterCommand(commands, updateCommands, id)
+                    }
+                    handleLeave={() =>
+                      onPointerLeaveCommand(commands, updateCommands)
+                    }
+                    handleDown={() =>
+                      onPointerDownCommand(commands, updateCommands, id)
+                    }
+                    handleInput={handleInput}
+                    handleClickCommandLetter={handleClickCommandLetter}
+                  />
+                )
               )
-            )
-          ) : (
-            <div className="w-full px-4">
-              <CommandCreateWrapper>
-                <button className="w-full bg-purple h-10 rounded-md transition-transform active:scale-[.98]">
-                  Add new command
-                </button>
-              </CommandCreateWrapper>
-            </div>
-          )}
+            ) : (
+              <div className="w-full px-4">
+                <CommandCreateWrapper>
+                  <button className="w-full bg-purple h-10 rounded-md transition-transform active:scale-[.98]">
+                    Add new command
+                  </button>
+                </CommandCreateWrapper>
+              </div>
+            )}
+          </AnimatePresence>
         </ul>
       </CollapsedSection>
     </>

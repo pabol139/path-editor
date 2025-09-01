@@ -88,7 +88,7 @@ export default function Wrapper() {
         open={isSidebarOpen}
         setOpen={setisSidebarOpen}
         setSvgDimensions={setSvgDimensions}
-      />
+      ></Sidebar>
     </>
   );
 }

@@ -1,3 +1,4 @@
+import React from "react";
 import { usePathObject } from "@/context/path-context";
 import type { Viewbox } from "@/types/Viewbox";
 import { usePanZoom } from "@/hooks/usePanZoom";
@@ -14,7 +15,7 @@ import {
 import { isTouchDevice } from "@/utils/svg";
 import { useCallback, useEffect } from "react";
 
-export default function Svg({
+function Svg({
   showControlElements = true,
   isSidebarOpen = true,
   viewbox,
@@ -152,3 +153,5 @@ export default function Svg({
     </svg>
   );
 }
+
+export default React.memo(Svg);
