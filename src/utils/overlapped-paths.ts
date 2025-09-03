@@ -1,29 +1,20 @@
 import type { Command, ParsePath } from "@/types/Path";
-import {
-  convertCommandsToPath,
-  convertCommandsRelativeToAbsolute,
-  getCurrentPositionBeforeCommand,
-  getLastControlPoint,
-} from "./path";
+import { convertCommandsToPath, getLastControlPoint } from "./path";
 import { LINE_COMMANDS } from "@/constants/path";
 export type OverlappedPath = { color: string; overlappedPath: string };
 
 export const createOverlappedPathsFromCommands = (
   commands: ParsePath<number>
 ) => {
-  const absoluteCommands = convertCommandsRelativeToAbsolute(commands);
   const overlappedPaths: OverlappedPath[] = [];
-  absoluteCommands.forEach((command, index) => {
+  commands.forEach((command, index) => {
     if (
       command.letter !== LINE_COMMANDS.MoveTo &&
       command.letter !== LINE_COMMANDS.Close &&
       (command.hovered || command.selected)
     ) {
       // let finalCommand: Command<number> | null = null;
-      const prevPosition = getCurrentPositionBeforeCommand(
-        absoluteCommands,
-        command.id
-      );
+      const prevPosition = command.prevPoint;
 
       const moveToCommand = {
         id: String(Math.random()),
@@ -31,6 +22,8 @@ export const createOverlappedPathsFromCommands = (
         coordinates: [prevPosition.x, prevPosition.y],
         hovered: false,
         selected: false,
+        points: [],
+        prevPoint: { x: 0, y: 0 },
       };
       const finalCommand = transformCommand(
         command,
@@ -38,6 +31,7 @@ export const createOverlappedPathsFromCommands = (
         index,
         prevPosition
       );
+
       const color = command.selected
         ? "deeppink"
         : command.hovered
@@ -102,8 +96,8 @@ const transformSmoothQuadratic = (
     coordinates: [
       controlPoint.x,
       controlPoint.y,
-      command.coordinates[0],
-      command.coordinates[1],
+      Number(command.points[0].cx),
+      Number(command.points[0].cy),
     ],
   };
 };
@@ -127,10 +121,10 @@ const transformSmoothCubic = (
     coordinates: [
       controlPoint.x,
       controlPoint.y,
-      command.coordinates[0],
-      command.coordinates[1],
-      command.coordinates[2],
-      command.coordinates[3],
+      Number(command.points[0].cx),
+      Number(command.points[0].cy),
+      Number(command.points[1].cx),
+      Number(command.points[1].cy),
     ],
   };
 };
@@ -140,10 +134,7 @@ const calculateReflectedControlPoint = (
   position: number,
   prevPosition: { x: number; y: number }
 ): { x: number; y: number } => {
-  const prevControlPoint = getLastControlPoint(
-    convertCommandsRelativeToAbsolute(commands),
-    position
-  );
+  const prevControlPoint = getLastControlPoint(commands, position);
 
   if (prevControlPoint) {
     return {

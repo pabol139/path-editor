@@ -1,8 +1,5 @@
 import { commandHandlers } from "@/utils/command-handler";
-import {
-  getCurrentPositionBeforeCommand,
-  isRelativeCommand,
-} from "@/utils/path";
+import { isRelativeCommand } from "@/utils/path";
 import type { Point as PointType } from "@/types/Point";
 import type { PathObject } from "@/types/Path";
 import type { UpdateCommandsType } from "@/context/path-context";
@@ -40,10 +37,7 @@ export default function usePoints(
         const handler = commandHandlers[command.letter.toLocaleUpperCase()];
 
         // Current point position to convert absolute to relative and viceversa
-        const currentPos = getCurrentPositionBeforeCommand(
-          commands,
-          command.id
-        );
+        const currentPos = command.prevPoint;
 
         const isRelative = isRelativeCommand(command.letter);
         // Create a new coordinates array to ensure immutability

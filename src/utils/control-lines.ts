@@ -1,9 +1,5 @@
 import type { Line } from "@/types/Line";
-import {
-  convertCommandsRelativeToAbsolute,
-  getCurrentPositionBeforeCommand,
-  getLastControlPoint,
-} from "./path";
+import { getLastControlPoint } from "./path";
 import { LINE_COMMANDS } from "@/constants/path";
 import type { Point } from "@/types/Point";
 import type { Command } from "@/types/Path";
@@ -33,13 +29,11 @@ export const createControlLines = (
 ) => {
   const lines: Line[] = [];
 
-  const commands = convertCommandsRelativeToAbsolute(rawCommands);
-
   points.forEach((point, index) => {
-    const commandIndex = commands.findIndex(
+    const commandIndex = rawCommands.findIndex(
       (command) => command.id === point.id_command
     );
-    const command = commandIndex !== -1 ? commands[commandIndex] : undefined;
+    const command = commandIndex !== -1 ? rawCommands[commandIndex] : undefined;
     if (!command) return [];
 
     const letter = command.letter.toLocaleUpperCase();
@@ -49,7 +43,7 @@ export const createControlLines = (
       const newLines = lineCreator(
         point,
         points,
-        commands,
+        rawCommands,
         index,
         commandIndex
       );
@@ -73,18 +67,7 @@ const createCubicLines: LineCreator = (
   if (coordinate_index === 0 && commands[commandIndex - 1]) {
     let prevCommand = commands[commandIndex - 1];
 
-    // Look for nearest MoveTo command if CloseTo is behind the curve
-    if (prevCommand.letter.toLocaleUpperCase() === LINE_COMMANDS.Close) {
-      let i = 2;
-      while (prevCommand.letter.toLocaleUpperCase() !== LINE_COMMANDS.MoveTo) {
-        prevCommand = commands[commandIndex - i];
-        i++;
-      }
-    }
-
-    const prevPoints = points.filter(
-      (point) => point.id_command === prevCommand.id
-    );
+    const prevPoints = prevCommand.points;
 
     lines.push({
       x1: prevPoints[prevPoints.length - 1].cx,
@@ -132,18 +115,8 @@ const createQuadraticLines: LineCreator = (
 
   let prevCommand = commands[commandIndex - 1];
 
-  // Look for nearest MoveTo command if CloseTo is behind the curve
-  if (prevCommand.letter.toLocaleUpperCase() === LINE_COMMANDS.Close) {
-    let i = 2;
-    while (prevCommand.letter.toLocaleUpperCase() !== LINE_COMMANDS.MoveTo) {
-      prevCommand = commands[commandIndex - i];
-      i++;
-    }
-  }
+  const prevPoints = prevCommand.points;
 
-  const prevPoints = points.filter(
-    (point) => point.id_command === prevCommand.id
-  );
   if (coordinate_index === 0 && commands[commandIndex - 1]) {
     lines.push({
       x1: prevPoints[prevPoints.length - 1].cx,
@@ -228,10 +201,7 @@ const createSmoothQuadraticLines: LineCreator = (
 
   const prevControlPoint = getLastControlPoint(commands, commandIndex);
   if (!prevControlPoint) return lines;
-  const prevCommandPosition = getCurrentPositionBeforeCommand(
-    commands,
-    commands[commandIndex].id
-  );
+  const prevCommandPosition = commands[commandIndex].prevPoint;
 
   const prevReflectionControlPoint = {
     x: 2 * prevCommandPosition.x - prevControlPoint.x,

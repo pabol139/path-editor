@@ -92,6 +92,8 @@ const generateCommands = (
       coordinates: coordinates,
       hovered: false,
       selected: false,
+      points: [],
+      prevPoint: { x: 0, y: 0 },
     };
     while (j < regexTable.length) {
       let regex = regexTable[j];
@@ -204,21 +206,18 @@ export const centerViewbox = (
 };
 
 export const getLastControlPoint = (
-  commands: Command<number>[],
+  commands: ParsePath<number>,
   currentIndex: number
 ): { x: number; y: number } | null => {
   // Look backwards for the last command that has a control point
   for (let i = currentIndex - 1; i >= 0; i--) {
     const command = commands[i];
-    const { letter, coordinates } = command;
+    const { letter, points } = command;
 
     const handler = commandHandlers[letter.toLocaleUpperCase()];
 
     // If command is CloseTo, prevCommandCoordinates will be last Move To coordinates
-    const prevCommandCoordinates = getCurrentPositionBeforeCommand(
-      commands,
-      command.id
-    );
+    const prevCommandCoordinates = command.prevPoint;
 
     if (letter.toLocaleUpperCase() === LINE_COMMANDS.SmoothQuadraticCurve) {
       const prevControlPoint =
@@ -234,16 +233,14 @@ export const getLastControlPoint = (
       }
     } else if (letter.toLocaleUpperCase() === LINE_COMMANDS.SmoothCurve) {
       return getLastControlPointCurve(commands, i);
-    } else if (handler.getLastControlPoint)
-      return handler.getLastControlPoint(coordinates);
-    else {
-      if (letter.toLocaleUpperCase() === LINE_COMMANDS.Close)
-        return handler.getEndPosition(
-          [prevCommandCoordinates.x, prevCommandCoordinates.y],
-          prevCommandCoordinates
-        );
+    } else if (handler.getLastControlPoint) {
+      return handler.getLastControlPoint(points);
+    } else {
+      if (letter.toLocaleUpperCase() === LINE_COMMANDS.Close) {
+        return handler.getEndPosition(points);
+      }
 
-      return handler.getEndPosition(coordinates, prevCommandCoordinates);
+      return handler.getEndPosition(points);
     }
   }
 
@@ -251,15 +248,14 @@ export const getLastControlPoint = (
 };
 
 const getLastControlPointCurve = (
-  commands: Command<number>[],
+  commands: ParsePath<number>,
   currentIndex: number
 ) => {
   const command = commands[currentIndex];
   const { letter } = command;
   const handler = commandHandlers[letter.toLocaleUpperCase()];
 
-  // On S command, the prevControl is the control point of the prev S, else it will be the one of C
-  return handler?.getLastControlPoint?.(command.coordinates) || null;
+  return handler?.getLastControlPoint?.(command.points) || null;
 };
 
 export const convertCommandsToPath = (commands: ParsePath<number>) => {
@@ -418,63 +414,97 @@ export const isRelativeCommand = (commandLetter: string): boolean => {
   return commandLetter === commandLetter.toLowerCase();
 };
 
-export function getCurrentPositionBeforeCommand(
-  commands: Command<number>[],
-  targetCommandId: string
-) {
-  let currentPosition = { x: 0, y: 0 };
-  let lastMoveToCommandPosition = { x: 0, y: 0 };
-  for (const command of commands) {
-    const { id, letter, coordinates } = command;
+export const generatePoints = (commands: ParsePath<number>) => {
+  let previousCommand: Command<number> | null = null;
+  let originPosition = { x: 0, y: 0 };
+  let currentPosition = {
+    x: 0,
+    y: 0,
+  };
+  const commandsWithPoints = commands.map((command) => {
+    const { letter, coordinates } = command;
+    const handler = commandHandlers[command.letter.toUpperCase()];
+    const isRelative = isRelativeCommand(command.letter);
+    const isCloseCommand = letter.toUpperCase() === LINE_COMMANDS.Close;
+    const isMoveToCommand = letter.toUpperCase() === LINE_COMMANDS.MoveTo;
+    const isVertical = letter.toUpperCase() === LINE_COMMANDS.Vertical;
+    const isHorizontal = letter.toUpperCase() === LINE_COMMANDS.Horizontal;
 
-    if (letter.toLocaleUpperCase() === LINE_COMMANDS.Close) {
-      if (!lastMoveToCommandPosition) continue;
-      currentPosition = lastMoveToCommandPosition;
+    let finalCommand = {
+      ...command,
+    };
 
-      if (id === targetCommandId) break;
-      continue;
-    }
-    if (id === targetCommandId) {
-      break; // Stop before processing the target command
-    }
+    const prevPoint = {
+      x:
+        Number(
+          previousCommand?.points[previousCommand.points.length - 1]?.cx
+        ) || 0,
+      y:
+        Number(
+          previousCommand?.points[previousCommand.points.length - 1]?.cy
+        ) || 0,
+    };
 
-    const handler = commandHandlers[letter.toLocaleUpperCase()];
-    const isRelative = isRelativeCommand(letter);
-    currentPosition = handler.getAccumulatedPosition(
-      currentPosition,
+    currentPosition = isRelative ? prevPoint : { x: 0, y: 0 };
+    //Convert command to absolute
+    const [_, updatedCoordinates] = handler.toAbsolute(
       coordinates,
+      currentPosition,
       isRelative
     );
 
-    if (letter.toLocaleUpperCase() === LINE_COMMANDS.MoveTo) {
-      lastMoveToCommandPosition = currentPosition;
-    }
-  }
+    const newCoordinates = isCloseCommand
+      ? [originPosition.x, originPosition.y]
+      : isVertical
+      ? [prevPoint.x, updatedCoordinates[0]]
+      : isHorizontal
+      ? [updatedCoordinates[0], prevPoint.y]
+      : updatedCoordinates;
 
-  return currentPosition;
-}
+    const points = handler.extractPoints({
+      ...command,
+      coordinates: newCoordinates,
+    });
+
+    finalCommand.points = points;
+    finalCommand.prevPoint = prevPoint;
+
+    previousCommand = finalCommand;
+
+    if (isMoveToCommand || isCloseCommand) {
+      originPosition = finalCommand
+        ? {
+            x: Number(finalCommand.points[finalCommand.points.length - 1]?.cx),
+            y: Number(finalCommand.points[finalCommand.points.length - 1]?.cy),
+          }
+        : originPosition;
+      return finalCommand;
+    }
+
+    return finalCommand;
+  });
+
+  return commandsWithPoints;
+};
 
 export const convertToRadians = (angle: number) => angle * (Math.PI / 180);
 
 export function convertCommandsRelativeToAbsolute(commands: ParsePath<number>) {
   return commands.map((command) => {
-    const absoluteCommand = convertRelativeToAbsolute(command, commands);
+    const absoluteCommand = convertRelativeToAbsolute(command);
     return absoluteCommand;
   });
 }
 export function convertCommandsAbsoluteToRelative(commands: ParsePath<number>) {
   return commands.map((command) => {
-    const relativeCommand = convertAbsoluteToRelative(command, commands);
+    const relativeCommand = convertAbsoluteToRelative(command);
     return relativeCommand;
   });
 }
 
-export function convertAbsoluteToRelative(
-  command: Command<number>,
-  commands: ParsePath<number>
-) {
-  const { letter, coordinates, id } = command;
-  const currentPosition = getCurrentPositionBeforeCommand(commands, id);
+export function convertAbsoluteToRelative(command: Command<number>) {
+  const { letter, coordinates } = command;
+  const currentPosition = command.prevPoint;
 
   if (letter.toLocaleUpperCase() === LINE_COMMANDS.Close)
     return { ...command, letter: letter.toLocaleLowerCase() };
@@ -506,12 +536,9 @@ export function createCommand(
   return { ...newCommand };
 }
 
-export function convertRelativeToAbsolute(
-  command: Command<number>,
-  commands: ParsePath<number>
-) {
-  const { letter, coordinates, id } = command;
-  const currentPosition = getCurrentPositionBeforeCommand(commands, id);
+export function convertRelativeToAbsolute(command: Command<number>) {
+  const { letter, coordinates } = command;
+  const currentPosition = command.prevPoint;
 
   if (letter.toLocaleUpperCase() === LINE_COMMANDS.Close)
     return { ...command, letter: letter.toLocaleUpperCase() };
@@ -532,43 +559,12 @@ export function convertRelativeToAbsolute(
 }
 
 export const updatePoints = (commands: ParsePath<number>) => {
-  let currentPosition = { x: 0, y: 0 };
-  let points: Point[] = [];
-  let interactedPoints: Point[] = [];
+  const points = commands.reduce(
+    (acc, curr) => acc.concat(curr.points),
+    [] as Point[]
+  );
 
-  const absoluteCommands = convertCommandsRelativeToAbsolute(commands);
-  absoluteCommands.forEach((absoluteCommand) => {
-    if (absoluteCommand.letter.toLocaleUpperCase() === LINE_COMMANDS.Close) {
-      return;
-    }
-    const handler = commandHandlers[absoluteCommand.letter.toLocaleUpperCase()];
-
-    if (absoluteCommand.letter.toUpperCase() === LINE_COMMANDS.Vertical) {
-      absoluteCommand.coordinates = [
-        Number(currentPosition.x),
-        absoluteCommand.coordinates[0],
-      ];
-    }
-
-    if (absoluteCommand.letter.toUpperCase() === LINE_COMMANDS.Horizontal) {
-      absoluteCommand.coordinates = [
-        absoluteCommand.coordinates[0],
-        Number(currentPosition.y),
-      ];
-    }
-
-    const generatedPoints = handler.extractPoints(absoluteCommand);
-    if (absoluteCommand.selected || absoluteCommand.hovered) {
-      interactedPoints.push(...generatedPoints);
-    } else points.push(...generatedPoints);
-    // points.push(...generatedPoints);
-    currentPosition = handler.getEndPosition(
-      absoluteCommand.coordinates,
-      currentPosition
-    );
-  });
-
-  return [...points, ...interactedPoints];
+  return points;
 };
 
 export const onPointerEnterCommand = (
@@ -577,9 +573,9 @@ export const onPointerEnterCommand = (
   id_command: string
 ) => {
   const newCommands = commands.map((command) => {
-    if (command.id !== id_command) return { ...command, hovered: false }; // Return unmodified command
+    if (command.id !== id_command) return { ...command, hovered: false };
 
-    return { ...command, hovered: true }; // Return new object
+    return { ...command, hovered: true };
   });
 
   updateCommands(newCommands, false);
@@ -590,7 +586,7 @@ export const onPointerLeaveCommand = (
   updateCommands: UpdateCommandsType
 ) => {
   const newCommands = commands.map((command) => {
-    return { ...command, hovered: false }; // Return new object
+    return { ...command, hovered: false };
   });
   updateCommands(newCommands, false);
 };
@@ -603,9 +599,9 @@ export const onPointerDownCommand = (
   isSidebarOpen?: boolean
 ) => {
   const newCommands = commands.map((command) => {
-    if (command.id !== id_command) return { ...command, selected: false }; // Return unmodified command
+    if (command.id !== id_command) return { ...command, selected: false };
 
-    return { ...command, selected: true }; // Return new object
+    return { ...command, selected: true };
   });
   updateCommands(newCommands, false);
   scrollIntoView && scrollCommandIntoView(id_command, isSidebarOpen);

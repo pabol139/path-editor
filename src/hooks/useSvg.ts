@@ -32,6 +32,7 @@ export default function useSvg(
   useEffect(() => {
     if (svgRef?.current) {
       centerViewbox(svgRef, updateViewbox, setSvgDimensions);
+
       setIsVisible(true);
     }
   }, []);

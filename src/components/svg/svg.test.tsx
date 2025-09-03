@@ -3,56 +3,69 @@ import "@testing-library/jest-dom";
 
 import Svg from "./svg";
 import { createCommandObject } from "@/utils/test-utils";
+import { usePathObject } from "@/context/path-context";
+import { useEffect } from "react";
+import { PathProvider } from "@/context/path-provider";
+import PathInput from "../path/path-input";
 
-const mockUpdatePath = jest.fn();
 const mockUpdateViewbox = jest.fn();
 const mockSetSvgDimensions = jest.fn();
-const mockStore = jest.fn();
 
 const defaultProps = {
   svgDimensions: { width: 100, height: 100 },
   viewbox: {
-    x: 0,
-    y: 0,
-    width: 1000,
-    height: 1000,
+    x: 10,
+    y: 10,
+    width: 100,
+    height: 100,
   },
   setSvgDimensions: mockSetSvgDimensions,
   updateViewbox: mockUpdateViewbox,
 };
 
-jest.mock("@/context/path-context", () => ({
-  usePathObject: () => ({
-    pathObject: {
-      displayPath: "M 10 20 C 10 10 10 10",
-      path: "M 10 20 C 10 10 10 10",
-      commands: [
-        createCommandObject(1, "M", [10, 10]),
-        createCommandObject(2, "C", [10, 10, 10, 10]),
-      ],
-    },
-    updatePath: mockUpdatePath,
-    error: null,
-    svgRef: { current: document.createElement("svg") },
-    undoUtils: { store: mockStore },
-  }),
-}));
+const testCommands = [
+  createCommandObject(1, "M", [10, 20]),
+  createCommandObject(2, "C", [10, 20, 10, 20, 10, 20]),
+];
+
+const TestSetup = ({ commands }: { commands: any[] }) => {
+  const { updateCommands } = usePathObject();
+
+  useEffect(() => {
+    updateCommands(commands);
+  }, []);
+
+  return null;
+};
+
+const mockedPathInputProps = {
+  updateViewbox: jest.fn(),
+  setSvgDimensions: jest.fn(),
+};
+
+const wrapper = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <PathProvider>
+      <TestSetup commands={testCommands} />
+      <PathInput {...mockedPathInputProps}></PathInput>
+      {children}
+    </PathProvider>
+  );
+};
 
 describe("svg element", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+  test("renders svg, path, points, lines", async () => {
+    render(<Svg {...defaultProps}></Svg>, { wrapper });
 
-  test("renders svg, path, points, lines and decorative lines", async () => {
-    const { container } = render(<Svg {...defaultProps}></Svg>);
+    const container = screen.getByRole("application");
 
     // Svg element
     expect(screen.getByRole("application")).toBeInTheDocument();
 
     // Path element
-    expect(screen.getByRole("img")).toBeInTheDocument();
+    expect(screen.getAllByRole("img")[1]).toBeInTheDocument();
 
-    // lines and decorative lines
+    // lines
     expect(
       screen.queryAllByRole("presentation", {
         hidden: true, // This includes aria-hidden elements
@@ -61,14 +74,16 @@ describe("svg element", () => {
 
     // Control points
     await waitFor(() => {
-      expect(container.querySelectorAll('circle[role="button"]')).toHaveLength(
+      expect(container?.querySelectorAll('circle[role="button"]')).toHaveLength(
         4
       );
     });
   });
 
   test("should not render points, lines and decorative lines", () => {
-    render(<Svg showControlElements={false} {...defaultProps}></Svg>);
+    render(<Svg showControlElements={false} {...defaultProps}></Svg>, {
+      wrapper,
+    });
     expect(
       screen.queryAllByRole("presentation", {
         hidden: true, // This includes aria-hidden elements

@@ -8,4 +8,5 @@ export type Point = {
   control: boolean;
   hovered: boolean;
   selected: boolean;
+  visible: boolean;
 };

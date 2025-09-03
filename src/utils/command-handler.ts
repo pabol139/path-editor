@@ -29,11 +29,8 @@ interface CommandHandler {
     isRelative: boolean
   ) => { x: number; y: number };
   validate?: (coords: number[]) => boolean;
-  getEndPosition: (
-    coordinates: number[],
-    currentPosition: { x: number; y: number }
-  ) => { x: number; y: number };
-  getLastControlPoint?: (coordinates: number[]) => { x: number; y: number };
+  getEndPosition: (points: Point[]) => { x: number; y: number };
+  getLastControlPoint?: (points: Point[]) => { x: number; y: number };
   translate: (
     coordinates: number[],
     values: { x: number; y: number },
@@ -69,6 +66,7 @@ const generateBasePoint = (
     control: false,
     hovered: hovered,
     selected: selected,
+    visible: true,
   };
 };
 
@@ -124,7 +122,10 @@ export const commandHandlers: Record<string, CommandHandler> = {
         y: coords[1],
       };
     },
-    getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
+    getEndPosition: (points) => ({
+      x: Number(points[0].cx),
+      y: Number(points[0].cy),
+    }),
     translate: (coords, values, isRelative, isFirstCommand) => {
       if (isRelative) {
         if (isFirstCommand) return [coords[0] + values.x, coords[1] + values.y];
@@ -156,6 +157,8 @@ export const commandHandlers: Record<string, CommandHandler> = {
       coordinates: [currentPosition.x, currentPosition.y],
       hovered: false,
       selected: true,
+      points: [],
+      prevPoint: { x: 0, y: 0 },
     }),
   },
 
@@ -211,7 +214,10 @@ export const commandHandlers: Record<string, CommandHandler> = {
         y: coords[1],
       };
     },
-    getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
+    getEndPosition: (points) => ({
+      x: Number(points[0].cx),
+      y: Number(points[0].cy),
+    }),
     translate: (coords, values, isRelative) => {
       if (isRelative) return coords;
 
@@ -224,6 +230,8 @@ export const commandHandlers: Record<string, CommandHandler> = {
       coordinates: [currentPosition.x, currentPosition.y],
       hovered: false,
       selected: true,
+      points: [],
+      prevPoint: { x: 0, y: 0 },
     }),
   },
   [LINE_COMMANDS.Horizontal]: {
@@ -266,9 +274,9 @@ export const commandHandlers: Record<string, CommandHandler> = {
         y: currentPosition.y,
       };
     },
-    getEndPosition: (coords, currentPosition) => ({
-      x: coords[0],
-      y: currentPosition.y,
+    getEndPosition: (points) => ({
+      x: Number(points[0].cx),
+      y: Number(points[0].cy),
     }),
     translate: (coords, values, isRelative) => {
       if (isRelative) return coords;
@@ -282,6 +290,8 @@ export const commandHandlers: Record<string, CommandHandler> = {
       coordinates: [currentPosition.x],
       hovered: false,
       selected: true,
+      points: [],
+      prevPoint: { x: 0, y: 0 },
     }),
   },
 
@@ -327,9 +337,9 @@ export const commandHandlers: Record<string, CommandHandler> = {
         y: coords[0],
       };
     },
-    getEndPosition: (coords, currentPosition) => ({
-      x: currentPosition.x,
-      y: coords[1],
+    getEndPosition: (points) => ({
+      x: Number(points[0].cx),
+      y: Number(points[0].cy),
     }),
     translate: (coords, values, isRelative) => {
       if (isRelative) return coords;
@@ -342,6 +352,8 @@ export const commandHandlers: Record<string, CommandHandler> = {
       coordinates: [currentPosition.y],
       hovered: false,
       selected: true,
+      points: [],
+      prevPoint: { x: 0, y: 0 },
     }),
   },
 
@@ -418,8 +430,14 @@ export const commandHandlers: Record<string, CommandHandler> = {
         y: coords[3],
       };
     },
-    getEndPosition: (coords) => ({ x: coords[2], y: coords[3] }),
-    getLastControlPoint: (coords) => ({ x: coords[0], y: coords[1] }),
+    getEndPosition: (points) => ({
+      x: Number(points[1].cx),
+      y: Number(points[1].cy),
+    }),
+    getLastControlPoint: (points) => ({
+      x: Number(points[0].cx),
+      y: Number(points[0].cy),
+    }),
     translate: (coords, values, isRelative) => {
       if (isRelative) return coords;
 
@@ -447,6 +465,8 @@ export const commandHandlers: Record<string, CommandHandler> = {
       ],
       hovered: false,
       selected: true,
+      points: [],
+      prevPoint: { x: 0, y: 0 },
     }),
   },
   [LINE_COMMANDS.SmoothQuadraticCurve]: {
@@ -499,7 +519,10 @@ export const commandHandlers: Record<string, CommandHandler> = {
         y: coords[1],
       };
     },
-    getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
+    getEndPosition: (points) => ({
+      x: Number(points[0].cx),
+      y: Number(points[0].cy),
+    }),
     translate: (coords, values, isRelative) => {
       if (isRelative) return coords;
 
@@ -512,6 +535,8 @@ export const commandHandlers: Record<string, CommandHandler> = {
       coordinates: [currentPosition.x, currentPosition.y],
       hovered: false,
       selected: true,
+      points: [],
+      prevPoint: { x: 0, y: 0 },
     }),
   },
   [LINE_COMMANDS.Curve]: {
@@ -598,8 +623,14 @@ export const commandHandlers: Record<string, CommandHandler> = {
         y: coords[5],
       };
     },
-    getEndPosition: (coords) => ({ x: coords[4], y: coords[5] }),
-    getLastControlPoint: (coords) => ({ x: coords[2], y: coords[3] }),
+    getEndPosition: (points) => ({
+      x: Number(points[2].cx),
+      y: Number(points[2].cy),
+    }),
+    getLastControlPoint: (points) => ({
+      x: Number(points[1].cx),
+      y: Number(points[1].cy),
+    }),
     translate: (coords, values, isRelative) => {
       if (isRelative) return coords;
       return [
@@ -632,6 +663,8 @@ export const commandHandlers: Record<string, CommandHandler> = {
       ],
       hovered: false,
       selected: true,
+      points: [],
+      prevPoint: { x: 0, y: 0 },
     }),
   },
   [LINE_COMMANDS.SmoothCurve]: {
@@ -710,8 +743,14 @@ export const commandHandlers: Record<string, CommandHandler> = {
         y: coords[3],
       };
     },
-    getEndPosition: (coords) => ({ x: coords[2], y: coords[3] }),
-    getLastControlPoint: (coords) => ({ x: coords[0], y: coords[1] }),
+    getEndPosition: (points) => ({
+      x: Number(points[1].cx),
+      y: Number(points[1].cy),
+    }),
+    getLastControlPoint: (points) => ({
+      x: Number(points[0].cx),
+      y: Number(points[0].cy),
+    }),
     translate: (coords, values, isRelative) => {
       if (isRelative) return coords;
       return [
@@ -738,6 +777,8 @@ export const commandHandlers: Record<string, CommandHandler> = {
       ],
       hovered: false,
       selected: true,
+      points: [],
+      prevPoint: { x: 0, y: 0 },
     }),
   },
   [LINE_COMMANDS.Arc]: {
@@ -814,7 +855,10 @@ export const commandHandlers: Record<string, CommandHandler> = {
         y: coords[6],
       };
     },
-    getEndPosition: (coords) => ({ x: coords[5], y: coords[6] }),
+    getEndPosition: (points) => ({
+      x: Number(points[0].cx),
+      y: Number(points[0].cy),
+    }),
     translate: (coords, values, isRelative) => {
       if (isRelative) return coords;
       return [
@@ -842,27 +886,27 @@ export const commandHandlers: Record<string, CommandHandler> = {
       coordinates: [1, 1, 0, 0, 0, currentPosition.x, currentPosition.y],
       hovered: false,
       selected: true,
+      points: [],
+      prevPoint: { x: 0, y: 0 },
     }),
   },
   [LINE_COMMANDS.Close]: {
-    extractPoints: () => [
+    extractPoints: (command) => [
       {
-        id: "",
-        id_command: "",
-        coordinate_index: 0,
-        radius: "",
-        cx: "",
-        cy: "",
-        control: false,
-        hovered: false,
-        selected: false,
+        ...generateBasePoint(command, 0),
+        cx: String(command.coordinates[0]),
+        cy: String(command.coordinates[1]),
+        visible: false,
       },
     ],
     updateCoordinates: () => [0, 0],
     toAbsolute: () => ["", [0]],
     toRelative: () => ["", [0]],
     getAccumulatedPosition: () => ({ x: 0, y: 0 }),
-    getEndPosition: (coords) => ({ x: coords[0], y: coords[1] }),
+    getEndPosition: (points) => ({
+      x: Number(points[0].cx),
+      y: Number(points[0].cy),
+    }),
     translate: () => [0],
     scale: () => [0],
     create: (_currentPosition, command_counter) => ({
@@ -871,6 +915,8 @@ export const commandHandlers: Record<string, CommandHandler> = {
       coordinates: [],
       hovered: false,
       selected: false,
+      points: [],
+      prevPoint: { x: 0, y: 0 },
     }),
   },
 };

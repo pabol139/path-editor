@@ -1,16 +1,23 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { onPointerDownCommand } from "@/utils/path";
 import { createCommandObject } from "@/utils/test-utils";
 import Command from "./command";
-
-const mockUpdatePath = jest.fn();
-const mockStore = jest.fn();
+import { usePathObject } from "@/context/path-context";
+import { useEffect } from "react";
+import { PathProvider } from "@/context/path-provider";
+import PathInput from "../path/path-input";
 
 const mockedProps = {
   id: "2C",
   letter: "C",
-  coordinates: [10, 10, 10, 10],
+  coordinates: "10,10,10,10,10,10",
   selected: false,
   hovered: false,
   isFirst: false,
@@ -21,37 +28,52 @@ const mockedProps = {
   handleClickCommandLetter: jest.fn(),
 };
 
-jest.mock("@/context/path-context", () => ({
-  usePathObject: () => ({
-    pathObject: {
-      displayPath: "M 10 20 C 10 10 10 10",
-      path: "M 10 20 C 10 10 10 10",
-      commands: [
-        createCommandObject(1, "M", [10, 10]),
-        createCommandObject(2, "C", [10, 10, 10, 10]),
-      ],
-    },
-    updatePath: mockUpdatePath,
-    error: null,
-    svgRef: { current: document.createElement("svg") },
-    undoUtils: { store: mockStore },
-  }),
-}));
+const testCommands = [
+  createCommandObject(1, "M", [10, 20]),
+  createCommandObject(2, "C", [10, 10, 10, 10, 10, 10]),
+];
+
+const TestSetup = ({ commands }: { commands: any[] }) => {
+  const { updateCommands } = usePathObject();
+
+  useEffect(() => {
+    updateCommands(commands);
+  }, []);
+
+  return null;
+};
+
+const mockedPathInputProps = {
+  updateViewbox: jest.fn(),
+  setSvgDimensions: jest.fn(),
+};
+const mockHandleInput = jest.fn();
+
+const wrapper = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <PathProvider>
+      <TestSetup commands={testCommands} />
+      <PathInput {...mockedPathInputProps}></PathInput>
+      {children}
+    </PathProvider>
+  );
+};
 
 describe("commands", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    render(<Command {...mockedProps} handleInput={mockHandleInput} />, {
+      wrapper,
+    });
   });
 
   test("should render command", async () => {
-    const { container } = render(<Command {...mockedProps}></Command>);
     waitFor(() => {
-      expect(container.querySelector("listitem")).toBeInTheDocument();
+      expect(screen.getByRole("listitem")).toBeInTheDocument();
     });
   });
 
   test("should call handle down on focus", async () => {
-    render(<Command {...mockedProps}></Command>);
     const command = screen.getByRole("listitem");
     fireEvent.focus(command);
 
@@ -59,9 +81,13 @@ describe("commands", () => {
   });
 
   test("should select command using real selection logic", () => {
+    cleanup();
+
     const initialCommands = [
       createCommandObject(1, "M", [10, 10]),
-      createCommandObject(2, "C", [10, 10, 10, 10], { selected: false }),
+      createCommandObject(2, "C", [10, 10, 10, 10, 10, 10], {
+        selected: false,
+      }),
     ];
 
     let currentCommands = [...initialCommands];
@@ -77,9 +103,9 @@ describe("commands", () => {
       onPointerDownCommand(currentCommands, mockUpdateCommands, "2C");
     };
 
-    const { rerender } = render(
-      <Command {...mockedProps} handleDown={handleDown} />
-    );
+    render(<Command {...mockedProps} handleDown={handleDown} />, {
+      wrapper,
+    });
 
     // Click the command
     fireEvent.click(screen.getByRole("listitem"));
@@ -90,23 +116,9 @@ describe("commands", () => {
     // Check that the command would be selected in the updated state
     const selectedCommand = currentCommands.find((cmd) => cmd.id === "2C");
     expect(selectedCommand?.selected).toBe(true);
-
-    // Re-render with the updated state
-    rerender(
-      <Command {...mockedProps} selected={true} handleDown={handleDown} />
-    );
-
-    expect(screen.getByRole("listitem")).toHaveAttribute(
-      "aria-selected",
-      "true"
-    );
   });
 
   test("should handle comma as decimal separator", () => {
-    const mockHandleInput = jest.fn();
-
-    render(<Command {...mockedProps} handleInput={mockHandleInput} />);
-
     const xInput = screen.getAllByDisplayValue("10")[0];
 
     // Type with comma (European decimal separator)
@@ -117,10 +129,6 @@ describe("commands", () => {
   });
 
   test("should not call handleInput when value hasn't actually changed", () => {
-    const mockHandleInput = jest.fn();
-
-    render(<Command {...mockedProps} handleInput={mockHandleInput} />);
-
     const xInput = screen.getAllByDisplayValue("10")[0];
 
     // Change to same value

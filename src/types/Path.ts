@@ -1,9 +1,13 @@
+import type { Point } from "./Point";
+
 export type Command<T> = {
   id: string;
   letter: string;
   coordinates: T[];
   hovered: boolean;
   selected: boolean;
+  points: Point[];
+  prevPoint: { x: number; y: number };
 };
 
 export type ParsePath<T> = Command<T>[];

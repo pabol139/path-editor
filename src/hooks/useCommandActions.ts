@@ -26,10 +26,7 @@ export default function useCommandActions() {
       updateCommands((currentCommands) => {
         return currentCommands.map((command) => {
           if (command.id !== id) return command;
-          const relativeCommand = convertAbsoluteToRelative(
-            command,
-            currentCommands
-          );
+          const relativeCommand = convertAbsoluteToRelative(command);
           return relativeCommand;
         });
       });
@@ -42,10 +39,7 @@ export default function useCommandActions() {
       updateCommands((currentCommands) => {
         return currentCommands.map((command) => {
           if (command.id !== id) return command;
-          const relativeCommand = convertRelativeToAbsolute(
-            command,
-            currentCommands
-          );
+          const relativeCommand = convertRelativeToAbsolute(command);
           return relativeCommand;
         });
       });

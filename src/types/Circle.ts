@@ -8,4 +8,5 @@ export interface PointType {
   control: boolean;
   hovered: boolean;
   selected: boolean;
+  visible: boolean;
 }

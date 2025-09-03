@@ -5,6 +5,7 @@ import {
   convertCommandsToPath,
   formatCommands,
   cleanSelectedAndHoveredCommands,
+  generatePoints,
 } from "@/utils/path";
 import {
   getInitialPath,
@@ -13,10 +14,17 @@ import {
 } from "@/utils/path-state";
 import { useCallback, useEffect, useReducer } from "react";
 
+const getInitialCommands = () => {
+  const newCommands = parsePath(getInitialPath());
+  const commandsWithPoints = generatePoints(newCommands);
+
+  return commandsWithPoints;
+};
+
 const INITIAL_STATE = {
   path: getInitialPath(),
   displayPath: getInitialPath(),
-  commands: parsePath(getInitialPath()),
+  commands: getInitialCommands(),
   undoStack: [],
   redoStack: [],
   error: false,
@@ -27,14 +35,14 @@ function reducer(state: PathState, action: Action) {
     case "SET_PATH": {
       try {
         const newCommands = parsePath(action.payload);
-
+        const commandsWithPoints = generatePoints(newCommands);
         if (!action.payload.trim()) savePathToStorage(DEFAULT_PATH);
         else savePathToStorage(action.payload);
 
         return {
           path: action.payload,
           displayPath: action.payload,
-          commands: newCommands,
+          commands: commandsWithPoints,
           undoStack: updateStack([
             ...state.undoStack,
             {
@@ -71,7 +79,8 @@ function reducer(state: PathState, action: Action) {
 
         const rawCommands =
           typeof updater === "function" ? updater(state.commands) : updater;
-        const formatted = formatCommands(rawCommands, 2);
+        const rawCommandsWithPoints = generatePoints(rawCommands);
+        const formatted = formatCommands(rawCommandsWithPoints, 2);
         const newPath = convertCommandsToPath(formatted);
 
         if (!newPath.trim()) savePathToStorage(DEFAULT_PATH);

@@ -4,8 +4,9 @@ import CommandActionsWrapper from "./command-actions-wrapper";
 import CommandLetter from "./command-letter";
 import useCommand from "@/hooks/useCommand";
 import CommandAtomsList from "./command-atoms-list";
+import React from "react";
 
-export default function Command({
+function Command({
   id,
   letter,
   coordinates,
@@ -20,16 +21,20 @@ export default function Command({
 }: {
   id: string;
   letter: string;
-  coordinates: number[];
+  coordinates: string;
   selected: boolean;
   hovered: boolean;
   isFirst: boolean;
-  handleEnter: () => void;
+  handleEnter: (id_command: string) => void;
   handleLeave: () => void;
-  handleDown: () => void;
+  handleDown: (id_command: string) => void;
   handleInput: (id: string, index: number, parsedValue: number) => void;
   handleClickCommandLetter: (id_command: string) => void;
 }) {
+  const parsedCommands = coordinates
+    .split(",")
+    .map((coordinate) => Number(coordinate));
+
   const {
     isRelative,
     isCheckbox,
@@ -37,7 +42,7 @@ export default function Command({
     updatedCoordinatesDisplayValues,
     updatedCoordinatesDisplayValuesOnBlur,
     handleInputFocus,
-  } = useCommand(id, letter, coordinates, handleInput);
+  } = useCommand(id, letter, parsedCommands, handleInput);
 
   const backgroundColor = selected
     ? "bg-purple600"
@@ -53,10 +58,10 @@ export default function Command({
       role="listitem"
       id={id}
       className={`pl-4 pr-4 flex justify-between gap-2  ${backgroundColor}`}
-      onMouseEnter={handleEnter}
+      onMouseEnter={() => handleEnter(id)}
       onMouseLeave={handleLeave}
-      onClick={handleDown}
-      onFocus={handleDown}
+      onClick={() => handleDown(id)}
+      onFocus={() => handleDown(id)}
       aria-selected={selected}
     >
       <div
@@ -103,3 +108,5 @@ export default function Command({
     </li>
   );
 }
+
+export default React.memo(Command);

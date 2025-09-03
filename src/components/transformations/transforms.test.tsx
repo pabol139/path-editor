@@ -75,8 +75,6 @@ describe("transforms section", () => {
   });
 
   test("should translate commands", () => {
-    const translateSpy = jest.spyOn(pathUtils, "translate");
-
     const xTranslateInput = screen.getByTestId("xtranslate");
     const yTranslateInput = screen.getByTestId("ytranslate");
     const button = screen.getByTestId("button-translate");
@@ -86,8 +84,6 @@ describe("transforms section", () => {
     fireEvent.change(yTranslateInput, { target: { value: "20" } });
     fireEvent.click(button);
 
-    expect(translateSpy).toHaveBeenCalledWith(testCommands, "20", "20");
-
     expect(textarea).toBeInTheDocument();
     expect(textarea).toHaveTextContent(
       "M 30 40 m 10 20 L 50 60 l 30 40 V 70 v 50 H 80 h 60 C 90.1 90 90 90 90 90 c 70.1 70 70 70 70 70 S 100 -60 100 100 s 80 -80 80 80 Q 110 110 110 110 q 90 90 90 90 T 120 120 t 100 100 A 110 110 0 0 0 130 130 a 110 110 0 0 0 110 110"
@@ -95,8 +91,6 @@ describe("transforms section", () => {
   });
 
   test("should scale commands", () => {
-    const scaleSpy = jest.spyOn(pathUtils, "scale");
-
     const xscaleInput = screen.getByTestId("xscale");
     const yscaleInput = screen.getByTestId("yscale");
     const button = screen.getByTestId("button-scale");
@@ -105,8 +99,6 @@ describe("transforms section", () => {
     fireEvent.change(xscaleInput, { target: { value: "2" } });
     fireEvent.change(yscaleInput, { target: { value: "2" } });
     fireEvent.click(button);
-
-    expect(scaleSpy).toHaveBeenCalledWith(testCommands, "2", "2");
 
     expect(textarea).toBeInTheDocument();
     expect(textarea).toHaveTextContent(

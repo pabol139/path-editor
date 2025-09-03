@@ -40,6 +40,7 @@ function Points({
   return (
     <>
       {points.map((point, key) => {
+        if (!point.visible) return;
         const command = commands.find(
           (command) => command.id === point.id_command
         );

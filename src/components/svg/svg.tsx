@@ -40,7 +40,6 @@ function Svg({
     updateViewbox,
     setSvgDimensions
   );
-
   function formatCommands() {
     const formatedCommands = cleanSelectedAndHoveredCommands(commands);
     updateCommands(formatedCommands, false);
