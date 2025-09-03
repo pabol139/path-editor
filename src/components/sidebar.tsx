@@ -99,16 +99,18 @@ export default function Sidebar({
             </motion.div>
           )}
 
-          <div className="overflow-auto border-l bg-primary border-secondary h-full text-tertiary w-full md:max-w-[var(--aside-width)]">
+          <div className="flex flex-col border-l bg-primary border-secondary h-full text-tertiary w-full md:max-w-[var(--aside-width)]">
             <PathSection
               updateViewbox={updateViewbox}
               setSvgDimensions={setSvgDimensions}
             />
-            <ViewboxSection viewbox={viewbox} updateViewbox={updateViewbox} />
+            <div className="flex-1 overflow-auto">
+              <ViewboxSection viewbox={viewbox} updateViewbox={updateViewbox} />
 
-            <TransformSection />
+              <TransformSection />
 
-            <CommandsSection />
+              <CommandsSection />
+            </div>
           </div>
         </aside>
       )}
